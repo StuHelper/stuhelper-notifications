@@ -38,23 +38,28 @@ type Preferences struct {
 	InteractionEnabled bool `json:"interaction_enabled"`
 }
 
-// Delivery is trusted module input, never accepted directly from an HTTP client.
-// Key must identify one immutable business event within SourceModule and Recipient.
-type Delivery struct {
-	Recipient    string
-	Key          string
-	Type         string
-	SourceModule string
-	Target       Target
-	TitleKey     string
-	TitleParams  map[string]string
+// Event is a trusted, complete notification mapping of one source event.
+// Source, ID, EventType, Subject and Revision retain the producer's identity.
+// The relay validates the CloudEvents envelope and maps only supported results.
+type Event struct {
+	Source      string
+	ID          string
+	EventType   string
+	Subject     string
+	Revision    int64
+	Recipient   string
+	Type        string
+	Target      Target
+	TitleKey    string
+	TitleParams map[string]string
 }
 type Result struct {
 	ID         string
 	Suppressed bool
+	Ignored    bool
 }
-type Sender interface {
-	Deliver(context.Context, Delivery) (Result, error)
+type Consumer interface {
+	Consume(context.Context, Event) (Result, error)
 }
 
 // Resolver enforces current target authorization for the recipient. Unknown targets
@@ -67,7 +72,7 @@ type Cursor struct {
 	ID        string
 }
 type Repository interface {
-	Deliver(context.Context, Delivery, string, time.Time, time.Duration) (Result, error)
+	Consume(context.Context, Event, string, time.Time, time.Duration) (Result, error)
 	List(context.Context, string, Cursor, int) ([]Notification, error)
 	Unread(context.Context, string) (int64, error)
 	MarkRead(context.Context, string, string, time.Time) error

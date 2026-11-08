@@ -631,7 +631,7 @@
           "notifications.system.security",
           "notifications.system.account"
         ],
-        "description": "封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Sender 传入 title_params。"
+        "description": "封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。"
       },
       "InteractionReplyTitlePayload": {
         "type": "object",

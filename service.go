@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var _ Consumer = (*Service)(nil)
+
 type Service struct {
 	repo     Repository
 	resolver Resolver
@@ -39,8 +41,8 @@ func ownerOK(owner string) error {
 	}
 	return nil
 }
-func (s *Service) Deliver(ctx context.Context, d Delivery) (Result, error) {
-	if !valid(d.Recipient, 256) || !valid(d.Key, 256) || !valid(d.SourceModule, 80) || !valid(d.Target.Kind, 80) || !valid(d.Target.ID, 256) || !valid(d.TitleKey, 256) {
+func (s *Service) Consume(ctx context.Context, d Event) (Result, error) {
+	if d.Revision < 1 || !valid(d.Subject, 512) || !valid(d.EventType, 128) || !valid(d.Recipient, 256) || !valid(d.ID, 256) || !valid(d.Source, 80) || !valid(d.Target.Kind, 80) || !valid(d.Target.ID, 256) || !valid(d.TitleKey, 256) {
 		return Result{}, ErrInput
 	}
 	if err := validateTitle(d); err != nil {
@@ -51,7 +53,7 @@ func (s *Service) Deliver(ctx context.Context, d Delivery) (Result, error) {
 		return Result{}, ErrInput
 	}
 	hash := sha256.Sum256(raw)
-	return s.repo.Deliver(ctx, d, hex.EncodeToString(hash[:]), s.now().UTC(), s.config.AggregationWindow)
+	return s.repo.Consume(ctx, d, hex.EncodeToString(hash[:]), s.now().UTC(), s.config.AggregationWindow)
 }
 func (s *Service) List(ctx context.Context, owner, after string, limit int) (Page, error) {
 	if e := ownerOK(owner); e != nil {

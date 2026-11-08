@@ -67,7 +67,7 @@ func setup(t *testing.T) *fixture {
 			t.Fatal(e)
 		}
 	}
-	_, e = owner.Exec("CREATE ROLE " + role + " LOGIN; REVOKE ALL ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA notifications TO " + role + "; GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO " + role + "; GRANT SELECT,INSERT ON notifications.receipts TO " + role + "; CREATE SCHEMA foreign_data; CREATE TABLE foreign_data.secret(value text)")
+	_, e = owner.Exec("CREATE ROLE " + role + " LOGIN; REVOKE ALL ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA notifications TO " + role + "; GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO " + role + "; GRANT SELECT,INSERT,UPDATE ON notifications.revisions TO " + role + "; GRANT SELECT,INSERT ON notifications.inbox TO " + role + "; CREATE SCHEMA foreign_data; CREATE TABLE foreign_data.secret(value text)")
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -83,7 +83,7 @@ func setup(t *testing.T) *fixture {
 	if e = (&postgres.Repository{DB: owner}).CheckRuntime(context.Background()); e == nil {
 		t.Fatal("migration identity accepted")
 	}
-	for _, query := range []string{"SELECT * FROM foreign_data.secret", "CREATE TABLE notifications.bad(id int)", "DELETE FROM notifications.receipts", "UPDATE notifications.receipts SET fingerprint='bad'"} {
+	for _, query := range []string{"SELECT * FROM foreign_data.secret", "CREATE TABLE notifications.bad(id int)", "DELETE FROM notifications.inbox", "DELETE FROM notifications.revisions", "UPDATE notifications.inbox SET fingerprint='bad'"} {
 		if _, e = runtime.Exec(query); e == nil {
 			t.Fatalf("runtime allowed %s", query)
 		}
@@ -95,12 +95,12 @@ func setup(t *testing.T) *fixture {
 	}
 	return f
 }
-func delivery(key, kind string) n.Delivery {
-	return n.Delivery{Recipient: "alice", Key: key, Type: kind, SourceModule: "reviews", Target: n.Target{Kind: "review", ID: "review-1"}, TitleKey: titleForType(kind), TitleParams: paramsForType(kind)}
+func delivery(key, kind string) n.Event {
+	return n.Event{Recipient: "alice", ID: key, Subject: "object/" + key, Revision: 1, EventType: "reviews.result.v1", Type: kind, Source: "reviews", Target: n.Target{Kind: "review", ID: "review-1"}, TitleKey: titleForType(kind), TitleParams: paramsForType(kind)}
 }
-func deliver(t *testing.T, f *fixture, d n.Delivery) n.Result {
+func deliver(t *testing.T, f *fixture, d n.Event) n.Result {
 	t.Helper()
-	v, e := f.s.Deliver(context.Background(), d)
+	v, e := f.s.Consume(context.Background(), d)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -213,7 +213,7 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 	errs := make(chan error, 12)
 	for range 12 {
 		wg.Add(1)
-		go func() { defer wg.Done(); v, e := f.s.Deliver(ctx, d); results <- v; errs <- e }()
+		go func() { defer wg.Done(); v, e := f.s.Consume(ctx, d); results <- v; errs <- e }()
 	}
 	wg.Wait()
 	close(results)
@@ -230,11 +230,11 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 		}
 		id = v.ID
 	}
-	if count(t, f, "items") != 1 || count(t, f, "receipts") != 1 {
+	if count(t, f, "items") != 1 || count(t, f, "inbox") != 1 {
 		t.Fatal("duplicate write")
 	}
 	d.TitleKey = "notifications.interaction.like"
-	if _, e := f.s.Deliver(ctx, d); !errors.Is(e, n.ErrConflict) {
+	if _, e := f.s.Consume(ctx, d); !errors.Is(e, n.ErrConflict) {
 		t.Fatal(e)
 	}
 	v := deliver(t, f, delivery("two", "interaction"))
@@ -352,26 +352,26 @@ func TestHTTPAuthenticationAndStrictPreferences(t *testing.T) {
 func TestDeliveryRollbackAndRetentionBoundary(t *testing.T) {
 	f := setup(t)
 	ctx := context.Background()
-	_, e := f.db.Exec(`CREATE FUNCTION notifications.reject_receipt() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test receipt failure'; END $$; CREATE TRIGGER fail_receipt BEFORE INSERT ON notifications.receipts FOR EACH ROW EXECUTE FUNCTION notifications.reject_receipt()`)
+	_, e := f.db.Exec(`CREATE FUNCTION notifications.reject_inbox() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test inbox failure'; END $$; CREATE TRIGGER fail_inbox BEFORE INSERT ON notifications.inbox FOR EACH ROW EXECUTE FUNCTION notifications.reject_inbox()`)
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = f.s.Deliver(ctx, delivery("rollback", "business")); !errors.Is(e, n.ErrUnavailable) {
+	if _, e = f.s.Consume(ctx, delivery("rollback", "business")); !errors.Is(e, n.ErrUnavailable) {
 		t.Fatal(e)
 	}
-	if count(t, f, "items") != 0 || count(t, f, "receipts") != 0 {
+	if count(t, f, "items") != 0 || count(t, f, "inbox") != 0 || count(t, f, "revisions") != 0 {
 		t.Fatal("partial transaction")
 	}
-	if _, e = f.db.Exec("DROP TRIGGER fail_receipt ON notifications.receipts"); e != nil {
+	if _, e = f.db.Exec("DROP TRIGGER fail_inbox ON notifications.inbox"); e != nil {
 		t.Fatal(e)
 	}
 	deliver(t, f, delivery("rollback", "business"))
 	canceled, cancel := context.WithCancel(ctx)
 	cancel()
-	if _, e = f.s.Deliver(canceled, delivery("canceled", "business")); e == nil {
+	if _, e = f.s.Consume(canceled, delivery("canceled", "business")); e == nil {
 		t.Fatal("canceled delivery succeeded")
 	}
-	if count(t, f, "items") != 1 || count(t, f, "receipts") != 1 {
+	if count(t, f, "items") != 1 || count(t, f, "inbox") != 1 {
 		t.Fatal("canceled delivery wrote data")
 	}
 	f.now = f.now.Add(24 * time.Hour)
@@ -403,7 +403,7 @@ func TestAggregationSeparatesTargetsParametersAndRecipients(t *testing.T) {
 		case 1:
 			d.Target.ID = "review-2"
 		case 2:
-			d.SourceModule = "catalog"
+			d.Source = "catalog"
 		case 3:
 			d.Recipient = "bob"
 		}
@@ -420,11 +420,11 @@ func TestAggregationSeparatesTargetsParametersAndRecipients(t *testing.T) {
 	}
 	d := delivery("invalid", "interaction")
 	d.Target.ID = ""
-	if _, e = f.s.Deliver(ctx, d); !errors.Is(e, n.ErrInput) {
+	if _, e = f.s.Consume(ctx, d); !errors.Is(e, n.ErrInput) {
 		t.Fatal(e)
 	}
-	if count(t, f, "receipts") != 5 {
-		t.Fatal("invalid delivery wrote receipt")
+	if count(t, f, "inbox") != 5 {
+		t.Fatal("invalid delivery wrote inbox")
 	}
 }
 

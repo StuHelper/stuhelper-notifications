@@ -1,5 +1,5 @@
 id: notifications
-version: 0.2.0
+version: 0.3.0
 kind: module
 api: 1
 critical: false
@@ -11,7 +11,7 @@ optional:
     api: 1
 capabilities:
   - notifications.inbox
-  - notifications.deliver
+  - notifications.consume
 scenario_tests:
   NT-01:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
@@ -29,3 +29,9 @@ scenario_tests:
   NT-07:
     - title_catalog_test.go#TestTitleCatalogAdmissionAndRejectedWrites
     - title_catalog_test.go#TestInteractionTitleUsesServerAggregateCount
+  NT-08:
+    - consume_test.go#TestConsumeRevisionOrderingAndOriginalResults
+    - consume_test.go#TestConsumeRollbackRestoresAggregateAndRevision
+    - consume_test.go#TestConsumeSuppressionAdvancesRevisionAndValidation
+    - consume_test.go#TestConsumeConcurrentSameRevision
+    - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup

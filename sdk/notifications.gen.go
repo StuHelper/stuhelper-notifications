@@ -1508,7 +1508,7 @@ type Notification struct {
 	Target       Target                   `json:"target"`
 	TargetStatus NotificationTargetStatus `json:"target_status"`
 
-	// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Sender 传入 title_params。
+	// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 	TitleKey TitleKey `json:"title_key"`
 
 	// TitleParams 必须满足 title_key 对应的封闭参数对象；只包含业务编号。详见 x-title-catalog。
@@ -1819,7 +1819,7 @@ type TeacherVerificationRejectedTitlePayloadTitleKey string
 // TeacherVerificationRejectedTitlePayloadType defines model for TeacherVerificationRejectedTitlePayload.Type.
 type TeacherVerificationRejectedTitlePayloadType string
 
-// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Sender 传入 title_params。
+// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 type TitleKey string
 
 // Unread defines model for Unread.

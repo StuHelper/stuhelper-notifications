@@ -129,7 +129,7 @@ export interface components {
             code: string;
         };
         /**
-         * @description 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Sender 传入 title_params。
+         * @description 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
          * @enum {string}
          */
         TitleKey: "notifications.interaction.reply" | "notifications.interaction.like" | "notifications.content.approved" | "notifications.content.rejected" | "notifications.content.removed" | "notifications.resource_removal.approved" | "notifications.resource_removal.rejected" | "notifications.report.approved" | "notifications.report.rejected" | "notifications.student_verification.approved" | "notifications.student_verification.rejected" | "notifications.identity_verification.approved" | "notifications.identity_verification.rejected" | "notifications.verification_revocation.approved" | "notifications.verification_revocation.rejected" | "notifications.verification_deletion.approved" | "notifications.verification_deletion.rejected" | "notifications.teacher_verification.approved" | "notifications.teacher_verification.rejected" | "notifications.student_verification.revoked" | "notifications.system.notice" | "notifications.system.security" | "notifications.system.account";

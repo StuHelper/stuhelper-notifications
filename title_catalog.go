@@ -30,7 +30,7 @@ var titleCatalog = func() map[string]titleRule {
 // Producers must not use personal identifiers even if they match this syntax.
 var displayReference = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$`)
 
-func validateTitle(d Delivery) error {
+func validateTitle(d Event) error {
 	rule, ok := titleCatalog[d.TitleKey]
 	if !ok || d.Type != rule.Type || !slices.Contains(rule.TargetKinds, d.Target.Kind) || len(d.TitleParams) != len(rule.Parameters) {
 		return ErrInput

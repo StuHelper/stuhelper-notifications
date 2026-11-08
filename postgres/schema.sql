@@ -20,14 +20,25 @@ CREATE INDEX IF NOT EXISTS items_owner_cursor ON notifications.items(owner,creat
 CREATE INDEX IF NOT EXISTS items_unread ON notifications.items(owner) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_expiry ON notifications.items(created_at,id);
 CREATE INDEX IF NOT EXISTS items_aggregation ON notifications.items(owner,source_module,target_kind,target_id,title_key,created_at DESC) WHERE type='interaction' AND read_at IS NULL;
--- Receipts survive inbox retention: replaying an old event cannot resurrect it.
-CREATE TABLE IF NOT EXISTS notifications.receipts (
- owner text NOT NULL,
- source_module text NOT NULL,
- key text NOT NULL,
+-- Retain inbox results independently of notification retention.
+CREATE TABLE IF NOT EXISTS notifications.inbox (
+ source text NOT NULL,
+ event_id text NOT NULL,
+ subject text NOT NULL,
+ revision bigint NOT NULL CHECK (revision>0),
  fingerprint text NOT NULL,
  item_id uuid,
- PRIMARY KEY(owner,source_module,key)
+ suppressed boolean NOT NULL,
+ ignored boolean NOT NULL,
+ PRIMARY KEY(source,event_id),
+ CHECK (NOT (suppressed AND ignored)),
+ CHECK ((item_id IS NOT NULL) = (NOT suppressed AND NOT ignored))
+);
+CREATE TABLE IF NOT EXISTS notifications.revisions (
+ source text NOT NULL,
+ subject text NOT NULL,
+ revision bigint NOT NULL CHECK (revision>=0),
+ PRIMARY KEY(source,subject)
 );
 REVOKE ALL ON SCHEMA notifications FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA notifications FROM PUBLIC;

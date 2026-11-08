@@ -30,7 +30,7 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 	for key, rule := range contract.Catalog {
 		for _, kind := range rule.Kinds {
 			serial++
-			d := n.Delivery{Recipient: "alice", Key: fmt.Sprint(serial), Type: rule.Type, SourceModule: "test", Target: n.Target{Kind: kind, ID: "object-1"}, TitleKey: key, TitleParams: map[string]string{}}
+			d := n.Event{Recipient: "alice", ID: fmt.Sprint(serial), Subject: fmt.Sprint(serial), Revision: 1, EventType: "test.result.v1", Type: rule.Type, Source: "test", Target: n.Target{Kind: kind, ID: "object-1"}, TitleKey: key, TitleParams: map[string]string{}}
 			for _, param := range rule.Params {
 				d.TitleParams[param] = "ref-123"
 			}
@@ -40,32 +40,32 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 			}
 		}
 	}
-	if count(t, f, "items") != serial || count(t, f, "receipts") != serial {
+	if count(t, f, "items") != serial || count(t, f, "inbox") != serial {
 		t.Fatal("catalog deliveries missing")
 	}
-	mutations := map[string]func(*n.Delivery){
-		"unknown key":                func(d *n.Delivery) { d.TitleKey = "notifications.unknown" },
-		"missing parameters":         func(d *n.Delivery) { d.TitleParams = nil },
-		"missing required parameter": func(d *n.Delivery) { d.TitleParams = map[string]string{"wrong": "ref-1"} },
-		"extra parameter":            func(d *n.Delivery) { d.TitleParams["body"] = "private" },
-		"caller count":               func(d *n.Delivery) { d.TitleParams["count"] = "99" },
-		"wrong type":                 func(d *n.Delivery) { d.Type = "security" },
-		"wrong target":               func(d *n.Delivery) { d.Target.Kind = "teacher_application" },
-		"empty":                      func(d *n.Delivery) { d.TitleParams["content_id"] = "" },
-		"long":                       func(d *n.Delivery) { d.TitleParams["content_id"] = strings.Repeat("a", 65) },
-		"body text":                  func(d *n.Delivery) { d.TitleParams["content_id"] = "full content text" },
-		"email":                      func(d *n.Delivery) { d.TitleParams["content_id"] = "person@example.invalid" },
-		"control":                    func(d *n.Delivery) { d.TitleParams["content_id"] = "id\nsecret" },
-		"invalid UTF8":               func(d *n.Delivery) { d.TitleParams["content_id"] = string([]byte{255}) },
+	mutations := map[string]func(*n.Event){
+		"unknown key":                func(d *n.Event) { d.TitleKey = "notifications.unknown" },
+		"missing parameters":         func(d *n.Event) { d.TitleParams = nil },
+		"missing required parameter": func(d *n.Event) { d.TitleParams = map[string]string{"wrong": "ref-1"} },
+		"extra parameter":            func(d *n.Event) { d.TitleParams["body"] = "private" },
+		"caller count":               func(d *n.Event) { d.TitleParams["count"] = "99" },
+		"wrong type":                 func(d *n.Event) { d.Type = "security" },
+		"wrong target":               func(d *n.Event) { d.Target.Kind = "teacher_application" },
+		"empty":                      func(d *n.Event) { d.TitleParams["content_id"] = "" },
+		"long":                       func(d *n.Event) { d.TitleParams["content_id"] = strings.Repeat("a", 65) },
+		"body text":                  func(d *n.Event) { d.TitleParams["content_id"] = "full content text" },
+		"email":                      func(d *n.Event) { d.TitleParams["content_id"] = "person@example.invalid" },
+		"control":                    func(d *n.Event) { d.TitleParams["content_id"] = "id\nsecret" },
+		"invalid UTF8":               func(d *n.Event) { d.TitleParams["content_id"] = string([]byte{255}) },
 	}
 	for name, mutate := range mutations {
 		t.Run(name, func(t *testing.T) {
 			d := delivery("invalid-"+name, "interaction")
 			mutate(&d)
-			if _, e := f.s.Deliver(ctx, d); !errors.Is(e, n.ErrInput) {
+			if _, e := f.s.Consume(ctx, d); !errors.Is(e, n.ErrInput) {
 				t.Fatal(e)
 			}
-			if count(t, f, "items") != serial || count(t, f, "receipts") != serial {
+			if count(t, f, "items") != serial || count(t, f, "inbox") != serial {
 				t.Fatal("rejected delivery wrote data")
 			}
 		})
@@ -77,11 +77,11 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 	}
 	d := delivery("off-invalid", "interaction")
 	d.TitleKey = "notifications.unknown"
-	if _, e := f.s.Deliver(ctx, d); !errors.Is(e, n.ErrInput) {
+	if _, e := f.s.Consume(ctx, d); !errors.Is(e, n.ErrInput) {
 		t.Fatal(e)
 	}
-	if count(t, f, "receipts") != serial {
-		t.Fatal("invalid suppressed receipt")
+	if count(t, f, "inbox") != serial {
+		t.Fatal("invalid suppressed inbox")
 	}
 	enabled := true
 	if _, e := f.s.Preferences(ctx, "alice", &enabled); e != nil {
