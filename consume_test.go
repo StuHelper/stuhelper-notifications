@@ -6,6 +6,7 @@ import (
 	"fmt"
 	n "github.com/StuHelper/stuhelper-notifications"
 	"github.com/StuHelper/stuhelper-notifications/postgres"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -19,7 +20,7 @@ func TestConsumeRevisionOrderingAndOriginalResults(t *testing.T) {
 	e.Subject = "task/task-1"
 	e.Revision = 3
 	first := deliver(t, f, e)
-	if first.ID == "" || first.Ignored {
+	if first.Recipients[0].ID == "" || first.Ignored {
 		t.Fatal(first)
 	}
 	// Complete results can skip revisions. Older and equal revisions have no effect.
@@ -33,11 +34,11 @@ func TestConsumeRevisionOrderingAndOriginalResults(t *testing.T) {
 			older.Revision = 2
 		}
 		ignored, err := f.s.Consume(ctx, older)
-		if err != nil || !ignored.Ignored || ignored.ID != "" || ignored.Suppressed {
+		if err != nil || !ignored.Ignored || ignored.Recipients[0].ID != "" || ignored.Recipients[0].SuppressionReason != n.SuppressionStaleRevision {
 			t.Fatal(ignored, err)
 		}
 		again, err := f.s.Consume(ctx, older)
-		if err != nil || again != ignored {
+		if err != nil || !reflect.DeepEqual(again, ignored) {
 			t.Fatal(again, err)
 		}
 	}
@@ -46,7 +47,7 @@ func TestConsumeRevisionOrderingAndOriginalResults(t *testing.T) {
 	latest.Revision = 4
 	deliver(t, f, latest)
 	replay, err := f.s.Consume(ctx, e)
-	if err != nil || replay != first {
+	if err != nil || !reflect.DeepEqual(replay, first) {
 		t.Fatal("replay must precede revision filtering", replay, err)
 	}
 	var revision int64
@@ -59,7 +60,7 @@ func TestConsumeRevisionOrderingAndOriginalResults(t *testing.T) {
 	// Event identity is global within source, not scoped to recipient or subject.
 	for _, mutate := range []func(*n.Event){
 		func(v *n.Event) { v.Subject = "task/other" },
-		func(v *n.Event) { v.Recipient = "bob" },
+		func(v *n.Event) { v.Recipients = []string{"bob"} },
 		func(v *n.Event) { v.Revision = 100 },
 		func(v *n.Event) { v.EventType = "moderation.other.v1" },
 	} {
@@ -81,7 +82,7 @@ func TestConsumeRevisionOrderingAndOriginalResults(t *testing.T) {
 		t.Fatal(err)
 	}
 	replay, err = f.s.Consume(ctx, e)
-	if err != nil || replay != first {
+	if err != nil || !reflect.DeepEqual(replay, first) {
 		t.Fatal("migration lost replay result", replay, err)
 	}
 }
@@ -106,7 +107,7 @@ func TestConsumeRollbackRestoresAggregateAndRevision(t *testing.T) {
 	if err = f.db.QueryRow("SELECT revision FROM notifications.revisions WHERE source=$1 AND subject=$2", e.Source, e.Subject).Scan(&revision); err != nil || revision != 1 {
 		t.Fatal(revision, err)
 	}
-	if err = f.db.QueryRow("SELECT count FROM notifications.items WHERE id=$1", first.ID).Scan(&aggregate); err != nil || aggregate != 1 {
+	if err = f.db.QueryRow("SELECT count FROM notifications.items WHERE id=$1", first.Recipients[0].ID).Scan(&aggregate); err != nil || aggregate != 1 {
 		t.Fatal(aggregate, err)
 	}
 	if count(t, f, "inbox") != 1 {
@@ -116,10 +117,10 @@ func TestConsumeRollbackRestoresAggregateAndRevision(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := deliver(t, f, next)
-	if got.ID != first.ID {
+	if got.Recipients[0].ID != first.Recipients[0].ID {
 		t.Fatal("aggregate changed")
 	}
-	if err = f.db.QueryRow("SELECT count FROM notifications.items WHERE id=$1", first.ID).Scan(&aggregate); err != nil || aggregate != 2 {
+	if err = f.db.QueryRow("SELECT count FROM notifications.items WHERE id=$1", first.Recipients[0].ID).Scan(&aggregate); err != nil || aggregate != 2 {
 		t.Fatal(aggregate, err)
 	}
 	// A blocked revision lock observes the caller deadline and leaves no new receipt.
@@ -155,7 +156,7 @@ func TestConsumeSuppressionAdvancesRevisionAndValidation(t *testing.T) {
 	e.Subject = "review/shared"
 	e.Revision = 2
 	suppressed := deliver(t, f, e)
-	if !suppressed.Suppressed || suppressed.Ignored {
+	if suppressed.Recipients[0].SuppressionReason != n.SuppressionInteractionDisabled || suppressed.Ignored {
 		t.Fatal(suppressed)
 	}
 	on := true
@@ -170,7 +171,7 @@ func TestConsumeSuppressionAdvancesRevisionAndValidation(t *testing.T) {
 		t.Fatal(got)
 	}
 	replay := deliver(t, f, e)
-	if replay != suppressed {
+	if !reflect.DeepEqual(replay, suppressed) {
 		t.Fatal(replay)
 	}
 	for _, mutate := range []func(*n.Event){

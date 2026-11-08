@@ -20,6 +20,19 @@ CREATE INDEX IF NOT EXISTS items_owner_cursor ON notifications.items(owner,creat
 CREATE INDEX IF NOT EXISTS items_unread ON notifications.items(owner) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_expiry ON notifications.items(created_at,id);
 CREATE INDEX IF NOT EXISTS items_aggregation ON notifications.items(owner,source_module,target_kind,target_id,title_key,created_at DESC) WHERE type='interaction' AND read_at IS NULL;
+-- Upgrade an empty candidate inbox in place. Existing single-recipient receipts
+-- omit the recipient on suppression and cannot be converted without source events.
+DO $$
+BEGIN
+ IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='notifications' AND table_name='inbox' AND column_name='item_id') THEN
+  IF EXISTS (SELECT 1 FROM notifications.inbox) THEN
+   RAISE EXCEPTION 'notifications inbox migration requires recipient reconstruction from source events';
+  END IF;
+  ALTER TABLE notifications.inbox DROP COLUMN item_id, DROP COLUMN suppressed, DROP COLUMN ignored;
+  ALTER TABLE notifications.inbox ADD COLUMN result jsonb NOT NULL
+   CHECK (jsonb_typeof(result->'recipients')='array' AND jsonb_array_length(result->'recipients') BETWEEN 1 AND 20);
+ END IF;
+END $$;
 -- Retain inbox results independently of notification retention.
 CREATE TABLE IF NOT EXISTS notifications.inbox (
  source text NOT NULL,
@@ -27,12 +40,8 @@ CREATE TABLE IF NOT EXISTS notifications.inbox (
  subject text NOT NULL,
  revision bigint NOT NULL CHECK (revision>0),
  fingerprint text NOT NULL,
- item_id uuid,
- suppressed boolean NOT NULL,
- ignored boolean NOT NULL,
- PRIMARY KEY(source,event_id),
- CHECK (NOT (suppressed AND ignored)),
- CHECK ((item_id IS NOT NULL) = (NOT suppressed AND NOT ignored))
+ result jsonb NOT NULL CHECK (jsonb_typeof(result->'recipients')='array' AND jsonb_array_length(result->'recipients') BETWEEN 1 AND 20),
+ PRIMARY KEY(source,event_id)
 );
 CREATE TABLE IF NOT EXISTS notifications.revisions (
  source text NOT NULL,

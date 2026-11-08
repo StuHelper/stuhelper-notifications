@@ -92,14 +92,16 @@ func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now ti
 		return n.Result{}, safe(e)
 	}
 	var old string
-	var id sql.NullString
+	var saved []byte
 	var result n.Result
-	e = tx.QueryRowContext(ctx, `SELECT fingerprint,item_id,suppressed,ignored FROM notifications.inbox WHERE source=$1 AND event_id=$2`, d.Source, d.ID).Scan(&old, &id, &result.Suppressed, &result.Ignored)
+	e = tx.QueryRowContext(ctx, `SELECT fingerprint,result FROM notifications.inbox WHERE source=$1 AND event_id=$2`, d.Source, d.ID).Scan(&old, &saved)
 	if e == nil {
 		if old != hash {
 			return n.Result{}, n.ErrConflict
 		}
-		result.ID = id.String
+		if e = json.Unmarshal(saved, &result); e != nil {
+			return n.Result{}, n.ErrUnavailable
+		}
 		return result, nil
 	}
 	if !errors.Is(e, sql.ErrNoRows) {
@@ -113,25 +115,37 @@ func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now ti
 		return n.Result{}, safe(e)
 	}
 	result.Ignored = d.Revision <= revision
+	// Service supplies unique recipients in sorted order. Consistent lock ordering
+	// prevents deadlocks between different events with overlapping recipient sets.
+	for _, recipient := range d.Recipients {
+		entry := n.RecipientResult{Recipient: recipient}
+		if result.Ignored {
+			entry.SuppressionReason = n.SuppressionStaleRevision
+		} else {
+			enabled, err := lock(ctx, tx, recipient)
+			if err != nil {
+				return n.Result{}, safe(err)
+			}
+			if d.Type == "interaction" && !enabled {
+				entry.SuppressionReason = n.SuppressionInteractionDisabled
+			}
+			entry, e = writeNotification(ctx, tx, d, entry, now, window)
+			if e != nil {
+				return n.Result{}, e
+			}
+		}
+		result.Recipients = append(result.Recipients, entry)
+	}
 	if !result.Ignored {
-		enabled, err := lock(ctx, tx, d.Recipient)
-		if err != nil {
-			return n.Result{}, safe(err)
-		}
-		result.Suppressed = d.Type == "interaction" && !enabled
-		result, e = writeNotification(ctx, tx, d, result, now, window)
-		if e != nil {
-			return n.Result{}, e
-		}
 		if _, e = tx.ExecContext(ctx, `UPDATE notifications.revisions SET revision=$3 WHERE source=$1 AND subject=$2`, d.Source, d.Subject, d.Revision); e != nil {
 			return n.Result{}, safe(e)
 		}
 	}
-	var itemID any
-	if result.ID != "" {
-		itemID = result.ID
+	saved, e = json.Marshal(result)
+	if e != nil {
+		return n.Result{}, n.ErrUnavailable
 	}
-	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.inbox(source,event_id,subject,revision,fingerprint,item_id,suppressed,ignored) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, d.Source, d.ID, d.Subject, d.Revision, hash, itemID, result.Suppressed, result.Ignored); e != nil {
+	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.inbox(source,event_id,subject,revision,fingerprint,result) VALUES($1,$2,$3,$4,$5,$6)`, d.Source, d.ID, d.Subject, d.Revision, hash, saved); e != nil {
 		return n.Result{}, safe(e)
 	}
 	if e = tx.Commit(); e != nil {
@@ -140,26 +154,26 @@ func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now ti
 	return result, nil
 }
 
-func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Result, now time.Time, window time.Duration) (n.Result, error) {
+func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.RecipientResult, now time.Time, window time.Duration) (n.RecipientResult, error) {
 	params, e := json.Marshal(d.TitleParams)
 	if e != nil {
-		return n.Result{}, n.ErrInput
+		return n.RecipientResult{}, n.ErrInput
 	}
-	if !result.Suppressed {
+	if result.SuppressionReason == "" {
 		if d.Type == "interaction" {
-			e = tx.QueryRowContext(ctx, `SELECT id FROM notifications.items WHERE owner=$1 AND type='interaction' AND source_module=$2 AND target_kind=$3 AND target_id=$4 AND title_key=$5 AND title_params=$6 AND created_at>$7 AND created_at<=$8 AND read_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1 FOR UPDATE`, d.Recipient, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now.Add(-window), now).Scan(&result.ID)
+			e = tx.QueryRowContext(ctx, `SELECT id FROM notifications.items WHERE owner=$1 AND type='interaction' AND source_module=$2 AND target_kind=$3 AND target_id=$4 AND title_key=$5 AND title_params=$6 AND created_at>$7 AND created_at<=$8 AND read_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1 FOR UPDATE`, result.Recipient, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now.Add(-window), now).Scan(&result.ID)
 			if e != nil && !errors.Is(e, sql.ErrNoRows) {
-				return n.Result{}, safe(e)
+				return n.RecipientResult{}, safe(e)
 			}
 		}
 		if result.ID != "" {
 			_, e = tx.ExecContext(ctx, `UPDATE notifications.items SET count=count+1 WHERE id=$1`, result.ID)
 		} else {
 			result.ID = uuid.NewString()
-			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,type,source_module,target_kind,target_id,title_key,title_params,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, result.ID, d.Recipient, d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
+			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,type,source_module,target_kind,target_id,title_key,title_params,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, result.ID, result.Recipient, d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
 		}
 		if e != nil {
-			return n.Result{}, safe(e)
+			return n.RecipientResult{}, safe(e)
 		}
 	}
 	return result, nil

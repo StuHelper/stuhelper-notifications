@@ -47,16 +47,26 @@ type Event struct {
 	EventType   string
 	Subject     string
 	Revision    int64
-	Recipient   string
+	Recipients  []string
 	Type        string
 	Target      Target
 	TitleKey    string
 	TitleParams map[string]string
 }
+
+const (
+	SuppressionInteractionDisabled = "interaction_disabled"
+	SuppressionStaleRevision       = "stale_revision"
+)
+
+type RecipientResult struct {
+	Recipient         string `json:"recipient"`
+	ID                string `json:"id"`
+	SuppressionReason string `json:"suppression_reason"`
+}
 type Result struct {
-	ID         string
-	Suppressed bool
-	Ignored    bool
+	Recipients []RecipientResult `json:"recipients"`
+	Ignored    bool              `json:"ignored"`
 }
 type Consumer interface {
 	Consume(context.Context, Event) (Result, error)

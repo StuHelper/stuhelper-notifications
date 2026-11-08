@@ -23,7 +23,7 @@ bash scripts/check-with-postgres.sh
 4. 使用运行连接构造 postgres.Repository，并调用 CheckRuntime。backend 管理连接池、请求超时、健康检查和连接关闭。迁移身份不进入业务进程。
 5. 调用 notifications.New(repo, resolver, config, clock)。Resolver 根据来源模块和目标引用调用所属模块公开接口，按接收人当前权限返回状态。依赖错误返回 error，禁止默认判定可访问。
 6. 将 httpapi.Handler 挂载至 /api/v1/notifications 及其子路径，Authenticate 回调复用平台认证，返回稳定用户标识。Cookie 认证由宿主同时执行 CSRF 防护。
-7. 标题键、参数和目标类型必须符合 [标题目录](docs/spec/notifications.md#标题键目录)。向 backend relay 注入 notifications.Consumer。relay 保留生产者的 source、id、type、subject、revision，映射为 Event 后调用 Consume。Consume 成功后才能调用提供方 ConfirmOutbox；超时重试沿用原事件和映射。
+7. 标题键、参数和目标类型必须符合 [标题目录](docs/spec/notifications.md#标题键目录)。向 backend relay 注入 notifications.Consumer。relay 保留生产者的 source、id、type、subject、revision，将全部收件人放入 Event.Recipients 后调用 Consume。Consume 成功后才能调用提供方 ConfirmOutbox；超时重试沿用原事件和映射。
 8. 宿主按配置周期调用 Service.Cleanup(ctx)，每次一个有上限的批次。关闭服务时取消任务并等待退出。宿主配置任务超时，保留可再次执行的进度。
 9. 负责人同步 stuhelper-next 规格的实现状态、模块登记和候选锁文件，并更新 Web 的 SDK 快照及实际通知页面。合并前验证真实候选组合。
 
@@ -43,3 +43,5 @@ backend 还须提供独立运行数据库连接、迁移连接、清理周期、
 Resolver 顺序处理当前页目标，每页最多 100 次调用。宿主应设置整个请求的总超时，Resolver 必须响应 context 取消。profiles 缺失只影响未来外部渠道偏好，不影响当前能力。
 
 当前 SDK 包含 Go HTTP 客户端和 TypeScript 类型，分别由 oapi-codegen 与 openapi-typescript 生成。Go Consumer 是内部模块接口，不开放网络投递入口。消费输入和 relay 处理约定见 [事件消费](docs/spec/notifications.md#事件消费)。
+
+Consume 每次接收 1–20 个收件人条目，去重排序后原子写入整批结果。Result.Recipients 返回逐人通知 ID 或抑制原因。若候选库已有单收件人 inbox 数据，迁移会明确报错并保留数据；恢复要求见事件消费说明。

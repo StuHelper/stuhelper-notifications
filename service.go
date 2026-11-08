@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"github.com/google/uuid"
+	"slices"
 	"strings"
 	"time"
 )
@@ -42,9 +43,21 @@ func ownerOK(owner string) error {
 	return nil
 }
 func (s *Service) Consume(ctx context.Context, d Event) (Result, error) {
-	if d.Revision < 1 || !valid(d.Subject, 512) || !valid(d.EventType, 128) || !valid(d.Recipient, 256) || !valid(d.ID, 256) || !valid(d.Source, 80) || !valid(d.Target.Kind, 80) || !valid(d.Target.ID, 256) || !valid(d.TitleKey, 256) {
+	if d.Revision < 1 || !valid(d.Subject, 512) || !valid(d.EventType, 128) || !valid(d.ID, 256) || !valid(d.Source, 80) || !valid(d.Target.Kind, 80) || !valid(d.Target.ID, 256) || !valid(d.TitleKey, 256) {
 		return Result{}, ErrInput
 	}
+	// Bound the submitted list before sorting and deduplicating.
+	if len(d.Recipients) < 1 || len(d.Recipients) > 20 {
+		return Result{}, ErrInput
+	}
+	recipients := slices.Clone(d.Recipients)
+	for _, recipient := range recipients {
+		if !valid(recipient, 256) {
+			return Result{}, ErrInput
+		}
+	}
+	slices.Sort(recipients)
+	d.Recipients = slices.Compact(recipients)
 	if err := validateTitle(d); err != nil {
 		return Result{}, err
 	}

@@ -1,5 +1,5 @@
 id: notifications
-version: 0.3.0
+version: 0.4.0
 kind: module
 api: 1
 critical: false
@@ -35,3 +35,9 @@ scenario_tests:
     - consume_test.go#TestConsumeSuppressionAdvancesRevisionAndValidation
     - consume_test.go#TestConsumeConcurrentSameRevision
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+  NT-09:
+    - recipients_test.go#TestConsumeRecipientsDeduplicationPreferencesAndReplay
+    - recipients_test.go#TestConsumeRecipientsBoundsAndAllDelivered
+    - recipients_test.go#TestConsumeRecipientsRollbackAllWrites
+    - recipients_test.go#TestConsumeRecipientsConcurrentReplayAndOverlap
+    - recipients_test.go#TestBatchInboxMigrationPreservesExistingData

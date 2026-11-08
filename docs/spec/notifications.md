@@ -81,7 +81,7 @@ target.id 是对应模块对象的原始 ID，title_params 是用于显示的业
 
 系统通知的三个键均指向目录内已有业务对象，使用 reference_id 展示引用编号。目录不定义任意系统正文、外部链接或尚不存在的公告对象。来源模块与 Resolver 装配须能查询该对象，否则返回 unavailable。
 
-HTTP 契约版本为 0.2.0，模块版本为 0.3.0。生产者使用目录键，客户端按目录提供八语言文案。
+HTTP 契约版本为 0.2.0，模块版本为 0.4.0。生产者使用目录键，客户端按目录提供八语言文案。
 
 ## 事件消费
 
@@ -102,26 +102,44 @@ func (s *Service) Consume(ctx context.Context, event Event) (Result, error)
 | EventType | 原事件 type，如 moderation.result.v1，最长 128 字节 |
 | Subject | 原 subject，最长 512 字节，不按接收人或通知目标重写 |
 | Revision | 原 data.revision，正 int64 |
-| Recipient | 稳定用户标识，最长 256 字节 |
+| Recipients | 1–20 个稳定用户标识，每项最长 256 字节；提交列表为空或超过 20 项时拒绝 |
 | Type | 通知类别，必须与标题目录相符 |
 | Target | 通知目标 kind 与 id |
 | TitleKey、TitleParams | 标题目录规定的键和显示用编号 |
 
 这是可信 Go 映射接口，不接收原始封套或任意网络请求。relay 校验 CloudEvents 1.0、JSON 内容类型、获准来源与事件类型、学校范围和接收人，按业务结果生成完整通知映射。不得把失败中间状态映射为业务成功通知。
 
-每个源事件映射一位接收人的一项通知。对同一源事件更换接收人再次调用会返回冲突。若业务需要多接收人，须先定义完整的批量消费协议，不能由 relay 拼接事件 ID 或重写 subject 绕过去重。
+每个源事件一次提交全部收件人，共享通知类别、目标和标题参数。模块先检查提交列表长度，再去重并按用户标识排序。全部收件人的通知、聚合结果、偏好拒收结果、修订和 inbox 在同一事务提交。
 
 消费按 (source, subject) 记录最大已处理修订。新 ID 的 revision 小于或等于该值时写入 Ignored 结果，不写通知、不推进修订。完整结果允许跨修订跳跃；本接口不接受需要逐条应用的增量事件。
 
-重复 ID 优先返回已保存的 Result，之后收到更新修订也不会改变旧事件的结果。事件锁、修订行锁和接收人偏好锁在事务中依次获取，保证并发重复、乱序和偏好修改不会重复写入通知。
+重复 ID 优先返回已保存的 Result。收件人顺序改变或重复条目增减不改变请求摘要，实际收件人集合改变则返回冲突。事件锁、修订行锁和按用户标识排序的偏好锁依次获取，避免重叠收件人集合反向加锁。
 
-Result.ID 为通知 ID，Suppressed 表示互动偏好拒收，Ignored 表示修订过旧或相同。拒收与忽略均为成功消费且持久保存；拒收也推进修订。任何写入失败均回滚，包含通知聚合数量、修订和 inbox。
+Result.Recipients 按用户标识排序，每项包含 Recipient、ID 和 SuppressionReason。成功入站时 ID 非空且原因为空；偏好拒收时 ID 为空，原因是 interaction_disabled；旧修订原因是 stale_revision，并设置 Result.Ignored。
+
+偏好拒收和旧修订忽略均为成功消费。偏好拒收也推进修订，其他收件人照常入站。任何收件人写入或 inbox 写入失败时，整批通知、聚合数量、偏好行和修订都回滚。
 
 Consume 返回 nil error 后，relay 才可 ConfirmOutbox。确认丢失时重新读取并消费同一事件，返回原结果。取消或超时先按原事件重试，不根据错误猜测事务是否已提交。
 
 relay 对提供方频道 LISTEN，通知到达后读取最多 100 条未发送事件。重连后立即补读，并每 60 秒兜底读取。失败从 5 秒指数退避，单次最长 1 小时，累计 24 小时后进入待处理队列。
 
-迁移新增 inbox 和 revisions，保留已有通知数据。业务运行身份仅持有 inbox 的 SELECT、INSERT 和 revisions 的 SELECT、INSERT、UPDATE。启动时 CheckRuntime 验证权限，迁移身份不进入业务进程。
+inbox 的 result JSON 保存整批消费结果，不随通知清理。业务运行身份仅持有 inbox 的 SELECT、INSERT 和 revisions 的 SELECT、INSERT、UPDATE。启动时 CheckRuntime 验证权限，迁移身份不进入业务进程。
+
+空的单收件人候选 inbox 可原位迁移，保留运行权限和已有通知。有记录的候选 inbox 会拒绝自动升级并保留数据，因为部分记录缺少收件人。负责人须依据原始事件恢复收件人与规范化摘要后再升级，不能直接清空去重历史。
+
+结果类型如下：
+
+```go
+type RecipientResult struct {
+    Recipient         string
+    ID                string
+    SuppressionReason string
+}
+type Result struct {
+    Recipients []RecipientResult
+    Ignored    bool
+}
+```
 
 ## 验收覆盖
 
@@ -132,6 +150,7 @@ relay 对提供方频道 LISTEN，通知到达后读取最多 100 条未发送�
 | NT-03 | 业务处理、安全及账号通知不受互动偏好影响 |
 | NT-04 | 目标不可访问及依赖超时状态 |
 | NT-05 | HTTP 未登录拒绝、他人通知隔离、严格偏好输入 |
+| NT-09 | 多收件人去重、部分拒收、整批回滚、并发重投、重叠收件人锁顺序、迁移保护 |
 | NT-08 | 乱序、旧修订、跨接收人重复冲突、原结果回放、事务回滚与锁等待取消 |
 | NT-07 | 全部目录键投递、非法组合拒绝且不写入、回复和点赞聚合数量 |
 | NT-06 | 投递失败回滚、保留期限边界、不同目标与接收人不聚合 |

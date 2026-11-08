@@ -96,7 +96,7 @@ func setup(t *testing.T) *fixture {
 	return f
 }
 func delivery(key, kind string) n.Event {
-	return n.Event{Recipient: "alice", ID: key, Subject: "object/" + key, Revision: 1, EventType: "reviews.result.v1", Type: kind, Source: "reviews", Target: n.Target{Kind: "review", ID: "review-1"}, TitleKey: titleForType(kind), TitleParams: paramsForType(kind)}
+	return n.Event{Recipients: []string{"alice"}, ID: key, Subject: "object/" + key, Revision: 1, EventType: "reviews.result.v1", Type: kind, Source: "reviews", Target: n.Target{Kind: "review", ID: "review-1"}, TitleKey: titleForType(kind), TitleParams: paramsForType(kind)}
 }
 func deliver(t *testing.T, f *fixture, d n.Event) n.Result {
 	t.Helper()
@@ -119,7 +119,7 @@ func TestOwnershipPaginationReadAndTargetState(t *testing.T) {
 	ctx := context.Background()
 	ids := []string{}
 	for i := range 5 {
-		ids = append(ids, deliver(t, f, delivery(fmt.Sprint(i), "business")).ID)
+		ids = append(ids, deliver(t, f, delivery(fmt.Sprint(i), "business")).Recipients[0].ID)
 	}
 	if count(t, f, "items") != 5 {
 		t.Fatal("delivery count")
@@ -225,10 +225,10 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 	}
 	id := ""
 	for v := range results {
-		if id != "" && id != v.ID {
+		if id != "" && id != v.Recipients[0].ID {
 			t.Fatal("different replay result")
 		}
-		id = v.ID
+		id = v.Recipients[0].ID
 	}
 	if count(t, f, "items") != 1 || count(t, f, "inbox") != 1 {
 		t.Fatal("duplicate write")
@@ -238,7 +238,7 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 		t.Fatal(e)
 	}
 	v := deliver(t, f, delivery("two", "interaction"))
-	if v.ID != id {
+	if v.Recipients[0].ID != id {
 		t.Fatal("not aggregated")
 	}
 	var aggregate int
@@ -251,12 +251,12 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 	}
 	blocked := delivery("off", "interaction")
 	v = deliver(t, f, blocked)
-	if !v.Suppressed || v.ID != "" || count(t, f, "items") != 1 {
+	if v.Recipients[0].SuppressionReason == "" || v.Recipients[0].ID != "" || count(t, f, "items") != 1 {
 		t.Fatal(v)
 	}
 	for _, kind := range []string{"business", "security", "account"} {
 		v = deliver(t, f, delivery(kind, kind))
-		if v.Suppressed {
+		if v.Recipients[0].SuppressionReason != "" {
 			t.Fatal(kind)
 		}
 	}
@@ -264,19 +264,19 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 	if _, e := f.s.Preferences(ctx, "alice", &enabled); e != nil {
 		t.Fatal(e)
 	}
-	if v = deliver(t, f, blocked); !v.Suppressed {
+	if v = deliver(t, f, blocked); v.Recipients[0].SuppressionReason == "" {
 		t.Fatal("suppressed replay entered inbox")
 	}
 	f.now = f.now.Add(time.Hour)
 	v = deliver(t, f, delivery("boundary", "interaction"))
-	if v.ID == id {
+	if v.Recipients[0].ID == id {
 		t.Fatal("window boundary aggregated")
 	}
-	if e := f.s.MarkRead(ctx, "alice", v.ID); e != nil {
+	if e := f.s.MarkRead(ctx, "alice", v.Recipients[0].ID); e != nil {
 		t.Fatal(e)
 	}
 	next := deliver(t, f, delivery("after-read", "interaction"))
-	if next.ID == v.ID {
+	if next.Recipients[0].ID == v.Recipients[0].ID {
 		t.Fatal("read item aggregated")
 	}
 	f.now = f.now.Add(25 * time.Hour)
@@ -291,13 +291,13 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 		}
 	}
 	v = deliver(t, f, delivery("one", "interaction"))
-	if v.ID != id || count(t, f, "items") != 0 {
+	if v.Recipients[0].ID != id || count(t, f, "items") != 0 {
 		t.Fatal("expired replay resurrected")
 	}
 }
 func TestHTTPAuthenticationAndStrictPreferences(t *testing.T) {
 	f := setup(t)
-	id := deliver(t, f, delivery("one", "business")).ID
+	id := deliver(t, f, delivery("one", "business")).Recipients[0].ID
 	paths := []struct {
 		method, path, body string
 		status             int
@@ -338,7 +338,7 @@ func TestHTTPAuthenticationAndStrictPreferences(t *testing.T) {
 	if w := request("PUT", "/api/v1/notifications/preferences", `{"interaction_enabled":false}`, "alice"); w.Code != 200 {
 		t.Fatal(w.Code)
 	}
-	if v := deliver(t, f, delivery("disabled", "interaction")); !v.Suppressed {
+	if v := deliver(t, f, delivery("disabled", "interaction")); v.Recipients[0].SuppressionReason == "" {
 		t.Fatal(v)
 	}
 	if w := request("GET", "/api/v1/notifications?limit=101", "", "alice"); w.Code != 400 {
@@ -405,9 +405,9 @@ func TestAggregationSeparatesTargetsParametersAndRecipients(t *testing.T) {
 		case 2:
 			d.Source = "catalog"
 		case 3:
-			d.Recipient = "bob"
+			d.Recipients = []string{"bob"}
 		}
-		if result := deliver(t, f, d); result.ID == first.ID {
+		if result := deliver(t, f, d); result.Recipients[0].ID == first.Recipients[0].ID {
 			t.Fatal("unrelated event aggregated")
 		}
 	}

@@ -30,12 +30,12 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 	for key, rule := range contract.Catalog {
 		for _, kind := range rule.Kinds {
 			serial++
-			d := n.Event{Recipient: "alice", ID: fmt.Sprint(serial), Subject: fmt.Sprint(serial), Revision: 1, EventType: "test.result.v1", Type: rule.Type, Source: "test", Target: n.Target{Kind: kind, ID: "object-1"}, TitleKey: key, TitleParams: map[string]string{}}
+			d := n.Event{Recipients: []string{"alice"}, ID: fmt.Sprint(serial), Subject: fmt.Sprint(serial), Revision: 1, EventType: "test.result.v1", Type: rule.Type, Source: "test", Target: n.Target{Kind: kind, ID: "object-1"}, TitleKey: key, TitleParams: map[string]string{}}
 			for _, param := range rule.Params {
 				d.TitleParams[param] = "ref-123"
 			}
 			v := deliver(t, f, d)
-			if v.ID == "" || v.Suppressed {
+			if v.Recipients[0].ID == "" || v.Recipients[0].SuppressionReason != "" {
 				t.Fatal(key, v)
 			}
 		}
