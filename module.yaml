@@ -1,5 +1,5 @@
 id: notifications
-version: 0.1.0
+version: 0.2.0
 kind: module
 api: 1
 critical: false
@@ -26,3 +26,6 @@ scenario_tests:
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
+  NT-07:
+    - title_catalog_test.go#TestTitleCatalogAdmissionAndRejectedWrites
+    - title_catalog_test.go#TestInteractionTitleUsesServerAggregateCount

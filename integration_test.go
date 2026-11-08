@@ -96,7 +96,7 @@ func setup(t *testing.T) *fixture {
 	return f
 }
 func delivery(key, kind string) n.Delivery {
-	return n.Delivery{Recipient: "alice", Key: key, Type: kind, SourceModule: "reviews", Target: n.Target{Kind: "review", ID: "review-1"}, TitleKey: "notifications.review", TitleParams: map[string]string{"name": "example"}}
+	return n.Delivery{Recipient: "alice", Key: key, Type: kind, SourceModule: "reviews", Target: n.Target{Kind: "review", ID: "review-1"}, TitleKey: titleForType(kind), TitleParams: paramsForType(kind)}
 }
 func deliver(t *testing.T, f *fixture, d n.Delivery) n.Result {
 	t.Helper()
@@ -233,7 +233,7 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 	if count(t, f, "items") != 1 || count(t, f, "receipts") != 1 {
 		t.Fatal("duplicate write")
 	}
-	d.TitleKey = "changed"
+	d.TitleKey = "notifications.interaction.like"
 	if _, e := f.s.Deliver(ctx, d); !errors.Is(e, n.ErrConflict) {
 		t.Fatal(e)
 	}
@@ -399,7 +399,7 @@ func TestAggregationSeparatesTargetsParametersAndRecipients(t *testing.T) {
 		d := delivery(fmt.Sprintf("different-%d", i), "interaction")
 		switch i {
 		case 0:
-			d.TitleParams["name"] = "different"
+			d.TitleParams["content_id"] = "different"
 		case 1:
 			d.Target.ID = "review-2"
 		case 2:
@@ -439,4 +439,22 @@ func TestAuthenticationDependencyFailure(t *testing.T) {
 	if count(t, f, "items") != 0 {
 		t.Fatal("auth failure wrote data")
 	}
+}
+
+func titleForType(kind string) string {
+	switch kind {
+	case "interaction":
+		return "notifications.interaction.reply"
+	case "business":
+		return "notifications.content.approved"
+	default:
+		return "notifications.system." + kind
+	}
+}
+func paramsForType(kind string) map[string]string {
+	name := "content_id"
+	if kind == "security" || kind == "account" {
+		name = "reference_id"
+	}
+	return map[string]string{name: "example-1"}
 }

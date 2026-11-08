@@ -17,13 +17,13 @@ bash scripts/check-with-postgres.sh
 
 ## Backend 装配
 
-1. 负责人创建公开仓库 StuHelper/stuhelper-notifications，默认分支 develop。发布本地工作分支后创建候选 PR，并登记候选提交与依赖组合。
+1. 仓库为 StuHelper/stuhelper-notifications，默认分支 develop。候选在 feat/backend-decisions 分支和 PR #1 维护，集成时登记候选提交与依赖组合。
 2. backend 引入模块，迁移身份调用 postgres.Migrate(ctx, db)。该迁移创建 notifications schema，已有通知不会被删除。
 3. 单独创建运行身份，授予 schema USAGE、items/preferences 的 SELECT、INSERT、UPDATE、DELETE，以及 receipts 的 SELECT、INSERT。运行身份不可拥有 schema、CREATEROLE、CREATEDB、超级用户权限或 receipts 更新删除权限。
 4. 使用运行连接构造 postgres.Repository，并调用 CheckRuntime。backend 管理连接池、请求超时、健康检查和连接关闭。迁移身份不进入业务进程。
 5. 调用 notifications.New(repo, resolver, config, clock)。Resolver 根据来源模块和目标引用调用所属模块公开接口，按接收人当前权限返回状态。依赖错误返回 error，禁止默认判定可访问。
 6. 将 httpapi.Handler 挂载至 /api/v1/notifications 及其子路径，Authenticate 回调复用平台认证，返回稳定用户标识。Cookie 认证由宿主同时执行 CSRF 防护。
-7. 向生产通知的模块注入 notifications.Sender。生产者通过自身 outbox 在业务事务提交后投递，使用稳定事件键；超时可重复投递，不能每次重试生成新键。
+7. 标题键、参数和目标类型必须符合 [标题目录](docs/spec/notifications.md#标题键目录)。向生产通知的模块注入 notifications.Sender。生产者通过自身 outbox 在业务事务提交后投递，使用稳定事件键；超时可重复投递，不能每次重试生成新键。
 8. 宿主按配置周期调用 Service.Cleanup(ctx)，每次一个有上限的批次。关闭服务时取消任务并等待退出。宿主配置任务超时，保留可再次执行的进度。
 9. 负责人同步 stuhelper-next 规格的实现状态、模块登记和候选锁文件，并更新 Web 的 SDK 快照及实际通知页面。合并前验证真实候选组合。
 

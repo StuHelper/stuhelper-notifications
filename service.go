@@ -43,21 +43,8 @@ func (s *Service) Deliver(ctx context.Context, d Delivery) (Result, error) {
 	if !valid(d.Recipient, 256) || !valid(d.Key, 256) || !valid(d.SourceModule, 80) || !valid(d.Target.Kind, 80) || !valid(d.Target.ID, 256) || !valid(d.TitleKey, 256) {
 		return Result{}, ErrInput
 	}
-	switch d.Type {
-	case "interaction", "business", "security", "account":
-	default:
-		return Result{}, ErrInput
-	}
-	if len(d.TitleParams) > 32 {
-		return Result{}, ErrInput
-	}
-	for k, v := range d.TitleParams {
-		if !valid(k, 80) || len(v) > 1024 || strings.ContainsRune(v, 0) {
-			return Result{}, ErrInput
-		}
-	}
-	if d.TitleParams == nil {
-		d.TitleParams = map[string]string{}
+	if err := validateTitle(d); err != nil {
+		return Result{}, err
 	}
 	raw, err := json.Marshal(d)
 	if err != nil {

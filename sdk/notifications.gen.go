@@ -18,6 +18,351 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for ContentApprovedTitlePayloadTargetKind.
+const (
+	ContentApprovedTitlePayloadTargetKindComment  ContentApprovedTitlePayloadTargetKind = "comment"
+	ContentApprovedTitlePayloadTargetKindResource ContentApprovedTitlePayloadTargetKind = "resource"
+	ContentApprovedTitlePayloadTargetKindReview   ContentApprovedTitlePayloadTargetKind = "review"
+)
+
+// Valid indicates whether the value is a known member of the ContentApprovedTitlePayloadTargetKind enum.
+func (e ContentApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ContentApprovedTitlePayloadTargetKindComment:
+		return true
+	case ContentApprovedTitlePayloadTargetKindResource:
+		return true
+	case ContentApprovedTitlePayloadTargetKindReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentApprovedTitlePayloadTitleKey.
+const (
+	ContentApprovedTitlePayloadTitleKeyNotificationsContentApproved ContentApprovedTitlePayloadTitleKey = "notifications.content.approved"
+)
+
+// Valid indicates whether the value is a known member of the ContentApprovedTitlePayloadTitleKey enum.
+func (e ContentApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ContentApprovedTitlePayloadTitleKeyNotificationsContentApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentApprovedTitlePayloadType.
+const (
+	ContentApprovedTitlePayloadTypeBusiness ContentApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ContentApprovedTitlePayloadType enum.
+func (e ContentApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case ContentApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentRejectedTitlePayloadTargetKind.
+const (
+	ContentRejectedTitlePayloadTargetKindComment  ContentRejectedTitlePayloadTargetKind = "comment"
+	ContentRejectedTitlePayloadTargetKindResource ContentRejectedTitlePayloadTargetKind = "resource"
+	ContentRejectedTitlePayloadTargetKindReview   ContentRejectedTitlePayloadTargetKind = "review"
+)
+
+// Valid indicates whether the value is a known member of the ContentRejectedTitlePayloadTargetKind enum.
+func (e ContentRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ContentRejectedTitlePayloadTargetKindComment:
+		return true
+	case ContentRejectedTitlePayloadTargetKindResource:
+		return true
+	case ContentRejectedTitlePayloadTargetKindReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentRejectedTitlePayloadTitleKey.
+const (
+	ContentRejectedTitlePayloadTitleKeyNotificationsContentRejected ContentRejectedTitlePayloadTitleKey = "notifications.content.rejected"
+)
+
+// Valid indicates whether the value is a known member of the ContentRejectedTitlePayloadTitleKey enum.
+func (e ContentRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ContentRejectedTitlePayloadTitleKeyNotificationsContentRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentRejectedTitlePayloadType.
+const (
+	ContentRejectedTitlePayloadTypeBusiness ContentRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ContentRejectedTitlePayloadType enum.
+func (e ContentRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case ContentRejectedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentRemovedTitlePayloadTargetKind.
+const (
+	ContentRemovedTitlePayloadTargetKindComment  ContentRemovedTitlePayloadTargetKind = "comment"
+	ContentRemovedTitlePayloadTargetKindResource ContentRemovedTitlePayloadTargetKind = "resource"
+	ContentRemovedTitlePayloadTargetKindReview   ContentRemovedTitlePayloadTargetKind = "review"
+)
+
+// Valid indicates whether the value is a known member of the ContentRemovedTitlePayloadTargetKind enum.
+func (e ContentRemovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ContentRemovedTitlePayloadTargetKindComment:
+		return true
+	case ContentRemovedTitlePayloadTargetKindResource:
+		return true
+	case ContentRemovedTitlePayloadTargetKindReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentRemovedTitlePayloadTitleKey.
+const (
+	ContentRemovedTitlePayloadTitleKeyNotificationsContentRemoved ContentRemovedTitlePayloadTitleKey = "notifications.content.removed"
+)
+
+// Valid indicates whether the value is a known member of the ContentRemovedTitlePayloadTitleKey enum.
+func (e ContentRemovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ContentRemovedTitlePayloadTitleKeyNotificationsContentRemoved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentRemovedTitlePayloadType.
+const (
+	ContentRemovedTitlePayloadTypeBusiness ContentRemovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ContentRemovedTitlePayloadType enum.
+func (e ContentRemovedTitlePayloadType) Valid() bool {
+	switch e {
+	case ContentRemovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IdentityVerificationApprovedTitlePayloadTargetKind.
+const (
+	IdentityVerificationApprovedTitlePayloadTargetKindVerificationOperation IdentityVerificationApprovedTitlePayloadTargetKind = "verification_operation"
+)
+
+// Valid indicates whether the value is a known member of the IdentityVerificationApprovedTitlePayloadTargetKind enum.
+func (e IdentityVerificationApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case IdentityVerificationApprovedTitlePayloadTargetKindVerificationOperation:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IdentityVerificationApprovedTitlePayloadTitleKey.
+const (
+	IdentityVerificationApprovedTitlePayloadTitleKeyNotificationsIdentityVerificationApproved IdentityVerificationApprovedTitlePayloadTitleKey = "notifications.identity_verification.approved"
+)
+
+// Valid indicates whether the value is a known member of the IdentityVerificationApprovedTitlePayloadTitleKey enum.
+func (e IdentityVerificationApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case IdentityVerificationApprovedTitlePayloadTitleKeyNotificationsIdentityVerificationApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IdentityVerificationApprovedTitlePayloadType.
+const (
+	IdentityVerificationApprovedTitlePayloadTypeAccount IdentityVerificationApprovedTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the IdentityVerificationApprovedTitlePayloadType enum.
+func (e IdentityVerificationApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case IdentityVerificationApprovedTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IdentityVerificationRejectedTitlePayloadTargetKind.
+const (
+	IdentityVerificationRejectedTitlePayloadTargetKindVerificationOperation IdentityVerificationRejectedTitlePayloadTargetKind = "verification_operation"
+)
+
+// Valid indicates whether the value is a known member of the IdentityVerificationRejectedTitlePayloadTargetKind enum.
+func (e IdentityVerificationRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case IdentityVerificationRejectedTitlePayloadTargetKindVerificationOperation:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IdentityVerificationRejectedTitlePayloadTitleKey.
+const (
+	IdentityVerificationRejectedTitlePayloadTitleKeyNotificationsIdentityVerificationRejected IdentityVerificationRejectedTitlePayloadTitleKey = "notifications.identity_verification.rejected"
+)
+
+// Valid indicates whether the value is a known member of the IdentityVerificationRejectedTitlePayloadTitleKey enum.
+func (e IdentityVerificationRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case IdentityVerificationRejectedTitlePayloadTitleKeyNotificationsIdentityVerificationRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IdentityVerificationRejectedTitlePayloadType.
+const (
+	IdentityVerificationRejectedTitlePayloadTypeAccount IdentityVerificationRejectedTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the IdentityVerificationRejectedTitlePayloadType enum.
+func (e IdentityVerificationRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case IdentityVerificationRejectedTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InteractionLikeTitlePayloadTargetKind.
+const (
+	InteractionLikeTitlePayloadTargetKindComment  InteractionLikeTitlePayloadTargetKind = "comment"
+	InteractionLikeTitlePayloadTargetKindResource InteractionLikeTitlePayloadTargetKind = "resource"
+	InteractionLikeTitlePayloadTargetKindReview   InteractionLikeTitlePayloadTargetKind = "review"
+)
+
+// Valid indicates whether the value is a known member of the InteractionLikeTitlePayloadTargetKind enum.
+func (e InteractionLikeTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case InteractionLikeTitlePayloadTargetKindComment:
+		return true
+	case InteractionLikeTitlePayloadTargetKindResource:
+		return true
+	case InteractionLikeTitlePayloadTargetKindReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InteractionLikeTitlePayloadTitleKey.
+const (
+	InteractionLikeTitlePayloadTitleKeyNotificationsInteractionLike InteractionLikeTitlePayloadTitleKey = "notifications.interaction.like"
+)
+
+// Valid indicates whether the value is a known member of the InteractionLikeTitlePayloadTitleKey enum.
+func (e InteractionLikeTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case InteractionLikeTitlePayloadTitleKeyNotificationsInteractionLike:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InteractionLikeTitlePayloadType.
+const (
+	InteractionLikeTitlePayloadTypeInteraction InteractionLikeTitlePayloadType = "interaction"
+)
+
+// Valid indicates whether the value is a known member of the InteractionLikeTitlePayloadType enum.
+func (e InteractionLikeTitlePayloadType) Valid() bool {
+	switch e {
+	case InteractionLikeTitlePayloadTypeInteraction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InteractionReplyTitlePayloadTargetKind.
+const (
+	InteractionReplyTitlePayloadTargetKindComment  InteractionReplyTitlePayloadTargetKind = "comment"
+	InteractionReplyTitlePayloadTargetKindResource InteractionReplyTitlePayloadTargetKind = "resource"
+	InteractionReplyTitlePayloadTargetKindReview   InteractionReplyTitlePayloadTargetKind = "review"
+)
+
+// Valid indicates whether the value is a known member of the InteractionReplyTitlePayloadTargetKind enum.
+func (e InteractionReplyTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case InteractionReplyTitlePayloadTargetKindComment:
+		return true
+	case InteractionReplyTitlePayloadTargetKindResource:
+		return true
+	case InteractionReplyTitlePayloadTargetKindReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InteractionReplyTitlePayloadTitleKey.
+const (
+	InteractionReplyTitlePayloadTitleKeyNotificationsInteractionReply InteractionReplyTitlePayloadTitleKey = "notifications.interaction.reply"
+)
+
+// Valid indicates whether the value is a known member of the InteractionReplyTitlePayloadTitleKey enum.
+func (e InteractionReplyTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case InteractionReplyTitlePayloadTitleKeyNotificationsInteractionReply:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InteractionReplyTitlePayloadType.
+const (
+	InteractionReplyTitlePayloadTypeInteraction InteractionReplyTitlePayloadType = "interaction"
+)
+
+// Valid indicates whether the value is a known member of the InteractionReplyTitlePayloadType enum.
+func (e InteractionReplyTitlePayloadType) Valid() bool {
+	switch e {
+	case InteractionReplyTitlePayloadTypeInteraction:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for NotificationTargetStatus.
 const (
 	Accessible   NotificationTargetStatus = "accessible"
@@ -41,32 +386,1117 @@ func (e NotificationTargetStatus) Valid() bool {
 
 // Defines values for NotificationType.
 const (
-	Account     NotificationType = "account"
-	Business    NotificationType = "business"
-	Interaction NotificationType = "interaction"
-	Security    NotificationType = "security"
+	NotificationTypeAccount     NotificationType = "account"
+	NotificationTypeBusiness    NotificationType = "business"
+	NotificationTypeInteraction NotificationType = "interaction"
+	NotificationTypeSecurity    NotificationType = "security"
 )
 
 // Valid indicates whether the value is a known member of the NotificationType enum.
 func (e NotificationType) Valid() bool {
 	switch e {
-	case Account:
+	case NotificationTypeAccount:
 		return true
-	case Business:
+	case NotificationTypeBusiness:
 		return true
-	case Interaction:
+	case NotificationTypeInteraction:
 		return true
-	case Security:
+	case NotificationTypeSecurity:
 		return true
 	default:
 		return false
 	}
 }
 
+// Defines values for ReportApprovedTitlePayloadTargetKind.
+const (
+	ReportApprovedTitlePayloadTargetKindReport ReportApprovedTitlePayloadTargetKind = "report"
+)
+
+// Valid indicates whether the value is a known member of the ReportApprovedTitlePayloadTargetKind enum.
+func (e ReportApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ReportApprovedTitlePayloadTargetKindReport:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReportApprovedTitlePayloadTitleKey.
+const (
+	ReportApprovedTitlePayloadTitleKeyNotificationsReportApproved ReportApprovedTitlePayloadTitleKey = "notifications.report.approved"
+)
+
+// Valid indicates whether the value is a known member of the ReportApprovedTitlePayloadTitleKey enum.
+func (e ReportApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ReportApprovedTitlePayloadTitleKeyNotificationsReportApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReportApprovedTitlePayloadType.
+const (
+	ReportApprovedTitlePayloadTypeBusiness ReportApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ReportApprovedTitlePayloadType enum.
+func (e ReportApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case ReportApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReportRejectedTitlePayloadTargetKind.
+const (
+	ReportRejectedTitlePayloadTargetKindReport ReportRejectedTitlePayloadTargetKind = "report"
+)
+
+// Valid indicates whether the value is a known member of the ReportRejectedTitlePayloadTargetKind enum.
+func (e ReportRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ReportRejectedTitlePayloadTargetKindReport:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReportRejectedTitlePayloadTitleKey.
+const (
+	ReportRejectedTitlePayloadTitleKeyNotificationsReportRejected ReportRejectedTitlePayloadTitleKey = "notifications.report.rejected"
+)
+
+// Valid indicates whether the value is a known member of the ReportRejectedTitlePayloadTitleKey enum.
+func (e ReportRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ReportRejectedTitlePayloadTitleKeyNotificationsReportRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReportRejectedTitlePayloadType.
+const (
+	ReportRejectedTitlePayloadTypeBusiness ReportRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ReportRejectedTitlePayloadType enum.
+func (e ReportRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case ReportRejectedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResourceRemovalApprovedTitlePayloadTargetKind.
+const (
+	ResourceRemovalApprovedTitlePayloadTargetKindResourceRemovalRequest ResourceRemovalApprovedTitlePayloadTargetKind = "resource_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the ResourceRemovalApprovedTitlePayloadTargetKind enum.
+func (e ResourceRemovalApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ResourceRemovalApprovedTitlePayloadTargetKindResourceRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResourceRemovalApprovedTitlePayloadTitleKey.
+const (
+	ResourceRemovalApprovedTitlePayloadTitleKeyNotificationsResourceRemovalApproved ResourceRemovalApprovedTitlePayloadTitleKey = "notifications.resource_removal.approved"
+)
+
+// Valid indicates whether the value is a known member of the ResourceRemovalApprovedTitlePayloadTitleKey enum.
+func (e ResourceRemovalApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ResourceRemovalApprovedTitlePayloadTitleKeyNotificationsResourceRemovalApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResourceRemovalApprovedTitlePayloadType.
+const (
+	ResourceRemovalApprovedTitlePayloadTypeBusiness ResourceRemovalApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ResourceRemovalApprovedTitlePayloadType enum.
+func (e ResourceRemovalApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case ResourceRemovalApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResourceRemovalRejectedTitlePayloadTargetKind.
+const (
+	ResourceRemovalRejectedTitlePayloadTargetKindResourceRemovalRequest ResourceRemovalRejectedTitlePayloadTargetKind = "resource_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the ResourceRemovalRejectedTitlePayloadTargetKind enum.
+func (e ResourceRemovalRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ResourceRemovalRejectedTitlePayloadTargetKindResourceRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResourceRemovalRejectedTitlePayloadTitleKey.
+const (
+	ResourceRemovalRejectedTitlePayloadTitleKeyNotificationsResourceRemovalRejected ResourceRemovalRejectedTitlePayloadTitleKey = "notifications.resource_removal.rejected"
+)
+
+// Valid indicates whether the value is a known member of the ResourceRemovalRejectedTitlePayloadTitleKey enum.
+func (e ResourceRemovalRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ResourceRemovalRejectedTitlePayloadTitleKeyNotificationsResourceRemovalRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResourceRemovalRejectedTitlePayloadType.
+const (
+	ResourceRemovalRejectedTitlePayloadTypeBusiness ResourceRemovalRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ResourceRemovalRejectedTitlePayloadType enum.
+func (e ResourceRemovalRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case ResourceRemovalRejectedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationApprovedTitlePayloadTargetKind.
+const (
+	StudentVerificationApprovedTitlePayloadTargetKindVerificationApplication StudentVerificationApprovedTitlePayloadTargetKind = "verification_application"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationApprovedTitlePayloadTargetKind enum.
+func (e StudentVerificationApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case StudentVerificationApprovedTitlePayloadTargetKindVerificationApplication:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationApprovedTitlePayloadTitleKey.
+const (
+	StudentVerificationApprovedTitlePayloadTitleKeyNotificationsStudentVerificationApproved StudentVerificationApprovedTitlePayloadTitleKey = "notifications.student_verification.approved"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationApprovedTitlePayloadTitleKey enum.
+func (e StudentVerificationApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case StudentVerificationApprovedTitlePayloadTitleKeyNotificationsStudentVerificationApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationApprovedTitlePayloadType.
+const (
+	StudentVerificationApprovedTitlePayloadTypeBusiness StudentVerificationApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationApprovedTitlePayloadType enum.
+func (e StudentVerificationApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case StudentVerificationApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationRejectedTitlePayloadTargetKind.
+const (
+	StudentVerificationRejectedTitlePayloadTargetKindVerificationApplication StudentVerificationRejectedTitlePayloadTargetKind = "verification_application"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationRejectedTitlePayloadTargetKind enum.
+func (e StudentVerificationRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case StudentVerificationRejectedTitlePayloadTargetKindVerificationApplication:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationRejectedTitlePayloadTitleKey.
+const (
+	StudentVerificationRejectedTitlePayloadTitleKeyNotificationsStudentVerificationRejected StudentVerificationRejectedTitlePayloadTitleKey = "notifications.student_verification.rejected"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationRejectedTitlePayloadTitleKey enum.
+func (e StudentVerificationRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case StudentVerificationRejectedTitlePayloadTitleKeyNotificationsStudentVerificationRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationRejectedTitlePayloadType.
+const (
+	StudentVerificationRejectedTitlePayloadTypeBusiness StudentVerificationRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationRejectedTitlePayloadType enum.
+func (e StudentVerificationRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case StudentVerificationRejectedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationRevokedTitlePayloadTargetKind.
+const (
+	StudentVerificationRevokedTitlePayloadTargetKindVerificationCredential StudentVerificationRevokedTitlePayloadTargetKind = "verification_credential"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationRevokedTitlePayloadTargetKind enum.
+func (e StudentVerificationRevokedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case StudentVerificationRevokedTitlePayloadTargetKindVerificationCredential:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationRevokedTitlePayloadTitleKey.
+const (
+	StudentVerificationRevokedTitlePayloadTitleKeyNotificationsStudentVerificationRevoked StudentVerificationRevokedTitlePayloadTitleKey = "notifications.student_verification.revoked"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationRevokedTitlePayloadTitleKey enum.
+func (e StudentVerificationRevokedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case StudentVerificationRevokedTitlePayloadTitleKeyNotificationsStudentVerificationRevoked:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationRevokedTitlePayloadType.
+const (
+	StudentVerificationRevokedTitlePayloadTypeAccount StudentVerificationRevokedTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationRevokedTitlePayloadType enum.
+func (e StudentVerificationRevokedTitlePayloadType) Valid() bool {
+	switch e {
+	case StudentVerificationRevokedTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemAccountTitlePayloadTargetKind.
+const (
+	SystemAccountTitlePayloadTargetKindComment                    SystemAccountTitlePayloadTargetKind = "comment"
+	SystemAccountTitlePayloadTargetKindReport                     SystemAccountTitlePayloadTargetKind = "report"
+	SystemAccountTitlePayloadTargetKindResource                   SystemAccountTitlePayloadTargetKind = "resource"
+	SystemAccountTitlePayloadTargetKindResourceRemovalRequest     SystemAccountTitlePayloadTargetKind = "resource_removal_request"
+	SystemAccountTitlePayloadTargetKindReview                     SystemAccountTitlePayloadTargetKind = "review"
+	SystemAccountTitlePayloadTargetKindTeacherApplication         SystemAccountTitlePayloadTargetKind = "teacher_application"
+	SystemAccountTitlePayloadTargetKindVerificationApplication    SystemAccountTitlePayloadTargetKind = "verification_application"
+	SystemAccountTitlePayloadTargetKindVerificationCredential     SystemAccountTitlePayloadTargetKind = "verification_credential"
+	SystemAccountTitlePayloadTargetKindVerificationOperation      SystemAccountTitlePayloadTargetKind = "verification_operation"
+	SystemAccountTitlePayloadTargetKindVerificationRemovalRequest SystemAccountTitlePayloadTargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the SystemAccountTitlePayloadTargetKind enum.
+func (e SystemAccountTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case SystemAccountTitlePayloadTargetKindComment:
+		return true
+	case SystemAccountTitlePayloadTargetKindReport:
+		return true
+	case SystemAccountTitlePayloadTargetKindResource:
+		return true
+	case SystemAccountTitlePayloadTargetKindResourceRemovalRequest:
+		return true
+	case SystemAccountTitlePayloadTargetKindReview:
+		return true
+	case SystemAccountTitlePayloadTargetKindTeacherApplication:
+		return true
+	case SystemAccountTitlePayloadTargetKindVerificationApplication:
+		return true
+	case SystemAccountTitlePayloadTargetKindVerificationCredential:
+		return true
+	case SystemAccountTitlePayloadTargetKindVerificationOperation:
+		return true
+	case SystemAccountTitlePayloadTargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemAccountTitlePayloadTitleKey.
+const (
+	SystemAccountTitlePayloadTitleKeyNotificationsSystemAccount SystemAccountTitlePayloadTitleKey = "notifications.system.account"
+)
+
+// Valid indicates whether the value is a known member of the SystemAccountTitlePayloadTitleKey enum.
+func (e SystemAccountTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case SystemAccountTitlePayloadTitleKeyNotificationsSystemAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemAccountTitlePayloadType.
+const (
+	SystemAccountTitlePayloadTypeAccount SystemAccountTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the SystemAccountTitlePayloadType enum.
+func (e SystemAccountTitlePayloadType) Valid() bool {
+	switch e {
+	case SystemAccountTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemNoticeTitlePayloadTargetKind.
+const (
+	SystemNoticeTitlePayloadTargetKindComment                    SystemNoticeTitlePayloadTargetKind = "comment"
+	SystemNoticeTitlePayloadTargetKindReport                     SystemNoticeTitlePayloadTargetKind = "report"
+	SystemNoticeTitlePayloadTargetKindResource                   SystemNoticeTitlePayloadTargetKind = "resource"
+	SystemNoticeTitlePayloadTargetKindResourceRemovalRequest     SystemNoticeTitlePayloadTargetKind = "resource_removal_request"
+	SystemNoticeTitlePayloadTargetKindReview                     SystemNoticeTitlePayloadTargetKind = "review"
+	SystemNoticeTitlePayloadTargetKindTeacherApplication         SystemNoticeTitlePayloadTargetKind = "teacher_application"
+	SystemNoticeTitlePayloadTargetKindVerificationApplication    SystemNoticeTitlePayloadTargetKind = "verification_application"
+	SystemNoticeTitlePayloadTargetKindVerificationCredential     SystemNoticeTitlePayloadTargetKind = "verification_credential"
+	SystemNoticeTitlePayloadTargetKindVerificationOperation      SystemNoticeTitlePayloadTargetKind = "verification_operation"
+	SystemNoticeTitlePayloadTargetKindVerificationRemovalRequest SystemNoticeTitlePayloadTargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the SystemNoticeTitlePayloadTargetKind enum.
+func (e SystemNoticeTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case SystemNoticeTitlePayloadTargetKindComment:
+		return true
+	case SystemNoticeTitlePayloadTargetKindReport:
+		return true
+	case SystemNoticeTitlePayloadTargetKindResource:
+		return true
+	case SystemNoticeTitlePayloadTargetKindResourceRemovalRequest:
+		return true
+	case SystemNoticeTitlePayloadTargetKindReview:
+		return true
+	case SystemNoticeTitlePayloadTargetKindTeacherApplication:
+		return true
+	case SystemNoticeTitlePayloadTargetKindVerificationApplication:
+		return true
+	case SystemNoticeTitlePayloadTargetKindVerificationCredential:
+		return true
+	case SystemNoticeTitlePayloadTargetKindVerificationOperation:
+		return true
+	case SystemNoticeTitlePayloadTargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemNoticeTitlePayloadTitleKey.
+const (
+	SystemNoticeTitlePayloadTitleKeyNotificationsSystemNotice SystemNoticeTitlePayloadTitleKey = "notifications.system.notice"
+)
+
+// Valid indicates whether the value is a known member of the SystemNoticeTitlePayloadTitleKey enum.
+func (e SystemNoticeTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case SystemNoticeTitlePayloadTitleKeyNotificationsSystemNotice:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemNoticeTitlePayloadType.
+const (
+	SystemNoticeTitlePayloadTypeBusiness SystemNoticeTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the SystemNoticeTitlePayloadType enum.
+func (e SystemNoticeTitlePayloadType) Valid() bool {
+	switch e {
+	case SystemNoticeTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemSecurityTitlePayloadTargetKind.
+const (
+	SystemSecurityTitlePayloadTargetKindComment                    SystemSecurityTitlePayloadTargetKind = "comment"
+	SystemSecurityTitlePayloadTargetKindReport                     SystemSecurityTitlePayloadTargetKind = "report"
+	SystemSecurityTitlePayloadTargetKindResource                   SystemSecurityTitlePayloadTargetKind = "resource"
+	SystemSecurityTitlePayloadTargetKindResourceRemovalRequest     SystemSecurityTitlePayloadTargetKind = "resource_removal_request"
+	SystemSecurityTitlePayloadTargetKindReview                     SystemSecurityTitlePayloadTargetKind = "review"
+	SystemSecurityTitlePayloadTargetKindTeacherApplication         SystemSecurityTitlePayloadTargetKind = "teacher_application"
+	SystemSecurityTitlePayloadTargetKindVerificationApplication    SystemSecurityTitlePayloadTargetKind = "verification_application"
+	SystemSecurityTitlePayloadTargetKindVerificationCredential     SystemSecurityTitlePayloadTargetKind = "verification_credential"
+	SystemSecurityTitlePayloadTargetKindVerificationOperation      SystemSecurityTitlePayloadTargetKind = "verification_operation"
+	SystemSecurityTitlePayloadTargetKindVerificationRemovalRequest SystemSecurityTitlePayloadTargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the SystemSecurityTitlePayloadTargetKind enum.
+func (e SystemSecurityTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case SystemSecurityTitlePayloadTargetKindComment:
+		return true
+	case SystemSecurityTitlePayloadTargetKindReport:
+		return true
+	case SystemSecurityTitlePayloadTargetKindResource:
+		return true
+	case SystemSecurityTitlePayloadTargetKindResourceRemovalRequest:
+		return true
+	case SystemSecurityTitlePayloadTargetKindReview:
+		return true
+	case SystemSecurityTitlePayloadTargetKindTeacherApplication:
+		return true
+	case SystemSecurityTitlePayloadTargetKindVerificationApplication:
+		return true
+	case SystemSecurityTitlePayloadTargetKindVerificationCredential:
+		return true
+	case SystemSecurityTitlePayloadTargetKindVerificationOperation:
+		return true
+	case SystemSecurityTitlePayloadTargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemSecurityTitlePayloadTitleKey.
+const (
+	SystemSecurityTitlePayloadTitleKeyNotificationsSystemSecurity SystemSecurityTitlePayloadTitleKey = "notifications.system.security"
+)
+
+// Valid indicates whether the value is a known member of the SystemSecurityTitlePayloadTitleKey enum.
+func (e SystemSecurityTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case SystemSecurityTitlePayloadTitleKeyNotificationsSystemSecurity:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemSecurityTitlePayloadType.
+const (
+	SystemSecurityTitlePayloadTypeSecurity SystemSecurityTitlePayloadType = "security"
+)
+
+// Valid indicates whether the value is a known member of the SystemSecurityTitlePayloadType enum.
+func (e SystemSecurityTitlePayloadType) Valid() bool {
+	switch e {
+	case SystemSecurityTitlePayloadTypeSecurity:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TargetKind.
+const (
+	TargetKindComment                    TargetKind = "comment"
+	TargetKindReport                     TargetKind = "report"
+	TargetKindResource                   TargetKind = "resource"
+	TargetKindResourceRemovalRequest     TargetKind = "resource_removal_request"
+	TargetKindReview                     TargetKind = "review"
+	TargetKindTeacherApplication         TargetKind = "teacher_application"
+	TargetKindVerificationApplication    TargetKind = "verification_application"
+	TargetKindVerificationCredential     TargetKind = "verification_credential"
+	TargetKindVerificationOperation      TargetKind = "verification_operation"
+	TargetKindVerificationRemovalRequest TargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the TargetKind enum.
+func (e TargetKind) Valid() bool {
+	switch e {
+	case TargetKindComment:
+		return true
+	case TargetKindReport:
+		return true
+	case TargetKindResource:
+		return true
+	case TargetKindResourceRemovalRequest:
+		return true
+	case TargetKindReview:
+		return true
+	case TargetKindTeacherApplication:
+		return true
+	case TargetKindVerificationApplication:
+		return true
+	case TargetKindVerificationCredential:
+		return true
+	case TargetKindVerificationOperation:
+		return true
+	case TargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationApprovedTitlePayloadTargetKind.
+const (
+	TeacherVerificationApprovedTitlePayloadTargetKindTeacherApplication TeacherVerificationApprovedTitlePayloadTargetKind = "teacher_application"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationApprovedTitlePayloadTargetKind enum.
+func (e TeacherVerificationApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case TeacherVerificationApprovedTitlePayloadTargetKindTeacherApplication:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationApprovedTitlePayloadTitleKey.
+const (
+	TeacherVerificationApprovedTitlePayloadTitleKeyNotificationsTeacherVerificationApproved TeacherVerificationApprovedTitlePayloadTitleKey = "notifications.teacher_verification.approved"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationApprovedTitlePayloadTitleKey enum.
+func (e TeacherVerificationApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case TeacherVerificationApprovedTitlePayloadTitleKeyNotificationsTeacherVerificationApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationApprovedTitlePayloadType.
+const (
+	TeacherVerificationApprovedTitlePayloadTypeBusiness TeacherVerificationApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationApprovedTitlePayloadType enum.
+func (e TeacherVerificationApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case TeacherVerificationApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationRejectedTitlePayloadTargetKind.
+const (
+	TeacherVerificationRejectedTitlePayloadTargetKindTeacherApplication TeacherVerificationRejectedTitlePayloadTargetKind = "teacher_application"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationRejectedTitlePayloadTargetKind enum.
+func (e TeacherVerificationRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case TeacherVerificationRejectedTitlePayloadTargetKindTeacherApplication:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationRejectedTitlePayloadTitleKey.
+const (
+	TeacherVerificationRejectedTitlePayloadTitleKeyNotificationsTeacherVerificationRejected TeacherVerificationRejectedTitlePayloadTitleKey = "notifications.teacher_verification.rejected"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationRejectedTitlePayloadTitleKey enum.
+func (e TeacherVerificationRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case TeacherVerificationRejectedTitlePayloadTitleKeyNotificationsTeacherVerificationRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationRejectedTitlePayloadType.
+const (
+	TeacherVerificationRejectedTitlePayloadTypeBusiness TeacherVerificationRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationRejectedTitlePayloadType enum.
+func (e TeacherVerificationRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case TeacherVerificationRejectedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TitleKey.
+const (
+	TitleKeyNotificationsContentApproved                TitleKey = "notifications.content.approved"
+	TitleKeyNotificationsContentRejected                TitleKey = "notifications.content.rejected"
+	TitleKeyNotificationsContentRemoved                 TitleKey = "notifications.content.removed"
+	TitleKeyNotificationsIdentityVerificationApproved   TitleKey = "notifications.identity_verification.approved"
+	TitleKeyNotificationsIdentityVerificationRejected   TitleKey = "notifications.identity_verification.rejected"
+	TitleKeyNotificationsInteractionLike                TitleKey = "notifications.interaction.like"
+	TitleKeyNotificationsInteractionReply               TitleKey = "notifications.interaction.reply"
+	TitleKeyNotificationsReportApproved                 TitleKey = "notifications.report.approved"
+	TitleKeyNotificationsReportRejected                 TitleKey = "notifications.report.rejected"
+	TitleKeyNotificationsResourceRemovalApproved        TitleKey = "notifications.resource_removal.approved"
+	TitleKeyNotificationsResourceRemovalRejected        TitleKey = "notifications.resource_removal.rejected"
+	TitleKeyNotificationsStudentVerificationApproved    TitleKey = "notifications.student_verification.approved"
+	TitleKeyNotificationsStudentVerificationRejected    TitleKey = "notifications.student_verification.rejected"
+	TitleKeyNotificationsStudentVerificationRevoked     TitleKey = "notifications.student_verification.revoked"
+	TitleKeyNotificationsSystemAccount                  TitleKey = "notifications.system.account"
+	TitleKeyNotificationsSystemNotice                   TitleKey = "notifications.system.notice"
+	TitleKeyNotificationsSystemSecurity                 TitleKey = "notifications.system.security"
+	TitleKeyNotificationsTeacherVerificationApproved    TitleKey = "notifications.teacher_verification.approved"
+	TitleKeyNotificationsTeacherVerificationRejected    TitleKey = "notifications.teacher_verification.rejected"
+	TitleKeyNotificationsVerificationDeletionApproved   TitleKey = "notifications.verification_deletion.approved"
+	TitleKeyNotificationsVerificationDeletionRejected   TitleKey = "notifications.verification_deletion.rejected"
+	TitleKeyNotificationsVerificationRevocationApproved TitleKey = "notifications.verification_revocation.approved"
+	TitleKeyNotificationsVerificationRevocationRejected TitleKey = "notifications.verification_revocation.rejected"
+)
+
+// Valid indicates whether the value is a known member of the TitleKey enum.
+func (e TitleKey) Valid() bool {
+	switch e {
+	case TitleKeyNotificationsContentApproved:
+		return true
+	case TitleKeyNotificationsContentRejected:
+		return true
+	case TitleKeyNotificationsContentRemoved:
+		return true
+	case TitleKeyNotificationsIdentityVerificationApproved:
+		return true
+	case TitleKeyNotificationsIdentityVerificationRejected:
+		return true
+	case TitleKeyNotificationsInteractionLike:
+		return true
+	case TitleKeyNotificationsInteractionReply:
+		return true
+	case TitleKeyNotificationsReportApproved:
+		return true
+	case TitleKeyNotificationsReportRejected:
+		return true
+	case TitleKeyNotificationsResourceRemovalApproved:
+		return true
+	case TitleKeyNotificationsResourceRemovalRejected:
+		return true
+	case TitleKeyNotificationsStudentVerificationApproved:
+		return true
+	case TitleKeyNotificationsStudentVerificationRejected:
+		return true
+	case TitleKeyNotificationsStudentVerificationRevoked:
+		return true
+	case TitleKeyNotificationsSystemAccount:
+		return true
+	case TitleKeyNotificationsSystemNotice:
+		return true
+	case TitleKeyNotificationsSystemSecurity:
+		return true
+	case TitleKeyNotificationsTeacherVerificationApproved:
+		return true
+	case TitleKeyNotificationsTeacherVerificationRejected:
+		return true
+	case TitleKeyNotificationsVerificationDeletionApproved:
+		return true
+	case TitleKeyNotificationsVerificationDeletionRejected:
+		return true
+	case TitleKeyNotificationsVerificationRevocationApproved:
+		return true
+	case TitleKeyNotificationsVerificationRevocationRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationDeletionApprovedTitlePayloadTargetKind.
+const (
+	VerificationDeletionApprovedTitlePayloadTargetKindVerificationRemovalRequest VerificationDeletionApprovedTitlePayloadTargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the VerificationDeletionApprovedTitlePayloadTargetKind enum.
+func (e VerificationDeletionApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case VerificationDeletionApprovedTitlePayloadTargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationDeletionApprovedTitlePayloadTitleKey.
+const (
+	VerificationDeletionApprovedTitlePayloadTitleKeyNotificationsVerificationDeletionApproved VerificationDeletionApprovedTitlePayloadTitleKey = "notifications.verification_deletion.approved"
+)
+
+// Valid indicates whether the value is a known member of the VerificationDeletionApprovedTitlePayloadTitleKey enum.
+func (e VerificationDeletionApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case VerificationDeletionApprovedTitlePayloadTitleKeyNotificationsVerificationDeletionApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationDeletionApprovedTitlePayloadType.
+const (
+	VerificationDeletionApprovedTitlePayloadTypeAccount VerificationDeletionApprovedTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the VerificationDeletionApprovedTitlePayloadType enum.
+func (e VerificationDeletionApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case VerificationDeletionApprovedTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationDeletionRejectedTitlePayloadTargetKind.
+const (
+	VerificationDeletionRejectedTitlePayloadTargetKindVerificationRemovalRequest VerificationDeletionRejectedTitlePayloadTargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the VerificationDeletionRejectedTitlePayloadTargetKind enum.
+func (e VerificationDeletionRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case VerificationDeletionRejectedTitlePayloadTargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationDeletionRejectedTitlePayloadTitleKey.
+const (
+	VerificationDeletionRejectedTitlePayloadTitleKeyNotificationsVerificationDeletionRejected VerificationDeletionRejectedTitlePayloadTitleKey = "notifications.verification_deletion.rejected"
+)
+
+// Valid indicates whether the value is a known member of the VerificationDeletionRejectedTitlePayloadTitleKey enum.
+func (e VerificationDeletionRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case VerificationDeletionRejectedTitlePayloadTitleKeyNotificationsVerificationDeletionRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationDeletionRejectedTitlePayloadType.
+const (
+	VerificationDeletionRejectedTitlePayloadTypeAccount VerificationDeletionRejectedTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the VerificationDeletionRejectedTitlePayloadType enum.
+func (e VerificationDeletionRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case VerificationDeletionRejectedTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationRevocationApprovedTitlePayloadTargetKind.
+const (
+	VerificationRevocationApprovedTitlePayloadTargetKindVerificationRemovalRequest VerificationRevocationApprovedTitlePayloadTargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the VerificationRevocationApprovedTitlePayloadTargetKind enum.
+func (e VerificationRevocationApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case VerificationRevocationApprovedTitlePayloadTargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationRevocationApprovedTitlePayloadTitleKey.
+const (
+	VerificationRevocationApprovedTitlePayloadTitleKeyNotificationsVerificationRevocationApproved VerificationRevocationApprovedTitlePayloadTitleKey = "notifications.verification_revocation.approved"
+)
+
+// Valid indicates whether the value is a known member of the VerificationRevocationApprovedTitlePayloadTitleKey enum.
+func (e VerificationRevocationApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case VerificationRevocationApprovedTitlePayloadTitleKeyNotificationsVerificationRevocationApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationRevocationApprovedTitlePayloadType.
+const (
+	VerificationRevocationApprovedTitlePayloadTypeAccount VerificationRevocationApprovedTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the VerificationRevocationApprovedTitlePayloadType enum.
+func (e VerificationRevocationApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case VerificationRevocationApprovedTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationRevocationRejectedTitlePayloadTargetKind.
+const (
+	VerificationRevocationRejectedTitlePayloadTargetKindVerificationRemovalRequest VerificationRevocationRejectedTitlePayloadTargetKind = "verification_removal_request"
+)
+
+// Valid indicates whether the value is a known member of the VerificationRevocationRejectedTitlePayloadTargetKind enum.
+func (e VerificationRevocationRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case VerificationRevocationRejectedTitlePayloadTargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationRevocationRejectedTitlePayloadTitleKey.
+const (
+	VerificationRevocationRejectedTitlePayloadTitleKeyNotificationsVerificationRevocationRejected VerificationRevocationRejectedTitlePayloadTitleKey = "notifications.verification_revocation.rejected"
+)
+
+// Valid indicates whether the value is a known member of the VerificationRevocationRejectedTitlePayloadTitleKey enum.
+func (e VerificationRevocationRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case VerificationRevocationRejectedTitlePayloadTitleKeyNotificationsVerificationRevocationRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationRevocationRejectedTitlePayloadType.
+const (
+	VerificationRevocationRejectedTitlePayloadTypeAccount VerificationRevocationRejectedTitlePayloadType = "account"
+)
+
+// Valid indicates whether the value is a known member of the VerificationRevocationRejectedTitlePayloadType enum.
+func (e VerificationRevocationRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case VerificationRevocationRejectedTitlePayloadTypeAccount:
+		return true
+	default:
+		return false
+	}
+}
+
+// ContentApprovedTitlePayload 内容审核通过
+type ContentApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                `json:"id"`
+		Kind ContentApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ContentApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ContentId string `json:"content_id"`
+	} `json:"title_params"`
+	Type ContentApprovedTitlePayloadType `json:"type"`
+}
+
+// ContentApprovedTitlePayloadTargetKind defines model for ContentApprovedTitlePayload.Target.Kind.
+type ContentApprovedTitlePayloadTargetKind string
+
+// ContentApprovedTitlePayloadTitleKey defines model for ContentApprovedTitlePayload.TitleKey.
+type ContentApprovedTitlePayloadTitleKey string
+
+// ContentApprovedTitlePayloadType defines model for ContentApprovedTitlePayload.Type.
+type ContentApprovedTitlePayloadType string
+
+// ContentRejectedTitlePayload 内容审核驳回
+type ContentRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                `json:"id"`
+		Kind ContentRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ContentRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ContentId string `json:"content_id"`
+	} `json:"title_params"`
+	Type ContentRejectedTitlePayloadType `json:"type"`
+}
+
+// ContentRejectedTitlePayloadTargetKind defines model for ContentRejectedTitlePayload.Target.Kind.
+type ContentRejectedTitlePayloadTargetKind string
+
+// ContentRejectedTitlePayloadTitleKey defines model for ContentRejectedTitlePayload.TitleKey.
+type ContentRejectedTitlePayloadTitleKey string
+
+// ContentRejectedTitlePayloadType defines model for ContentRejectedTitlePayload.Type.
+type ContentRejectedTitlePayloadType string
+
+// ContentRemovedTitlePayload 内容下架
+type ContentRemovedTitlePayload struct {
+	Target struct {
+		Id   string                               `json:"id"`
+		Kind ContentRemovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ContentRemovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ContentId string `json:"content_id"`
+	} `json:"title_params"`
+	Type ContentRemovedTitlePayloadType `json:"type"`
+}
+
+// ContentRemovedTitlePayloadTargetKind defines model for ContentRemovedTitlePayload.Target.Kind.
+type ContentRemovedTitlePayloadTargetKind string
+
+// ContentRemovedTitlePayloadTitleKey defines model for ContentRemovedTitlePayload.TitleKey.
+type ContentRemovedTitlePayloadTitleKey string
+
+// ContentRemovedTitlePayloadType defines model for ContentRemovedTitlePayload.Type.
+type ContentRemovedTitlePayloadType string
+
 // Error defines model for Error.
 type Error struct {
 	Code string `json:"code"`
 }
+
+// IdentityVerificationApprovedTitlePayload 实名核验通过
+type IdentityVerificationApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                             `json:"id"`
+		Kind IdentityVerificationApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    IdentityVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// OperationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		OperationId string `json:"operation_id"`
+	} `json:"title_params"`
+	Type IdentityVerificationApprovedTitlePayloadType `json:"type"`
+}
+
+// IdentityVerificationApprovedTitlePayloadTargetKind defines model for IdentityVerificationApprovedTitlePayload.Target.Kind.
+type IdentityVerificationApprovedTitlePayloadTargetKind string
+
+// IdentityVerificationApprovedTitlePayloadTitleKey defines model for IdentityVerificationApprovedTitlePayload.TitleKey.
+type IdentityVerificationApprovedTitlePayloadTitleKey string
+
+// IdentityVerificationApprovedTitlePayloadType defines model for IdentityVerificationApprovedTitlePayload.Type.
+type IdentityVerificationApprovedTitlePayloadType string
+
+// IdentityVerificationRejectedTitlePayload 实名核验驳回
+type IdentityVerificationRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                             `json:"id"`
+		Kind IdentityVerificationRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    IdentityVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// OperationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		OperationId string `json:"operation_id"`
+	} `json:"title_params"`
+	Type IdentityVerificationRejectedTitlePayloadType `json:"type"`
+}
+
+// IdentityVerificationRejectedTitlePayloadTargetKind defines model for IdentityVerificationRejectedTitlePayload.Target.Kind.
+type IdentityVerificationRejectedTitlePayloadTargetKind string
+
+// IdentityVerificationRejectedTitlePayloadTitleKey defines model for IdentityVerificationRejectedTitlePayload.TitleKey.
+type IdentityVerificationRejectedTitlePayloadTitleKey string
+
+// IdentityVerificationRejectedTitlePayloadType defines model for IdentityVerificationRejectedTitlePayload.Type.
+type IdentityVerificationRejectedTitlePayloadType string
+
+// InteractionLikeTitlePayload 收到点赞
+type InteractionLikeTitlePayload struct {
+	Target struct {
+		Id   string                                `json:"id"`
+		Kind InteractionLikeTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    InteractionLikeTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ContentId string `json:"content_id"`
+	} `json:"title_params"`
+	Type InteractionLikeTitlePayloadType `json:"type"`
+}
+
+// InteractionLikeTitlePayloadTargetKind defines model for InteractionLikeTitlePayload.Target.Kind.
+type InteractionLikeTitlePayloadTargetKind string
+
+// InteractionLikeTitlePayloadTitleKey defines model for InteractionLikeTitlePayload.TitleKey.
+type InteractionLikeTitlePayloadTitleKey string
+
+// InteractionLikeTitlePayloadType defines model for InteractionLikeTitlePayload.Type.
+type InteractionLikeTitlePayloadType string
+
+// InteractionReplyTitlePayload 收到回复
+type InteractionReplyTitlePayload struct {
+	Target struct {
+		Id   string                                 `json:"id"`
+		Kind InteractionReplyTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    InteractionReplyTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ContentId string `json:"content_id"`
+	} `json:"title_params"`
+	Type InteractionReplyTitlePayloadType `json:"type"`
+}
+
+// InteractionReplyTitlePayloadTargetKind defines model for InteractionReplyTitlePayload.Target.Kind.
+type InteractionReplyTitlePayloadTargetKind string
+
+// InteractionReplyTitlePayloadTitleKey defines model for InteractionReplyTitlePayload.TitleKey.
+type InteractionReplyTitlePayloadTitleKey string
+
+// InteractionReplyTitlePayloadType defines model for InteractionReplyTitlePayload.Type.
+type InteractionReplyTitlePayloadType string
 
 // Notification defines model for Notification.
 type Notification struct {
@@ -77,9 +1507,14 @@ type Notification struct {
 	SourceModule string                   `json:"source_module"`
 	Target       Target                   `json:"target"`
 	TargetStatus NotificationTargetStatus `json:"target_status"`
-	TitleKey     string                   `json:"title_key"`
-	TitleParams  map[string]string        `json:"title_params"`
-	Type         NotificationType         `json:"type"`
+
+	// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Sender 传入 title_params。
+	TitleKey TitleKey `json:"title_key"`
+
+	// TitleParams 必须满足 title_key 对应的封闭参数对象；只包含业务编号。详见 x-title-catalog。
+	TitleParams map[string]string `json:"title_params"`
+	Type        NotificationType  `json:"type"`
+	union       json.RawMessage
 }
 
 // NotificationTargetStatus defines model for Notification.TargetStatus.
@@ -99,16 +1534,390 @@ type Preferences struct {
 	InteractionEnabled bool `json:"interaction_enabled"`
 }
 
+// ReportApprovedTitlePayload 举报处理通过
+type ReportApprovedTitlePayload struct {
+	Target struct {
+		Id   string                               `json:"id"`
+		Kind ReportApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ReportApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ReportId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ReportId string `json:"report_id"`
+	} `json:"title_params"`
+	Type ReportApprovedTitlePayloadType `json:"type"`
+}
+
+// ReportApprovedTitlePayloadTargetKind defines model for ReportApprovedTitlePayload.Target.Kind.
+type ReportApprovedTitlePayloadTargetKind string
+
+// ReportApprovedTitlePayloadTitleKey defines model for ReportApprovedTitlePayload.TitleKey.
+type ReportApprovedTitlePayloadTitleKey string
+
+// ReportApprovedTitlePayloadType defines model for ReportApprovedTitlePayload.Type.
+type ReportApprovedTitlePayloadType string
+
+// ReportRejectedTitlePayload 举报处理驳回
+type ReportRejectedTitlePayload struct {
+	Target struct {
+		Id   string                               `json:"id"`
+		Kind ReportRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ReportRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ReportId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ReportId string `json:"report_id"`
+	} `json:"title_params"`
+	Type ReportRejectedTitlePayloadType `json:"type"`
+}
+
+// ReportRejectedTitlePayloadTargetKind defines model for ReportRejectedTitlePayload.Target.Kind.
+type ReportRejectedTitlePayloadTargetKind string
+
+// ReportRejectedTitlePayloadTitleKey defines model for ReportRejectedTitlePayload.TitleKey.
+type ReportRejectedTitlePayloadTitleKey string
+
+// ReportRejectedTitlePayloadType defines model for ReportRejectedTitlePayload.Type.
+type ReportRejectedTitlePayloadType string
+
+// ResourceRemovalApprovedTitlePayload 资料下架申请通过
+type ResourceRemovalApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                        `json:"id"`
+		Kind ResourceRemovalApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ResourceRemovalApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type ResourceRemovalApprovedTitlePayloadType `json:"type"`
+}
+
+// ResourceRemovalApprovedTitlePayloadTargetKind defines model for ResourceRemovalApprovedTitlePayload.Target.Kind.
+type ResourceRemovalApprovedTitlePayloadTargetKind string
+
+// ResourceRemovalApprovedTitlePayloadTitleKey defines model for ResourceRemovalApprovedTitlePayload.TitleKey.
+type ResourceRemovalApprovedTitlePayloadTitleKey string
+
+// ResourceRemovalApprovedTitlePayloadType defines model for ResourceRemovalApprovedTitlePayload.Type.
+type ResourceRemovalApprovedTitlePayloadType string
+
+// ResourceRemovalRejectedTitlePayload 资料下架申请驳回
+type ResourceRemovalRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                        `json:"id"`
+		Kind ResourceRemovalRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ResourceRemovalRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type ResourceRemovalRejectedTitlePayloadType `json:"type"`
+}
+
+// ResourceRemovalRejectedTitlePayloadTargetKind defines model for ResourceRemovalRejectedTitlePayload.Target.Kind.
+type ResourceRemovalRejectedTitlePayloadTargetKind string
+
+// ResourceRemovalRejectedTitlePayloadTitleKey defines model for ResourceRemovalRejectedTitlePayload.TitleKey.
+type ResourceRemovalRejectedTitlePayloadTitleKey string
+
+// ResourceRemovalRejectedTitlePayloadType defines model for ResourceRemovalRejectedTitlePayload.Type.
+type ResourceRemovalRejectedTitlePayloadType string
+
+// StudentVerificationApprovedTitlePayload 学生认证通过
+type StudentVerificationApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                            `json:"id"`
+		Kind StudentVerificationApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    StudentVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ApplicationId string `json:"application_id"`
+	} `json:"title_params"`
+	Type StudentVerificationApprovedTitlePayloadType `json:"type"`
+}
+
+// StudentVerificationApprovedTitlePayloadTargetKind defines model for StudentVerificationApprovedTitlePayload.Target.Kind.
+type StudentVerificationApprovedTitlePayloadTargetKind string
+
+// StudentVerificationApprovedTitlePayloadTitleKey defines model for StudentVerificationApprovedTitlePayload.TitleKey.
+type StudentVerificationApprovedTitlePayloadTitleKey string
+
+// StudentVerificationApprovedTitlePayloadType defines model for StudentVerificationApprovedTitlePayload.Type.
+type StudentVerificationApprovedTitlePayloadType string
+
+// StudentVerificationRejectedTitlePayload 学生认证驳回
+type StudentVerificationRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                            `json:"id"`
+		Kind StudentVerificationRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    StudentVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ApplicationId string `json:"application_id"`
+	} `json:"title_params"`
+	Type StudentVerificationRejectedTitlePayloadType `json:"type"`
+}
+
+// StudentVerificationRejectedTitlePayloadTargetKind defines model for StudentVerificationRejectedTitlePayload.Target.Kind.
+type StudentVerificationRejectedTitlePayloadTargetKind string
+
+// StudentVerificationRejectedTitlePayloadTitleKey defines model for StudentVerificationRejectedTitlePayload.TitleKey.
+type StudentVerificationRejectedTitlePayloadTitleKey string
+
+// StudentVerificationRejectedTitlePayloadType defines model for StudentVerificationRejectedTitlePayload.Type.
+type StudentVerificationRejectedTitlePayloadType string
+
+// StudentVerificationRevokedTitlePayload 学生认证被撤销
+type StudentVerificationRevokedTitlePayload struct {
+	Target struct {
+		Id   string                                           `json:"id"`
+		Kind StudentVerificationRevokedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    StudentVerificationRevokedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// CredentialId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		CredentialId string `json:"credential_id"`
+	} `json:"title_params"`
+	Type StudentVerificationRevokedTitlePayloadType `json:"type"`
+}
+
+// StudentVerificationRevokedTitlePayloadTargetKind defines model for StudentVerificationRevokedTitlePayload.Target.Kind.
+type StudentVerificationRevokedTitlePayloadTargetKind string
+
+// StudentVerificationRevokedTitlePayloadTitleKey defines model for StudentVerificationRevokedTitlePayload.TitleKey.
+type StudentVerificationRevokedTitlePayloadTitleKey string
+
+// StudentVerificationRevokedTitlePayloadType defines model for StudentVerificationRevokedTitlePayload.Type.
+type StudentVerificationRevokedTitlePayloadType string
+
+// SystemAccountTitlePayload 账号通知
+type SystemAccountTitlePayload struct {
+	Target struct {
+		Id   string                              `json:"id"`
+		Kind SystemAccountTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    SystemAccountTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ReferenceId string `json:"reference_id"`
+	} `json:"title_params"`
+	Type SystemAccountTitlePayloadType `json:"type"`
+}
+
+// SystemAccountTitlePayloadTargetKind defines model for SystemAccountTitlePayload.Target.Kind.
+type SystemAccountTitlePayloadTargetKind string
+
+// SystemAccountTitlePayloadTitleKey defines model for SystemAccountTitlePayload.TitleKey.
+type SystemAccountTitlePayloadTitleKey string
+
+// SystemAccountTitlePayloadType defines model for SystemAccountTitlePayload.Type.
+type SystemAccountTitlePayloadType string
+
+// SystemNoticeTitlePayload 系统通知
+type SystemNoticeTitlePayload struct {
+	Target struct {
+		Id   string                             `json:"id"`
+		Kind SystemNoticeTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    SystemNoticeTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ReferenceId string `json:"reference_id"`
+	} `json:"title_params"`
+	Type SystemNoticeTitlePayloadType `json:"type"`
+}
+
+// SystemNoticeTitlePayloadTargetKind defines model for SystemNoticeTitlePayload.Target.Kind.
+type SystemNoticeTitlePayloadTargetKind string
+
+// SystemNoticeTitlePayloadTitleKey defines model for SystemNoticeTitlePayload.TitleKey.
+type SystemNoticeTitlePayloadTitleKey string
+
+// SystemNoticeTitlePayloadType defines model for SystemNoticeTitlePayload.Type.
+type SystemNoticeTitlePayloadType string
+
+// SystemSecurityTitlePayload 安全通知
+type SystemSecurityTitlePayload struct {
+	Target struct {
+		Id   string                               `json:"id"`
+		Kind SystemSecurityTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    SystemSecurityTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ReferenceId string `json:"reference_id"`
+	} `json:"title_params"`
+	Type SystemSecurityTitlePayloadType `json:"type"`
+}
+
+// SystemSecurityTitlePayloadTargetKind defines model for SystemSecurityTitlePayload.Target.Kind.
+type SystemSecurityTitlePayloadTargetKind string
+
+// SystemSecurityTitlePayloadTitleKey defines model for SystemSecurityTitlePayload.TitleKey.
+type SystemSecurityTitlePayloadTitleKey string
+
+// SystemSecurityTitlePayloadType defines model for SystemSecurityTitlePayload.Type.
+type SystemSecurityTitlePayloadType string
+
 // Target defines model for Target.
 type Target struct {
-	Id   string `json:"id"`
-	Kind string `json:"kind"`
+	Id   string     `json:"id"`
+	Kind TargetKind `json:"kind"`
 }
+
+// TargetKind defines model for Target.Kind.
+type TargetKind string
+
+// TeacherVerificationApprovedTitlePayload 教师认证通过
+type TeacherVerificationApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                            `json:"id"`
+		Kind TeacherVerificationApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    TeacherVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ApplicationId string `json:"application_id"`
+	} `json:"title_params"`
+	Type TeacherVerificationApprovedTitlePayloadType `json:"type"`
+}
+
+// TeacherVerificationApprovedTitlePayloadTargetKind defines model for TeacherVerificationApprovedTitlePayload.Target.Kind.
+type TeacherVerificationApprovedTitlePayloadTargetKind string
+
+// TeacherVerificationApprovedTitlePayloadTitleKey defines model for TeacherVerificationApprovedTitlePayload.TitleKey.
+type TeacherVerificationApprovedTitlePayloadTitleKey string
+
+// TeacherVerificationApprovedTitlePayloadType defines model for TeacherVerificationApprovedTitlePayload.Type.
+type TeacherVerificationApprovedTitlePayloadType string
+
+// TeacherVerificationRejectedTitlePayload 教师认证驳回
+type TeacherVerificationRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                            `json:"id"`
+		Kind TeacherVerificationRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    TeacherVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		ApplicationId string `json:"application_id"`
+	} `json:"title_params"`
+	Type TeacherVerificationRejectedTitlePayloadType `json:"type"`
+}
+
+// TeacherVerificationRejectedTitlePayloadTargetKind defines model for TeacherVerificationRejectedTitlePayload.Target.Kind.
+type TeacherVerificationRejectedTitlePayloadTargetKind string
+
+// TeacherVerificationRejectedTitlePayloadTitleKey defines model for TeacherVerificationRejectedTitlePayload.TitleKey.
+type TeacherVerificationRejectedTitlePayloadTitleKey string
+
+// TeacherVerificationRejectedTitlePayloadType defines model for TeacherVerificationRejectedTitlePayload.Type.
+type TeacherVerificationRejectedTitlePayloadType string
+
+// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Sender 传入 title_params。
+type TitleKey string
 
 // Unread defines model for Unread.
 type Unread struct {
 	Count int64 `json:"count"`
 }
+
+// VerificationDeletionApprovedTitlePayload 认证删除申请通过
+type VerificationDeletionApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                             `json:"id"`
+		Kind VerificationDeletionApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    VerificationDeletionApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type VerificationDeletionApprovedTitlePayloadType `json:"type"`
+}
+
+// VerificationDeletionApprovedTitlePayloadTargetKind defines model for VerificationDeletionApprovedTitlePayload.Target.Kind.
+type VerificationDeletionApprovedTitlePayloadTargetKind string
+
+// VerificationDeletionApprovedTitlePayloadTitleKey defines model for VerificationDeletionApprovedTitlePayload.TitleKey.
+type VerificationDeletionApprovedTitlePayloadTitleKey string
+
+// VerificationDeletionApprovedTitlePayloadType defines model for VerificationDeletionApprovedTitlePayload.Type.
+type VerificationDeletionApprovedTitlePayloadType string
+
+// VerificationDeletionRejectedTitlePayload 认证删除申请驳回
+type VerificationDeletionRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                             `json:"id"`
+		Kind VerificationDeletionRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    VerificationDeletionRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type VerificationDeletionRejectedTitlePayloadType `json:"type"`
+}
+
+// VerificationDeletionRejectedTitlePayloadTargetKind defines model for VerificationDeletionRejectedTitlePayload.Target.Kind.
+type VerificationDeletionRejectedTitlePayloadTargetKind string
+
+// VerificationDeletionRejectedTitlePayloadTitleKey defines model for VerificationDeletionRejectedTitlePayload.TitleKey.
+type VerificationDeletionRejectedTitlePayloadTitleKey string
+
+// VerificationDeletionRejectedTitlePayloadType defines model for VerificationDeletionRejectedTitlePayload.Type.
+type VerificationDeletionRejectedTitlePayloadType string
+
+// VerificationRevocationApprovedTitlePayload 认证撤销申请通过
+type VerificationRevocationApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                               `json:"id"`
+		Kind VerificationRevocationApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    VerificationRevocationApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type VerificationRevocationApprovedTitlePayloadType `json:"type"`
+}
+
+// VerificationRevocationApprovedTitlePayloadTargetKind defines model for VerificationRevocationApprovedTitlePayload.Target.Kind.
+type VerificationRevocationApprovedTitlePayloadTargetKind string
+
+// VerificationRevocationApprovedTitlePayloadTitleKey defines model for VerificationRevocationApprovedTitlePayload.TitleKey.
+type VerificationRevocationApprovedTitlePayloadTitleKey string
+
+// VerificationRevocationApprovedTitlePayloadType defines model for VerificationRevocationApprovedTitlePayload.Type.
+type VerificationRevocationApprovedTitlePayloadType string
+
+// VerificationRevocationRejectedTitlePayload 认证撤销申请驳回
+type VerificationRevocationRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                               `json:"id"`
+		Kind VerificationRevocationRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    VerificationRevocationRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type VerificationRevocationRejectedTitlePayloadType `json:"type"`
+}
+
+// VerificationRevocationRejectedTitlePayloadTargetKind defines model for VerificationRevocationRejectedTitlePayload.Target.Kind.
+type VerificationRevocationRejectedTitlePayloadTargetKind string
+
+// VerificationRevocationRejectedTitlePayloadTitleKey defines model for VerificationRevocationRejectedTitlePayload.TitleKey.
+type VerificationRevocationRejectedTitlePayloadTitleKey string
+
+// VerificationRevocationRejectedTitlePayloadType defines model for VerificationRevocationRejectedTitlePayload.Type.
+type VerificationRevocationRejectedTitlePayloadType string
 
 // ListNotificationsParams defines parameters for ListNotifications.
 type ListNotificationsParams struct {
@@ -119,6 +1928,757 @@ type ListNotificationsParams struct {
 
 // SetPreferencesJSONRequestBody defines body for SetPreferences for application/json ContentType.
 type SetPreferencesJSONRequestBody = Preferences
+
+// AsInteractionReplyTitlePayload returns the union data inside the Notification as a InteractionReplyTitlePayload
+func (t Notification) AsInteractionReplyTitlePayload() (InteractionReplyTitlePayload, error) {
+	var body InteractionReplyTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromInteractionReplyTitlePayload overwrites any union data inside the Notification as the provided InteractionReplyTitlePayload
+func (t *Notification) FromInteractionReplyTitlePayload(v InteractionReplyTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeInteractionReplyTitlePayload performs a merge with any union data inside the Notification, using the provided InteractionReplyTitlePayload
+func (t *Notification) MergeInteractionReplyTitlePayload(v InteractionReplyTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsInteractionLikeTitlePayload returns the union data inside the Notification as a InteractionLikeTitlePayload
+func (t Notification) AsInteractionLikeTitlePayload() (InteractionLikeTitlePayload, error) {
+	var body InteractionLikeTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromInteractionLikeTitlePayload overwrites any union data inside the Notification as the provided InteractionLikeTitlePayload
+func (t *Notification) FromInteractionLikeTitlePayload(v InteractionLikeTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeInteractionLikeTitlePayload performs a merge with any union data inside the Notification, using the provided InteractionLikeTitlePayload
+func (t *Notification) MergeInteractionLikeTitlePayload(v InteractionLikeTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsContentApprovedTitlePayload returns the union data inside the Notification as a ContentApprovedTitlePayload
+func (t Notification) AsContentApprovedTitlePayload() (ContentApprovedTitlePayload, error) {
+	var body ContentApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromContentApprovedTitlePayload overwrites any union data inside the Notification as the provided ContentApprovedTitlePayload
+func (t *Notification) FromContentApprovedTitlePayload(v ContentApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeContentApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided ContentApprovedTitlePayload
+func (t *Notification) MergeContentApprovedTitlePayload(v ContentApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsContentRejectedTitlePayload returns the union data inside the Notification as a ContentRejectedTitlePayload
+func (t Notification) AsContentRejectedTitlePayload() (ContentRejectedTitlePayload, error) {
+	var body ContentRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromContentRejectedTitlePayload overwrites any union data inside the Notification as the provided ContentRejectedTitlePayload
+func (t *Notification) FromContentRejectedTitlePayload(v ContentRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeContentRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided ContentRejectedTitlePayload
+func (t *Notification) MergeContentRejectedTitlePayload(v ContentRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsContentRemovedTitlePayload returns the union data inside the Notification as a ContentRemovedTitlePayload
+func (t Notification) AsContentRemovedTitlePayload() (ContentRemovedTitlePayload, error) {
+	var body ContentRemovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromContentRemovedTitlePayload overwrites any union data inside the Notification as the provided ContentRemovedTitlePayload
+func (t *Notification) FromContentRemovedTitlePayload(v ContentRemovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeContentRemovedTitlePayload performs a merge with any union data inside the Notification, using the provided ContentRemovedTitlePayload
+func (t *Notification) MergeContentRemovedTitlePayload(v ContentRemovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsResourceRemovalApprovedTitlePayload returns the union data inside the Notification as a ResourceRemovalApprovedTitlePayload
+func (t Notification) AsResourceRemovalApprovedTitlePayload() (ResourceRemovalApprovedTitlePayload, error) {
+	var body ResourceRemovalApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceRemovalApprovedTitlePayload overwrites any union data inside the Notification as the provided ResourceRemovalApprovedTitlePayload
+func (t *Notification) FromResourceRemovalApprovedTitlePayload(v ResourceRemovalApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceRemovalApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided ResourceRemovalApprovedTitlePayload
+func (t *Notification) MergeResourceRemovalApprovedTitlePayload(v ResourceRemovalApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsResourceRemovalRejectedTitlePayload returns the union data inside the Notification as a ResourceRemovalRejectedTitlePayload
+func (t Notification) AsResourceRemovalRejectedTitlePayload() (ResourceRemovalRejectedTitlePayload, error) {
+	var body ResourceRemovalRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceRemovalRejectedTitlePayload overwrites any union data inside the Notification as the provided ResourceRemovalRejectedTitlePayload
+func (t *Notification) FromResourceRemovalRejectedTitlePayload(v ResourceRemovalRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceRemovalRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided ResourceRemovalRejectedTitlePayload
+func (t *Notification) MergeResourceRemovalRejectedTitlePayload(v ResourceRemovalRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReportApprovedTitlePayload returns the union data inside the Notification as a ReportApprovedTitlePayload
+func (t Notification) AsReportApprovedTitlePayload() (ReportApprovedTitlePayload, error) {
+	var body ReportApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReportApprovedTitlePayload overwrites any union data inside the Notification as the provided ReportApprovedTitlePayload
+func (t *Notification) FromReportApprovedTitlePayload(v ReportApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeReportApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided ReportApprovedTitlePayload
+func (t *Notification) MergeReportApprovedTitlePayload(v ReportApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReportRejectedTitlePayload returns the union data inside the Notification as a ReportRejectedTitlePayload
+func (t Notification) AsReportRejectedTitlePayload() (ReportRejectedTitlePayload, error) {
+	var body ReportRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReportRejectedTitlePayload overwrites any union data inside the Notification as the provided ReportRejectedTitlePayload
+func (t *Notification) FromReportRejectedTitlePayload(v ReportRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeReportRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided ReportRejectedTitlePayload
+func (t *Notification) MergeReportRejectedTitlePayload(v ReportRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsStudentVerificationApprovedTitlePayload returns the union data inside the Notification as a StudentVerificationApprovedTitlePayload
+func (t Notification) AsStudentVerificationApprovedTitlePayload() (StudentVerificationApprovedTitlePayload, error) {
+	var body StudentVerificationApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromStudentVerificationApprovedTitlePayload overwrites any union data inside the Notification as the provided StudentVerificationApprovedTitlePayload
+func (t *Notification) FromStudentVerificationApprovedTitlePayload(v StudentVerificationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeStudentVerificationApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided StudentVerificationApprovedTitlePayload
+func (t *Notification) MergeStudentVerificationApprovedTitlePayload(v StudentVerificationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsStudentVerificationRejectedTitlePayload returns the union data inside the Notification as a StudentVerificationRejectedTitlePayload
+func (t Notification) AsStudentVerificationRejectedTitlePayload() (StudentVerificationRejectedTitlePayload, error) {
+	var body StudentVerificationRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromStudentVerificationRejectedTitlePayload overwrites any union data inside the Notification as the provided StudentVerificationRejectedTitlePayload
+func (t *Notification) FromStudentVerificationRejectedTitlePayload(v StudentVerificationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeStudentVerificationRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided StudentVerificationRejectedTitlePayload
+func (t *Notification) MergeStudentVerificationRejectedTitlePayload(v StudentVerificationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsIdentityVerificationApprovedTitlePayload returns the union data inside the Notification as a IdentityVerificationApprovedTitlePayload
+func (t Notification) AsIdentityVerificationApprovedTitlePayload() (IdentityVerificationApprovedTitlePayload, error) {
+	var body IdentityVerificationApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromIdentityVerificationApprovedTitlePayload overwrites any union data inside the Notification as the provided IdentityVerificationApprovedTitlePayload
+func (t *Notification) FromIdentityVerificationApprovedTitlePayload(v IdentityVerificationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeIdentityVerificationApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided IdentityVerificationApprovedTitlePayload
+func (t *Notification) MergeIdentityVerificationApprovedTitlePayload(v IdentityVerificationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsIdentityVerificationRejectedTitlePayload returns the union data inside the Notification as a IdentityVerificationRejectedTitlePayload
+func (t Notification) AsIdentityVerificationRejectedTitlePayload() (IdentityVerificationRejectedTitlePayload, error) {
+	var body IdentityVerificationRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromIdentityVerificationRejectedTitlePayload overwrites any union data inside the Notification as the provided IdentityVerificationRejectedTitlePayload
+func (t *Notification) FromIdentityVerificationRejectedTitlePayload(v IdentityVerificationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeIdentityVerificationRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided IdentityVerificationRejectedTitlePayload
+func (t *Notification) MergeIdentityVerificationRejectedTitlePayload(v IdentityVerificationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsVerificationRevocationApprovedTitlePayload returns the union data inside the Notification as a VerificationRevocationApprovedTitlePayload
+func (t Notification) AsVerificationRevocationApprovedTitlePayload() (VerificationRevocationApprovedTitlePayload, error) {
+	var body VerificationRevocationApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromVerificationRevocationApprovedTitlePayload overwrites any union data inside the Notification as the provided VerificationRevocationApprovedTitlePayload
+func (t *Notification) FromVerificationRevocationApprovedTitlePayload(v VerificationRevocationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeVerificationRevocationApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided VerificationRevocationApprovedTitlePayload
+func (t *Notification) MergeVerificationRevocationApprovedTitlePayload(v VerificationRevocationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsVerificationRevocationRejectedTitlePayload returns the union data inside the Notification as a VerificationRevocationRejectedTitlePayload
+func (t Notification) AsVerificationRevocationRejectedTitlePayload() (VerificationRevocationRejectedTitlePayload, error) {
+	var body VerificationRevocationRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromVerificationRevocationRejectedTitlePayload overwrites any union data inside the Notification as the provided VerificationRevocationRejectedTitlePayload
+func (t *Notification) FromVerificationRevocationRejectedTitlePayload(v VerificationRevocationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeVerificationRevocationRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided VerificationRevocationRejectedTitlePayload
+func (t *Notification) MergeVerificationRevocationRejectedTitlePayload(v VerificationRevocationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsVerificationDeletionApprovedTitlePayload returns the union data inside the Notification as a VerificationDeletionApprovedTitlePayload
+func (t Notification) AsVerificationDeletionApprovedTitlePayload() (VerificationDeletionApprovedTitlePayload, error) {
+	var body VerificationDeletionApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromVerificationDeletionApprovedTitlePayload overwrites any union data inside the Notification as the provided VerificationDeletionApprovedTitlePayload
+func (t *Notification) FromVerificationDeletionApprovedTitlePayload(v VerificationDeletionApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeVerificationDeletionApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided VerificationDeletionApprovedTitlePayload
+func (t *Notification) MergeVerificationDeletionApprovedTitlePayload(v VerificationDeletionApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsVerificationDeletionRejectedTitlePayload returns the union data inside the Notification as a VerificationDeletionRejectedTitlePayload
+func (t Notification) AsVerificationDeletionRejectedTitlePayload() (VerificationDeletionRejectedTitlePayload, error) {
+	var body VerificationDeletionRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromVerificationDeletionRejectedTitlePayload overwrites any union data inside the Notification as the provided VerificationDeletionRejectedTitlePayload
+func (t *Notification) FromVerificationDeletionRejectedTitlePayload(v VerificationDeletionRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeVerificationDeletionRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided VerificationDeletionRejectedTitlePayload
+func (t *Notification) MergeVerificationDeletionRejectedTitlePayload(v VerificationDeletionRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsTeacherVerificationApprovedTitlePayload returns the union data inside the Notification as a TeacherVerificationApprovedTitlePayload
+func (t Notification) AsTeacherVerificationApprovedTitlePayload() (TeacherVerificationApprovedTitlePayload, error) {
+	var body TeacherVerificationApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTeacherVerificationApprovedTitlePayload overwrites any union data inside the Notification as the provided TeacherVerificationApprovedTitlePayload
+func (t *Notification) FromTeacherVerificationApprovedTitlePayload(v TeacherVerificationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTeacherVerificationApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided TeacherVerificationApprovedTitlePayload
+func (t *Notification) MergeTeacherVerificationApprovedTitlePayload(v TeacherVerificationApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsTeacherVerificationRejectedTitlePayload returns the union data inside the Notification as a TeacherVerificationRejectedTitlePayload
+func (t Notification) AsTeacherVerificationRejectedTitlePayload() (TeacherVerificationRejectedTitlePayload, error) {
+	var body TeacherVerificationRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTeacherVerificationRejectedTitlePayload overwrites any union data inside the Notification as the provided TeacherVerificationRejectedTitlePayload
+func (t *Notification) FromTeacherVerificationRejectedTitlePayload(v TeacherVerificationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTeacherVerificationRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided TeacherVerificationRejectedTitlePayload
+func (t *Notification) MergeTeacherVerificationRejectedTitlePayload(v TeacherVerificationRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsStudentVerificationRevokedTitlePayload returns the union data inside the Notification as a StudentVerificationRevokedTitlePayload
+func (t Notification) AsStudentVerificationRevokedTitlePayload() (StudentVerificationRevokedTitlePayload, error) {
+	var body StudentVerificationRevokedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromStudentVerificationRevokedTitlePayload overwrites any union data inside the Notification as the provided StudentVerificationRevokedTitlePayload
+func (t *Notification) FromStudentVerificationRevokedTitlePayload(v StudentVerificationRevokedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeStudentVerificationRevokedTitlePayload performs a merge with any union data inside the Notification, using the provided StudentVerificationRevokedTitlePayload
+func (t *Notification) MergeStudentVerificationRevokedTitlePayload(v StudentVerificationRevokedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSystemNoticeTitlePayload returns the union data inside the Notification as a SystemNoticeTitlePayload
+func (t Notification) AsSystemNoticeTitlePayload() (SystemNoticeTitlePayload, error) {
+	var body SystemNoticeTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSystemNoticeTitlePayload overwrites any union data inside the Notification as the provided SystemNoticeTitlePayload
+func (t *Notification) FromSystemNoticeTitlePayload(v SystemNoticeTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSystemNoticeTitlePayload performs a merge with any union data inside the Notification, using the provided SystemNoticeTitlePayload
+func (t *Notification) MergeSystemNoticeTitlePayload(v SystemNoticeTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSystemSecurityTitlePayload returns the union data inside the Notification as a SystemSecurityTitlePayload
+func (t Notification) AsSystemSecurityTitlePayload() (SystemSecurityTitlePayload, error) {
+	var body SystemSecurityTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSystemSecurityTitlePayload overwrites any union data inside the Notification as the provided SystemSecurityTitlePayload
+func (t *Notification) FromSystemSecurityTitlePayload(v SystemSecurityTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSystemSecurityTitlePayload performs a merge with any union data inside the Notification, using the provided SystemSecurityTitlePayload
+func (t *Notification) MergeSystemSecurityTitlePayload(v SystemSecurityTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSystemAccountTitlePayload returns the union data inside the Notification as a SystemAccountTitlePayload
+func (t Notification) AsSystemAccountTitlePayload() (SystemAccountTitlePayload, error) {
+	var body SystemAccountTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSystemAccountTitlePayload overwrites any union data inside the Notification as the provided SystemAccountTitlePayload
+func (t *Notification) FromSystemAccountTitlePayload(v SystemAccountTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSystemAccountTitlePayload performs a merge with any union data inside the Notification, using the provided SystemAccountTitlePayload
+func (t *Notification) MergeSystemAccountTitlePayload(v SystemAccountTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Notification) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	object := make(map[string]json.RawMessage)
+	if t.union != nil {
+		err = json.Unmarshal(b, &object)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	object["count"], err = json.Marshal(t.Count)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'count': %w", err)
+	}
+
+	object["created_at"], err = json.Marshal(t.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'created_at': %w", err)
+	}
+
+	object["id"], err = json.Marshal(t.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'id': %w", err)
+	}
+
+	object["read_at"], err = json.Marshal(t.ReadAt)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'read_at': %w", err)
+	}
+
+	object["source_module"], err = json.Marshal(t.SourceModule)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'source_module': %w", err)
+	}
+
+	object["target"], err = json.Marshal(t.Target)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'target': %w", err)
+	}
+
+	object["target_status"], err = json.Marshal(t.TargetStatus)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'target_status': %w", err)
+	}
+
+	object["title_key"], err = json.Marshal(t.TitleKey)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'title_key': %w", err)
+	}
+
+	if t.TitleParams != nil {
+		object["title_params"], err = json.Marshal(t.TitleParams)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'title_params': %w", err)
+		}
+	}
+
+	object["type"], err = json.Marshal(t.Type)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'type': %w", err)
+	}
+
+	b, err = json.Marshal(object)
+	return b, err
+}
+
+func (t *Notification) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	if err != nil {
+		return err
+	}
+	object := make(map[string]json.RawMessage)
+	err = json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["count"]; found {
+		err = json.Unmarshal(raw, &t.Count)
+		if err != nil {
+			return fmt.Errorf("error reading 'count': %w", err)
+		}
+	}
+
+	if raw, found := object["created_at"]; found {
+		err = json.Unmarshal(raw, &t.CreatedAt)
+		if err != nil {
+			return fmt.Errorf("error reading 'created_at': %w", err)
+		}
+	}
+
+	if raw, found := object["id"]; found {
+		err = json.Unmarshal(raw, &t.Id)
+		if err != nil {
+			return fmt.Errorf("error reading 'id': %w", err)
+		}
+	}
+
+	if raw, found := object["read_at"]; found {
+		err = json.Unmarshal(raw, &t.ReadAt)
+		if err != nil {
+			return fmt.Errorf("error reading 'read_at': %w", err)
+		}
+	}
+
+	if raw, found := object["source_module"]; found {
+		err = json.Unmarshal(raw, &t.SourceModule)
+		if err != nil {
+			return fmt.Errorf("error reading 'source_module': %w", err)
+		}
+	}
+
+	if raw, found := object["target"]; found {
+		err = json.Unmarshal(raw, &t.Target)
+		if err != nil {
+			return fmt.Errorf("error reading 'target': %w", err)
+		}
+	}
+
+	if raw, found := object["target_status"]; found {
+		err = json.Unmarshal(raw, &t.TargetStatus)
+		if err != nil {
+			return fmt.Errorf("error reading 'target_status': %w", err)
+		}
+	}
+
+	if raw, found := object["title_key"]; found {
+		err = json.Unmarshal(raw, &t.TitleKey)
+		if err != nil {
+			return fmt.Errorf("error reading 'title_key': %w", err)
+		}
+	}
+
+	if raw, found := object["title_params"]; found {
+		err = json.Unmarshal(raw, &t.TitleParams)
+		if err != nil {
+			return fmt.Errorf("error reading 'title_params': %w", err)
+		}
+	}
+
+	if raw, found := object["type"]; found {
+		err = json.Unmarshal(raw, &t.Type)
+		if err != nil {
+			return fmt.Errorf("error reading 'type': %w", err)
+		}
+	}
+
+	return err
+}
 
 // RequestEditorFn is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
