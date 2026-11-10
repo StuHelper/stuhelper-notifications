@@ -1,0 +1,43 @@
+id: notifications
+version: 0.4.0
+kind: module
+api: 1
+critical: false
+requires:
+  - id: platform
+    api: 1
+optional:
+  - id: profiles
+    api: 1
+capabilities:
+  - notifications.inbox
+  - notifications.consume
+scenario_tests:
+  NT-01:
+    - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+  NT-02:
+    - integration_test.go#TestOwnershipPaginationReadAndTargetState
+  NT-03:
+    - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+  NT-04:
+    - integration_test.go#TestOwnershipPaginationReadAndTargetState
+  NT-05:
+    - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
+  NT-06:
+    - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
+    - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
+  NT-07:
+    - title_catalog_test.go#TestTitleCatalogAdmissionAndRejectedWrites
+    - title_catalog_test.go#TestInteractionTitleUsesServerAggregateCount
+  NT-08:
+    - consume_test.go#TestConsumeRevisionOrderingAndOriginalResults
+    - consume_test.go#TestConsumeRollbackRestoresAggregateAndRevision
+    - consume_test.go#TestConsumeSuppressionAdvancesRevisionAndValidation
+    - consume_test.go#TestConsumeConcurrentSameRevision
+    - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+  NT-09:
+    - recipients_test.go#TestConsumeRecipientsDeduplicationPreferencesAndReplay
+    - recipients_test.go#TestConsumeRecipientsBoundsAndAllDelivered
+    - recipients_test.go#TestConsumeRecipientsRollbackAllWrites
+    - recipients_test.go#TestConsumeRecipientsConcurrentReplayAndOverlap
+    - recipients_test.go#TestBatchInboxMigrationPreservesExistingData
