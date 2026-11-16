@@ -49,7 +49,19 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		out, e = h.Service.List(ctx, owner, r.URL.Query().Get("cursor"), limit)
+		includeNames := false
+		if values, ok := r.URL.Query()["include_content_names"]; ok {
+			if len(values) != 1 || values[0] != "true" && values[0] != "false" {
+				failure(w, n.ErrInput)
+				return
+			}
+			includeNames = values[0] == "true"
+		}
+		if includeNames {
+			out, e = h.Service.ListWithContentNames(ctx, owner, r.URL.Query().Get("cursor"), limit)
+		} else {
+			out, e = h.Service.List(ctx, owner, r.URL.Query().Get("cursor"), limit)
+		}
 	case r.Method == http.MethodGet && path == "/unread-count":
 		var count int64
 		count, e = h.Service.Unread(ctx, owner)
