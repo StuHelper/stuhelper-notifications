@@ -53,7 +53,7 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 	}
 	check := func(state, name string) {
 		t.Helper()
-		page, e := f.s.List(ctx, "alice", "", 100)
+		page, e := f.s.ListWithContentNames(ctx, "alice", "", 100)
 		if e != nil || len(page.Items) != 100 {
 			t.Fatal(len(page.Items), e)
 		}
@@ -101,10 +101,10 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 		t.Fatal("producer supplied name", err)
 	}
 	before := batch.calls
-	if page, err := f.s.List(ctx, "bob", "", 100); err != nil || len(page.Items) != 0 || batch.calls != before {
+	if page, err := f.s.ListWithContentNames(ctx, "bob", "", 100); err != nil || len(page.Items) != 0 || batch.calls != before {
 		t.Fatal("other owner lookup", page, err)
 	}
-	if _, err = f.s.List(ctx, "", "", 100); !errors.Is(err, n.ErrUnauthenticated) || batch.calls != before {
+	if _, err = f.s.ListWithContentNames(ctx, "", "", 100); !errors.Is(err, n.ErrUnauthenticated) || batch.calls != before {
 		t.Fatal("unauthenticated lookup", err)
 	}
 }
