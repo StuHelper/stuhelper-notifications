@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "StuHelper Notifications",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "仅访问本人通知；业务、安全、账号通知始终开启。时间使用 UTC RFC3339。"
   },
   "security": [
@@ -84,6 +84,16 @@
               "maximum": 100,
               "default": 30
             }
+          },
+          {
+            "name": "include_content_names",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。"
           }
         ]
       }
@@ -450,7 +460,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。"
+            "description": "保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。"
           },
           "created_at": {
             "type": "string",

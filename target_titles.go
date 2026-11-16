@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-func (s *Service) resolvePage(ctx context.Context, owner string, items []Notification) {
+func (s *Service) resolvePage(ctx context.Context, owner string, items []Notification, includeNames bool) {
 	if len(items) == 0 {
 		return
 	}
@@ -53,7 +53,7 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		delete(item.TitleParams, "content_name")
 		delete(item.TitleParams, "content_name_state")
 		rule := titleCatalog[item.TitleKey]
-		if !slices.Contains(rule.ReadParameters, "content_name") || !slices.Contains([]string{"review", "comment", "resource"}, item.Target.Kind) {
+		if !includeNames || !slices.Contains(rule.ReadParameters, "content_name") || !slices.Contains([]string{"review", "comment", "resource"}, item.Target.Kind) {
 			continue
 		}
 		name := strings.TrimSpace(resolved.Name)

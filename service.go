@@ -69,6 +69,14 @@ func (s *Service) Consume(ctx context.Context, d Event) (Result, error) {
 	return s.repo.Consume(ctx, d, hex.EncodeToString(hash[:]), s.now().UTC(), s.config.AggregationWindow)
 }
 func (s *Service) List(ctx context.Context, owner, after string, limit int) (Page, error) {
+	return s.list(ctx, owner, after, limit, false)
+}
+
+// ListWithContentNames opts into the expanded title parameter contract.
+func (s *Service) ListWithContentNames(ctx context.Context, owner, after string, limit int) (Page, error) {
+	return s.list(ctx, owner, after, limit, true)
+}
+func (s *Service) list(ctx context.Context, owner, after string, limit int, includeNames bool) (Page, error) {
 	if e := ownerOK(owner); e != nil {
 		return Page{}, e
 	}
@@ -99,7 +107,7 @@ func (s *Service) List(ctx context.Context, owner, after string, limit int) (Pag
 		b, _ := json.Marshal(Cursor{last.CreatedAt, last.ID})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
-	s.resolvePage(ctx, owner, out.Items)
+	s.resolvePage(ctx, owner, out.Items, includeNames)
 	return out, nil
 }
 func (s *Service) Unread(ctx context.Context, owner string) (int64, error) {

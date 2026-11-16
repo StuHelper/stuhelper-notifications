@@ -81,7 +81,7 @@ target.id 是对应模块对象的原始 ID，title_params 是用于显示的业
 
 系统通知的三个键均指向目录内已有业务对象，使用 reference_id 展示引用编号。目录不定义任意系统正文、外部链接或尚不存在的公告对象。来源模块与 Resolver 装配须能查询该对象，否则返回 unavailable。
 
-HTTP 契约版本为 0.3.0，模块版本为 0.5.0。生产者使用目录键，客户端按目录提供八语言文案。
+HTTP 契约版本为 0.3.1，模块版本为 0.5.1。生产者使用目录键，客户端按目录提供八语言文案。
 
 ## 事件消费
 
@@ -159,7 +159,7 @@ type Result struct {
 
 ## 读取时补充内容名称
 
-原 TitleKey 和编号参数保持不变。review、comment、resource 目标在 title_params 中增加 content_name 与 content_name_state。名称来自所属模块的当前公开接口，不接受事件生产者提交，也不写入通知表或聚合指纹。
+原 TitleKey 和编号参数保持不变。请求 include_content_names=true 时，review、comment、resource 目标在 title_params 中增加 content_name 与 content_name_state。名称来自所属模块的当前公开接口，不接受事件生产者提交，也不写入通知表或聚合指纹。
 
 content_name_state 为 available 时，content_name 为当前评价标题或资料标题。回复采用根评价标题，空标题采用所属课程或教师目录名称。名称最多 256 个 Unicode 字符，不含控制字符。
 
@@ -168,3 +168,5 @@ content_name_state 为 available 时，content_name 为当前评价标题或资�
 宿主实现 BatchResolver，一次处理本页去重后的目标，并按所属模块使用批量接口。旧 Resolver 继续兼容；未提供名称解析的旧宿主返回名称暂不可用。通知分页、计数、消费幂等与原编号字段保持原行为。
 
 读取参数由 x-title-catalog 的 read_parameters 声明，生产者参数仍由 parameters 封闭校验。旧客户端继续使用编号参数，新客户端按名称状态选择可读标题或占位文案。
+
+旧 HTTP 请求和 Go List 保留原封闭参数结构。新客户端通过 include_content_names=true 或 Go ListWithContentNames 启用名称。参数只接受单个 true 或 false，未指定时为 false。

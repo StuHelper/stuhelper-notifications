@@ -102,7 +102,7 @@ export interface components {
             source_module: string;
             target: components["schemas"]["Target"];
             title_key: components["schemas"]["TitleKey"];
-            /** @description 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 */
+            /** @description 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。 */
             title_params: {
                 [key: string]: string;
             };
@@ -572,6 +572,8 @@ export interface operations {
                 /** @description 不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。 */
                 cursor?: string;
                 limit?: number;
+                /** @description 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。 */
+                include_content_names?: boolean;
             };
             header?: never;
             path?: never;
