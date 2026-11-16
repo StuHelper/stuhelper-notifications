@@ -96,3 +96,20 @@ type Config struct {
 	CleanupBatch      int
 	ResolveTimeout    time.Duration
 }
+
+// TargetRef is a comparable key for a page-scoped, deduplicated lookup.
+type TargetRef struct {
+	Source string
+	Target Target
+}
+type TargetResolution struct {
+	Status string
+	Name   string
+}
+
+// BatchResolver performs current authorization and name lookup through each
+// owning module's public batch port. Missing results are unavailable. Resolver
+// remains supported for older hosts; new backend assemblies implement both.
+type BatchResolver interface {
+	ResolveBatch(context.Context, string, []TargetRef) (map[TargetRef]TargetResolution, error)
+}

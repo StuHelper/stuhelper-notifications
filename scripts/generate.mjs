@@ -17,7 +17,7 @@ for (const [key, rule] of Object.entries(catalogue)) {
   assert.deepEqual(variant.properties.type.enum, [rule.type]);
   assert.deepEqual(variant.properties.target.properties.kind.enum, rule.target_kinds);
   assert.deepEqual(variant.properties.title_params.required, rule.parameters);
-  assert.deepEqual(Object.keys(variant.properties.title_params.properties), rule.parameters);
+  assert.deepEqual(Object.keys(variant.properties.title_params.properties), [...rule.parameters, ...(rule.read_parameters ?? [])]);
   assert.equal(variant.properties.title_params.additionalProperties, false);
 }
 

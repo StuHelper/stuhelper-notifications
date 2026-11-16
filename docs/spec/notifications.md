@@ -1,12 +1,12 @@
 ---
 type: spec
 status: Accepted
-updated: 2026-11-09
+updated: 2026-11-17
 ---
 
 # 通知模块实现说明
 
-本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 只允许当前登录用户读取和修改本人通知。profiles 为可选依赖，缺失时不影响站内通知。
+本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 只允许当前登录用户读取和修改本人通知。profiles 为可选依赖，缺失时不影响站内通知。reviews、resources、verification、moderation 是目标解析的可选依赖，缺失时仅对应目标返回 unavailable。
 
 通知包含类型、来源模块、目标引用、标题翻译键与字符串参数、创建时间、已读时间和聚合数量。调用方只提交目录规定的业务编号，不能放入正文或个人敏感信息。客户端负责八语言翻译。
 
@@ -81,7 +81,7 @@ target.id 是对应模块对象的原始 ID，title_params 是用于显示的业
 
 系统通知的三个键均指向目录内已有业务对象，使用 reference_id 展示引用编号。目录不定义任意系统正文、外部链接或尚不存在的公告对象。来源模块与 Resolver 装配须能查询该对象，否则返回 unavailable。
 
-HTTP 契约版本为 0.2.0，模块版本为 0.4.0。生产者使用目录键，客户端按目录提供八语言文案。
+HTTP 契约版本为 0.3.0，模块版本为 0.5.0。生产者使用目录键，客户端按目录提供八语言文案。
 
 ## 事件消费
 
@@ -156,3 +156,15 @@ type Result struct {
 | NT-06 | 投递失败回滚、保留期限边界、不同目标与接收人不聚合 |
 
 实际测试函数在 module.yaml 的 scenario_tests 登记。隔离数据库测试还验证游标分页、清理上限、迁移重复执行与运行身份权限。
+
+## 读取时补充内容名称
+
+原 TitleKey 和编号参数保持不变。review、comment、resource 目标在 title_params 中增加 content_name 与 content_name_state。名称来自所属模块的当前公开接口，不接受事件生产者提交，也不写入通知表或聚合指纹。
+
+content_name_state 为 available 时，content_name 为当前评价标题或资料标题。回复采用根评价标题，空标题采用所属课程或教师目录名称。名称最多 256 个 Unicode 字符，不含控制字符。
+
+对象删除、下架或失去阅读权限时，状态为 inaccessible，名称为空。依赖失败或名称无效时为 unavailable，名称为空。前端分别使用本地化的“内容不可用”和“名称暂不可用”，避免重用缓存名称。
+
+宿主实现 BatchResolver，一次处理本页去重后的目标，并按所属模块使用批量接口。旧 Resolver 继续兼容；未提供名称解析的旧宿主返回名称暂不可用。通知分页、计数、消费幂等与原编号字段保持原行为。
+
+读取参数由 x-title-catalog 的 read_parameters 声明，生产者参数仍由 parameters 封闭校验。旧客户端继续使用编号参数，新客户端按名称状态选择可读标题或占位文案。
