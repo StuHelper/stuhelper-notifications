@@ -8,9 +8,10 @@ import (
 
 // The embedded provider contract is the single source of allowed delivery titles.
 type titleRule struct {
-	Type        string   `json:"type"`
-	TargetKinds []string `json:"target_kinds"`
-	Parameters  []string `json:"parameters"`
+	ReadParameters []string `json:"read_parameters"`
+	Type           string   `json:"type"`
+	TargetKinds    []string `json:"target_kinds"`
+	Parameters     []string `json:"parameters"`
 }
 
 var titleCatalog = func() map[string]titleRule {

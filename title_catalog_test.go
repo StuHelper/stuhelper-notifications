@@ -107,7 +107,7 @@ func TestInteractionTitleUsesServerAggregateCount(t *testing.T) {
 		t.Fatal(page, e)
 	}
 	for _, item := range page.Items {
-		if item.Count != 2 || len(item.TitleParams) != 1 || item.TitleParams["content_id"] != "example-1" {
+		if item.Count != 2 || len(item.TitleParams) != 3 || item.TitleParams["content_id"] != "example-1" {
 			t.Fatal(item)
 		}
 	}
