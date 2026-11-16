@@ -99,16 +99,7 @@ func (s *Service) List(ctx context.Context, owner, after string, limit int) (Pag
 		b, _ := json.Marshal(Cursor{last.CreatedAt, last.ID})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
-	for i := range out.Items {
-		item := &out.Items[i]
-		call, cancel := context.WithTimeout(ctx, s.config.ResolveTimeout)
-		state, err := s.resolver.Resolve(call, owner, item.SourceModule, item.Target)
-		cancel()
-		if err != nil || (state != "accessible" && state != "inaccessible") {
-			state = "unavailable"
-		}
-		item.TargetStatus = state
-	}
+	s.resolvePage(ctx, owner, out.Items)
 	return out, nil
 }
 func (s *Service) Unread(ctx context.Context, owner string) (int64, error) {

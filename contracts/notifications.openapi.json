@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "StuHelper Notifications",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "仅访问本人通知；业务、安全、账号通知始终开启。时间使用 UTC RFC3339。"
   },
   "security": [
@@ -450,7 +450,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "必须满足 title_key 对应的封闭参数对象；只包含业务编号。详见 x-title-catalog。"
+            "description": "保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。"
           },
           "created_at": {
             "type": "string",
@@ -691,6 +691,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -754,6 +770,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -817,6 +849,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -880,6 +928,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -943,6 +1007,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -1928,6 +2008,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -1998,6 +2094,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -2068,6 +2180,22 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
               }
             }
           }
@@ -2092,6 +2220,10 @@
       ],
       "parameters": [
         "content_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     },
     "notifications.interaction.like": {
@@ -2104,6 +2236,10 @@
       ],
       "parameters": [
         "content_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     },
     "notifications.content.approved": {
@@ -2116,6 +2252,10 @@
       ],
       "parameters": [
         "content_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     },
     "notifications.content.rejected": {
@@ -2128,6 +2268,10 @@
       ],
       "parameters": [
         "content_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     },
     "notifications.content.removed": {
@@ -2140,6 +2284,10 @@
       ],
       "parameters": [
         "content_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     },
     "notifications.resource_removal.approved": {
@@ -2309,6 +2457,10 @@
       ],
       "parameters": [
         "reference_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     },
     "notifications.system.security": {
@@ -2328,6 +2480,10 @@
       ],
       "parameters": [
         "reference_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     },
     "notifications.system.account": {
@@ -2347,7 +2503,12 @@
       ],
       "parameters": [
         "reference_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
       ]
     }
-  }
+  },
+  "x-title-catalog-description": "parameters 是事件生产者必须提交的旧业务编号参数。read_parameters 是读取时按当前权限从所属模块解析的可选参数，不接受生产者提交，也不持久保存名称。"
 }

@@ -54,6 +54,27 @@ func (e ContentApprovedTitlePayloadTitleKey) Valid() bool {
 	}
 }
 
+// Defines values for ContentApprovedTitlePayloadTitleParamsContentNameState.
+const (
+	ContentApprovedTitlePayloadTitleParamsContentNameStateAvailable    ContentApprovedTitlePayloadTitleParamsContentNameState = "available"
+	ContentApprovedTitlePayloadTitleParamsContentNameStateInaccessible ContentApprovedTitlePayloadTitleParamsContentNameState = "inaccessible"
+	ContentApprovedTitlePayloadTitleParamsContentNameStateUnavailable  ContentApprovedTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the ContentApprovedTitlePayloadTitleParamsContentNameState enum.
+func (e ContentApprovedTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case ContentApprovedTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case ContentApprovedTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case ContentApprovedTitlePayloadTitleParamsContentNameStateUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContentApprovedTitlePayloadType.
 const (
 	ContentApprovedTitlePayloadTypeBusiness ContentApprovedTitlePayloadType = "business"
@@ -105,6 +126,27 @@ func (e ContentRejectedTitlePayloadTitleKey) Valid() bool {
 	}
 }
 
+// Defines values for ContentRejectedTitlePayloadTitleParamsContentNameState.
+const (
+	ContentRejectedTitlePayloadTitleParamsContentNameStateAvailable    ContentRejectedTitlePayloadTitleParamsContentNameState = "available"
+	ContentRejectedTitlePayloadTitleParamsContentNameStateInaccessible ContentRejectedTitlePayloadTitleParamsContentNameState = "inaccessible"
+	ContentRejectedTitlePayloadTitleParamsContentNameStateUnavailable  ContentRejectedTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the ContentRejectedTitlePayloadTitleParamsContentNameState enum.
+func (e ContentRejectedTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case ContentRejectedTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case ContentRejectedTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case ContentRejectedTitlePayloadTitleParamsContentNameStateUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContentRejectedTitlePayloadType.
 const (
 	ContentRejectedTitlePayloadTypeBusiness ContentRejectedTitlePayloadType = "business"
@@ -150,6 +192,27 @@ const (
 func (e ContentRemovedTitlePayloadTitleKey) Valid() bool {
 	switch e {
 	case ContentRemovedTitlePayloadTitleKeyNotificationsContentRemoved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentRemovedTitlePayloadTitleParamsContentNameState.
+const (
+	ContentRemovedTitlePayloadTitleParamsContentNameStateAvailable    ContentRemovedTitlePayloadTitleParamsContentNameState = "available"
+	ContentRemovedTitlePayloadTitleParamsContentNameStateInaccessible ContentRemovedTitlePayloadTitleParamsContentNameState = "inaccessible"
+	ContentRemovedTitlePayloadTitleParamsContentNameStateUnavailable  ContentRemovedTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the ContentRemovedTitlePayloadTitleParamsContentNameState enum.
+func (e ContentRemovedTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case ContentRemovedTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case ContentRemovedTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case ContentRemovedTitlePayloadTitleParamsContentNameStateUnavailable:
 		return true
 	default:
 		return false
@@ -297,6 +360,27 @@ func (e InteractionLikeTitlePayloadTitleKey) Valid() bool {
 	}
 }
 
+// Defines values for InteractionLikeTitlePayloadTitleParamsContentNameState.
+const (
+	InteractionLikeTitlePayloadTitleParamsContentNameStateAvailable    InteractionLikeTitlePayloadTitleParamsContentNameState = "available"
+	InteractionLikeTitlePayloadTitleParamsContentNameStateInaccessible InteractionLikeTitlePayloadTitleParamsContentNameState = "inaccessible"
+	InteractionLikeTitlePayloadTitleParamsContentNameStateUnavailable  InteractionLikeTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the InteractionLikeTitlePayloadTitleParamsContentNameState enum.
+func (e InteractionLikeTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case InteractionLikeTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case InteractionLikeTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case InteractionLikeTitlePayloadTitleParamsContentNameStateUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for InteractionLikeTitlePayloadType.
 const (
 	InteractionLikeTitlePayloadTypeInteraction InteractionLikeTitlePayloadType = "interaction"
@@ -348,6 +432,27 @@ func (e InteractionReplyTitlePayloadTitleKey) Valid() bool {
 	}
 }
 
+// Defines values for InteractionReplyTitlePayloadTitleParamsContentNameState.
+const (
+	InteractionReplyTitlePayloadTitleParamsContentNameStateAvailable    InteractionReplyTitlePayloadTitleParamsContentNameState = "available"
+	InteractionReplyTitlePayloadTitleParamsContentNameStateInaccessible InteractionReplyTitlePayloadTitleParamsContentNameState = "inaccessible"
+	InteractionReplyTitlePayloadTitleParamsContentNameStateUnavailable  InteractionReplyTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the InteractionReplyTitlePayloadTitleParamsContentNameState enum.
+func (e InteractionReplyTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case InteractionReplyTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case InteractionReplyTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case InteractionReplyTitlePayloadTitleParamsContentNameStateUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for InteractionReplyTitlePayloadType.
 const (
 	InteractionReplyTitlePayloadTypeInteraction InteractionReplyTitlePayloadType = "interaction"
@@ -365,19 +470,19 @@ func (e InteractionReplyTitlePayloadType) Valid() bool {
 
 // Defines values for NotificationTargetStatus.
 const (
-	Accessible   NotificationTargetStatus = "accessible"
-	Inaccessible NotificationTargetStatus = "inaccessible"
-	Unavailable  NotificationTargetStatus = "unavailable"
+	NotificationTargetStatusAccessible   NotificationTargetStatus = "accessible"
+	NotificationTargetStatusInaccessible NotificationTargetStatus = "inaccessible"
+	NotificationTargetStatusUnavailable  NotificationTargetStatus = "unavailable"
 )
 
 // Valid indicates whether the value is a known member of the NotificationTargetStatus enum.
 func (e NotificationTargetStatus) Valid() bool {
 	switch e {
-	case Accessible:
+	case NotificationTargetStatusAccessible:
 		return true
-	case Inaccessible:
+	case NotificationTargetStatusInaccessible:
 		return true
-	case Unavailable:
+	case NotificationTargetStatusUnavailable:
 		return true
 	default:
 		return false
@@ -780,6 +885,27 @@ func (e SystemAccountTitlePayloadTitleKey) Valid() bool {
 	}
 }
 
+// Defines values for SystemAccountTitlePayloadTitleParamsContentNameState.
+const (
+	SystemAccountTitlePayloadTitleParamsContentNameStateAvailable    SystemAccountTitlePayloadTitleParamsContentNameState = "available"
+	SystemAccountTitlePayloadTitleParamsContentNameStateInaccessible SystemAccountTitlePayloadTitleParamsContentNameState = "inaccessible"
+	SystemAccountTitlePayloadTitleParamsContentNameStateUnavailable  SystemAccountTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the SystemAccountTitlePayloadTitleParamsContentNameState enum.
+func (e SystemAccountTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case SystemAccountTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case SystemAccountTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case SystemAccountTitlePayloadTitleParamsContentNameStateUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SystemAccountTitlePayloadType.
 const (
 	SystemAccountTitlePayloadTypeAccount SystemAccountTitlePayloadType = "account"
@@ -852,6 +978,27 @@ func (e SystemNoticeTitlePayloadTitleKey) Valid() bool {
 	}
 }
 
+// Defines values for SystemNoticeTitlePayloadTitleParamsContentNameState.
+const (
+	SystemNoticeTitlePayloadTitleParamsContentNameStateAvailable    SystemNoticeTitlePayloadTitleParamsContentNameState = "available"
+	SystemNoticeTitlePayloadTitleParamsContentNameStateInaccessible SystemNoticeTitlePayloadTitleParamsContentNameState = "inaccessible"
+	SystemNoticeTitlePayloadTitleParamsContentNameStateUnavailable  SystemNoticeTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the SystemNoticeTitlePayloadTitleParamsContentNameState enum.
+func (e SystemNoticeTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case SystemNoticeTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case SystemNoticeTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case SystemNoticeTitlePayloadTitleParamsContentNameStateUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SystemNoticeTitlePayloadType.
 const (
 	SystemNoticeTitlePayloadTypeBusiness SystemNoticeTitlePayloadType = "business"
@@ -918,6 +1065,27 @@ const (
 func (e SystemSecurityTitlePayloadTitleKey) Valid() bool {
 	switch e {
 	case SystemSecurityTitlePayloadTitleKeyNotificationsSystemSecurity:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemSecurityTitlePayloadTitleParamsContentNameState.
+const (
+	SystemSecurityTitlePayloadTitleParamsContentNameStateAvailable    SystemSecurityTitlePayloadTitleParamsContentNameState = "available"
+	SystemSecurityTitlePayloadTitleParamsContentNameStateInaccessible SystemSecurityTitlePayloadTitleParamsContentNameState = "inaccessible"
+	SystemSecurityTitlePayloadTitleParamsContentNameStateUnavailable  SystemSecurityTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the SystemSecurityTitlePayloadTitleParamsContentNameState enum.
+func (e SystemSecurityTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case SystemSecurityTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case SystemSecurityTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case SystemSecurityTitlePayloadTitleParamsContentNameStateUnavailable:
 		return true
 	default:
 		return false
@@ -1342,6 +1510,12 @@ type ContentApprovedTitlePayload struct {
 	TitleParams struct {
 		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ContentId string `json:"content_id"`
+
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *ContentApprovedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 	} `json:"title_params"`
 	Type ContentApprovedTitlePayloadType `json:"type"`
 }
@@ -1351,6 +1525,9 @@ type ContentApprovedTitlePayloadTargetKind string
 
 // ContentApprovedTitlePayloadTitleKey defines model for ContentApprovedTitlePayload.TitleKey.
 type ContentApprovedTitlePayloadTitleKey string
+
+// ContentApprovedTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type ContentApprovedTitlePayloadTitleParamsContentNameState string
 
 // ContentApprovedTitlePayloadType defines model for ContentApprovedTitlePayload.Type.
 type ContentApprovedTitlePayloadType string
@@ -1365,6 +1542,12 @@ type ContentRejectedTitlePayload struct {
 	TitleParams struct {
 		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ContentId string `json:"content_id"`
+
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *ContentRejectedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 	} `json:"title_params"`
 	Type ContentRejectedTitlePayloadType `json:"type"`
 }
@@ -1374,6 +1557,9 @@ type ContentRejectedTitlePayloadTargetKind string
 
 // ContentRejectedTitlePayloadTitleKey defines model for ContentRejectedTitlePayload.TitleKey.
 type ContentRejectedTitlePayloadTitleKey string
+
+// ContentRejectedTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type ContentRejectedTitlePayloadTitleParamsContentNameState string
 
 // ContentRejectedTitlePayloadType defines model for ContentRejectedTitlePayload.Type.
 type ContentRejectedTitlePayloadType string
@@ -1388,6 +1574,12 @@ type ContentRemovedTitlePayload struct {
 	TitleParams struct {
 		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ContentId string `json:"content_id"`
+
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *ContentRemovedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 	} `json:"title_params"`
 	Type ContentRemovedTitlePayloadType `json:"type"`
 }
@@ -1397,6 +1589,9 @@ type ContentRemovedTitlePayloadTargetKind string
 
 // ContentRemovedTitlePayloadTitleKey defines model for ContentRemovedTitlePayload.TitleKey.
 type ContentRemovedTitlePayloadTitleKey string
+
+// ContentRemovedTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type ContentRemovedTitlePayloadTitleParamsContentNameState string
 
 // ContentRemovedTitlePayloadType defines model for ContentRemovedTitlePayload.Type.
 type ContentRemovedTitlePayloadType string
@@ -1462,6 +1657,12 @@ type InteractionLikeTitlePayload struct {
 	TitleParams struct {
 		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ContentId string `json:"content_id"`
+
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *InteractionLikeTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 	} `json:"title_params"`
 	Type InteractionLikeTitlePayloadType `json:"type"`
 }
@@ -1471,6 +1672,9 @@ type InteractionLikeTitlePayloadTargetKind string
 
 // InteractionLikeTitlePayloadTitleKey defines model for InteractionLikeTitlePayload.TitleKey.
 type InteractionLikeTitlePayloadTitleKey string
+
+// InteractionLikeTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type InteractionLikeTitlePayloadTitleParamsContentNameState string
 
 // InteractionLikeTitlePayloadType defines model for InteractionLikeTitlePayload.Type.
 type InteractionLikeTitlePayloadType string
@@ -1485,6 +1689,12 @@ type InteractionReplyTitlePayload struct {
 	TitleParams struct {
 		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ContentId string `json:"content_id"`
+
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *InteractionReplyTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 	} `json:"title_params"`
 	Type InteractionReplyTitlePayloadType `json:"type"`
 }
@@ -1494,6 +1704,9 @@ type InteractionReplyTitlePayloadTargetKind string
 
 // InteractionReplyTitlePayloadTitleKey defines model for InteractionReplyTitlePayload.TitleKey.
 type InteractionReplyTitlePayloadTitleKey string
+
+// InteractionReplyTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type InteractionReplyTitlePayloadTitleParamsContentNameState string
 
 // InteractionReplyTitlePayloadType defines model for InteractionReplyTitlePayload.Type.
 type InteractionReplyTitlePayloadType string
@@ -1511,7 +1724,7 @@ type Notification struct {
 	// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 	TitleKey TitleKey `json:"title_key"`
 
-	// TitleParams 必须满足 title_key 对应的封闭参数对象；只包含业务编号。详见 x-title-catalog。
+	// TitleParams 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。
 	TitleParams map[string]string `json:"title_params"`
 	Type        NotificationType  `json:"type"`
 	union       json.RawMessage
@@ -1703,6 +1916,12 @@ type SystemAccountTitlePayload struct {
 	} `json:"target"`
 	TitleKey    SystemAccountTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *SystemAccountTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
 		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
@@ -1715,6 +1934,9 @@ type SystemAccountTitlePayloadTargetKind string
 // SystemAccountTitlePayloadTitleKey defines model for SystemAccountTitlePayload.TitleKey.
 type SystemAccountTitlePayloadTitleKey string
 
+// SystemAccountTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type SystemAccountTitlePayloadTitleParamsContentNameState string
+
 // SystemAccountTitlePayloadType defines model for SystemAccountTitlePayload.Type.
 type SystemAccountTitlePayloadType string
 
@@ -1726,6 +1948,12 @@ type SystemNoticeTitlePayload struct {
 	} `json:"target"`
 	TitleKey    SystemNoticeTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *SystemNoticeTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
 		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
@@ -1738,6 +1966,9 @@ type SystemNoticeTitlePayloadTargetKind string
 // SystemNoticeTitlePayloadTitleKey defines model for SystemNoticeTitlePayload.TitleKey.
 type SystemNoticeTitlePayloadTitleKey string
 
+// SystemNoticeTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type SystemNoticeTitlePayloadTitleParamsContentNameState string
+
 // SystemNoticeTitlePayloadType defines model for SystemNoticeTitlePayload.Type.
 type SystemNoticeTitlePayloadType string
 
@@ -1749,6 +1980,12 @@ type SystemSecurityTitlePayload struct {
 	} `json:"target"`
 	TitleKey    SystemSecurityTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *SystemSecurityTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
 		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
@@ -1760,6 +1997,9 @@ type SystemSecurityTitlePayloadTargetKind string
 
 // SystemSecurityTitlePayloadTitleKey defines model for SystemSecurityTitlePayload.TitleKey.
 type SystemSecurityTitlePayloadTitleKey string
+
+// SystemSecurityTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type SystemSecurityTitlePayloadTitleParamsContentNameState string
 
 // SystemSecurityTitlePayloadType defines model for SystemSecurityTitlePayload.Type.
 type SystemSecurityTitlePayloadType string

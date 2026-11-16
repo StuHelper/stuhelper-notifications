@@ -102,7 +102,7 @@ export interface components {
             source_module: string;
             target: components["schemas"]["Target"];
             title_key: components["schemas"]["TitleKey"];
-            /** @description 必须满足 title_key 对应的封闭参数对象；只包含业务编号。详见 x-title-catalog。 */
+            /** @description 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 */
             title_params: {
                 [key: string]: string;
             };
@@ -147,6 +147,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 content_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 收到点赞 */
@@ -163,6 +170,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 content_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 内容审核通过 */
@@ -179,6 +193,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 content_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 内容审核驳回 */
@@ -195,6 +216,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 content_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 内容下架 */
@@ -211,6 +239,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 content_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 资料下架申请通过 */
@@ -467,6 +502,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 reference_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 安全通知 */
@@ -483,6 +525,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 reference_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 账号通知 */
@@ -499,6 +548,13 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 reference_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
             };
         };
     };
