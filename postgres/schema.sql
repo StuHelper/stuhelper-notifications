@@ -13,10 +13,27 @@ CREATE TABLE IF NOT EXISTS notifications.items (
  title_key text NOT NULL,
  title_params jsonb NOT NULL,
  created_at timestamptz NOT NULL,
+ updated_at timestamptz NOT NULL,
  read_at timestamptz,
- count bigint NOT NULL DEFAULT 1 CHECK (count>0)
+ count bigint NOT NULL DEFAULT 1 CHECK (count>0),
+ CHECK (updated_at >= created_at)
 );
+ALTER TABLE notifications.items ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+UPDATE notifications.items SET updated_at = created_at WHERE updated_at IS NULL;
+ALTER TABLE notifications.items ALTER COLUMN updated_at SET NOT NULL;
+DO $$
+BEGIN
+ IF NOT EXISTS (
+  SELECT 1 FROM pg_constraint c
+  JOIN pg_class t ON c.conrelid = t.oid
+  JOIN pg_namespace n ON t.relnamespace = n.oid
+  WHERE n.nspname = 'notifications' AND t.relname = 'items' AND pg_get_constraintdef(c.oid) LIKE '%updated_at%'
+ ) THEN
+  ALTER TABLE notifications.items ADD CONSTRAINT items_updated_at_check CHECK (updated_at >= created_at);
+ END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS items_owner_cursor ON notifications.items(owner,created_at DESC,id DESC);
+CREATE INDEX IF NOT EXISTS items_owner_updated_cursor ON notifications.items(owner,updated_at DESC,id DESC);
 CREATE INDEX IF NOT EXISTS items_unread ON notifications.items(owner) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_expiry ON notifications.items(created_at,id);
 CREATE INDEX IF NOT EXISTS items_aggregation ON notifications.items(owner,source_module,target_kind,target_id,title_key,created_at DESC) WHERE type='interaction' AND read_at IS NULL;

@@ -108,6 +108,11 @@ export interface components {
             };
             /** Format: date-time */
             created_at: string;
+            /**
+             * Format: date-time
+             * @description 最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。
+             */
+            updated_at: string;
             /** Format: date-time */
             read_at: string | null;
             /** @enum {string} */
@@ -569,7 +574,7 @@ export interface operations {
     listNotifications: {
         parameters: {
             query?: {
-                /** @description 不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。 */
+                /** @description 不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。 */
                 cursor?: string;
                 limit?: number;
                 /** @description 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。 */

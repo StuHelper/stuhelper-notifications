@@ -167,10 +167,10 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 			}
 		}
 		if result.ID != "" {
-			_, e = tx.ExecContext(ctx, `UPDATE notifications.items SET count=count+1 WHERE id=$1`, result.ID)
+			_, e = tx.ExecContext(ctx, `UPDATE notifications.items SET count=count+1,updated_at=GREATEST(updated_at,$2) WHERE id=$1`, result.ID, now)
 		} else {
 			result.ID = uuid.NewString()
-			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,type,source_module,target_kind,target_id,title_key,title_params,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, result.ID, result.Recipient, d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
+			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9)`, result.ID, result.Recipient, d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
 		}
 		if e != nil {
 			return n.RecipientResult{}, safe(e)
@@ -179,7 +179,22 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 	return result, nil
 }
 func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit int) ([]n.Notification, error) {
-	rows, e := r.DB.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND ($2 OR (created_at,id)<($3,$4::uuid)) ORDER BY created_at DESC,id DESC LIMIT $5`, owner, c.ID == "", c.CreatedAt, emptyUUID(c.ID), limit)
+	if limit < 1 || limit > 101 {
+		return nil, n.ErrInput
+	}
+	cursorAt := c.UpdatedAt
+	if cursorAt.IsZero() {
+		cursorAt = c.CreatedAt
+	}
+	var (
+		rows *sql.Rows
+		e    error
+	)
+	if c.ID == "" {
+		rows, e = r.DB.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 ORDER BY updated_at DESC,id DESC LIMIT $2`, owner, limit)
+	} else {
+		rows, e = r.DB.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 AND (updated_at,id)<($2,$3::uuid) ORDER BY updated_at DESC,id DESC LIMIT $4`, owner, cursorAt, c.ID, limit)
+	}
 	if e != nil {
 		return nil, safe(e)
 	}
@@ -188,7 +203,7 @@ func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit i
 	for rows.Next() {
 		var v n.Notification
 		var params []byte
-		if e = rows.Scan(&v.ID, &v.Type, &v.SourceModule, &v.Target.Kind, &v.Target.ID, &v.TitleKey, &params, &v.CreatedAt, &v.ReadAt, &v.Count); e != nil {
+		if e = rows.Scan(&v.ID, &v.Type, &v.SourceModule, &v.Target.Kind, &v.Target.ID, &v.TitleKey, &params, &v.CreatedAt, &v.UpdatedAt, &v.ReadAt, &v.Count); e != nil {
 			return nil, safe(e)
 		}
 		if e = json.Unmarshal(params, &v.TitleParams); e != nil {

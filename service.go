@@ -89,12 +89,20 @@ func (s *Service) list(ctx context.Context, owner, after string, limit int, incl
 		if e != nil {
 			return Page{}, ErrInput
 		}
-		if json.Unmarshal(b, &cursor) != nil || cursor.CreatedAt.IsZero() {
+		if json.Unmarshal(b, &cursor) != nil {
 			return Page{}, ErrInput
 		}
-		if _, e = uuid.Parse(cursor.ID); e != nil {
+		if cursor.UpdatedAt.IsZero() {
+			cursor.UpdatedAt = cursor.CreatedAt
+		}
+		if cursor.UpdatedAt.IsZero() || len(cursor.ID) != 36 {
 			return Page{}, ErrInput
 		}
+		u, e := uuid.Parse(cursor.ID)
+		if e != nil {
+			return Page{}, ErrInput
+		}
+		cursor.ID = u.String()
 	}
 	rows, e := s.repo.List(ctx, owner, cursor, limit+1)
 	if e != nil {
@@ -104,7 +112,7 @@ func (s *Service) list(ctx context.Context, owner, after string, limit int, incl
 	if len(rows) > limit {
 		out.Items = rows[:limit]
 		last := out.Items[limit-1]
-		b, _ := json.Marshal(Cursor{last.CreatedAt, last.ID})
+		b, _ := json.Marshal(Cursor{UpdatedAt: last.UpdatedAt, ID: last.ID})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
 	s.resolvePage(ctx, owner, out.Items, includeNames)
