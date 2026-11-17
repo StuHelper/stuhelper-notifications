@@ -87,6 +87,7 @@ type Repository interface {
 	Unread(context.Context, string) (int64, error)
 	MarkRead(context.Context, string, string, time.Time) error
 	MarkAllRead(context.Context, string, time.Time) error
+	Delete(context.Context, string, string) error
 	Preferences(context.Context, string, *bool) (Preferences, error)
 	Cleanup(context.Context, time.Time, int) (int64, error)
 }

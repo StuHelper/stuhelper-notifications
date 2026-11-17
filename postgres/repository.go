@@ -63,6 +63,10 @@ func (r *Repository) CheckRuntime(ctx context.Context) error {
 			return n.ErrUnavailable
 		}
 	}
+	var canDelete bool
+	if e = r.DB.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,'notifications.items','DELETE')`).Scan(&canDelete); e != nil || !canDelete {
+		return n.ErrUnavailable
+	}
 	return nil
 }
 
@@ -236,6 +240,28 @@ func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Ti
 }
 func (r *Repository) MarkAllRead(ctx context.Context, owner string, now time.Time) error {
 	return r.mark(ctx, owner, "", now)
+}
+func (r *Repository) Delete(ctx context.Context, owner, id string) error {
+	tx, e := r.DB.BeginTx(ctx, nil)
+	if e != nil {
+		return safe(e)
+	}
+	defer tx.Rollback()
+	if _, e = lock(ctx, tx, owner); e != nil {
+		return safe(e)
+	}
+	result, e := tx.ExecContext(ctx, `DELETE FROM notifications.items WHERE owner=$1 AND id=$2::uuid`, owner, id)
+	if e != nil {
+		return safe(e)
+	}
+	affected, e := result.RowsAffected()
+	if e != nil {
+		return safe(e)
+	}
+	if affected == 0 {
+		return n.ErrNotFound
+	}
+	return safe(tx.Commit())
 }
 func (r *Repository) Preferences(ctx context.Context, owner string, value *bool) (n.Preferences, error) {
 	tx, e := r.DB.BeginTx(ctx, nil)

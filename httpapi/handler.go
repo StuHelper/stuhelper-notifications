@@ -91,6 +91,8 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodPost && strings.HasSuffix(path, "/read"):
 		id := strings.TrimSuffix(strings.TrimPrefix(path, "/"), "/read")
 		e = h.Service.MarkRead(ctx, owner, id)
+	case r.Method == http.MethodDelete && singleItemPath(path):
+		e = h.Service.Delete(ctx, owner, strings.TrimPrefix(path, "/"))
 	default:
 		e = n.ErrNotFound
 	}
@@ -121,4 +123,17 @@ func failure(w http.ResponseWriter, e error) {
 	_ = json.NewEncoder(w).Encode(struct {
 		Code string `json:"code"`
 	}{code})
+}
+
+func singleItemPath(path string) bool {
+	id, ok := strings.CutPrefix(path, "/")
+	if !ok || id == "" || strings.Contains(id, "/") {
+		return false
+	}
+	switch id {
+	case "preferences", "unread-count", "read-all":
+		return false
+	default:
+		return true
+	}
 }
