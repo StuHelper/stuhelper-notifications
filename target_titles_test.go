@@ -13,9 +13,9 @@ import (
 )
 
 type titleBatch struct {
-	calls, legacy, refs int
-	state, name         string
-	fail                bool
+	calls, legacy, refs    int
+	state, name, contextID string
+	fail                   bool
 }
 
 func (b *titleBatch) Resolve(context.Context, string, string, n.Target) (string, error) {
@@ -33,7 +33,7 @@ func (b *titleBatch) ResolveBatch(ctx context.Context, owner string, refs []n.Ta
 	}
 	out := map[n.TargetRef]n.TargetResolution{}
 	for _, ref := range refs {
-		out[ref] = n.TargetResolution{Status: b.state, Name: b.name}
+		out[ref] = n.TargetResolution{Status: b.state, Name: b.name, ContextID: b.contextID}
 	}
 	return out, nil
 }
@@ -106,5 +106,109 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 	}
 	if _, err = f.s.ListWithContentNames(ctx, "", "", 100); !errors.Is(err, n.ErrUnauthenticated) || batch.calls != before {
 		t.Fatal("unauthenticated lookup", err)
+	}
+}
+
+func TestCommentContextIDAndReasonCodeReadBehavior(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+	batch := &titleBatch{state: "accessible", name: "数据结构课程评价", contextID: "review-root-42"}
+	var err error
+	f.s, err = n.New(&postgres.Repository{DB: f.db}, batch, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	deliver(t, f, n.Event{
+		Recipients:  []string{"alice"},
+		ID:          "comment-reply-1",
+		Subject:     "comment/101",
+		Revision:    1,
+		EventType:   "reviews.reply.v1",
+		Type:        "interaction",
+		Source:      "reviews",
+		Target:      n.Target{Kind: "comment", ID: "comment-101"},
+		TitleKey:    "notifications.interaction.reply",
+		TitleParams: map[string]string{"content_id": "comment-101"},
+	})
+	deliver(t, f, n.Event{
+		Recipients:  []string{"alice"},
+		ID:          "resource-rejected-1",
+		Subject:     "resource/202",
+		Revision:    1,
+		EventType:   "moderation.result.v1",
+		Type:        "business",
+		Source:      "moderation",
+		Target:      n.Target{Kind: "resource", ID: "resource-202"},
+		TitleKey:    "notifications.content.rejected",
+		TitleParams: map[string]string{"content_id": "resource-202", "reason_code": "copyright_claim"},
+	})
+
+	// Producers cannot spoof read-only context_id.
+	forged := delivery("forged-context", "interaction")
+	forged.Target = n.Target{Kind: "comment", ID: "comment-999"}
+	forged.TitleParams["context_id"] = "review-spoofed"
+	if _, err = f.s.Consume(ctx, forged); !errors.Is(err, n.ErrInput) {
+		t.Fatalf("expected ErrInput for producer-supplied context_id, got %v", err)
+	}
+
+	// Expanded read includes context_id on accessible comment targets, omits context_id on resource targets, and retains reason_code.
+	page, err := f.s.ListWithContentNames(ctx, "alice", "", 10)
+	if err != nil || len(page.Items) != 2 {
+		t.Fatal(page, err)
+	}
+	byID := map[string]n.Notification{}
+	for _, it := range page.Items {
+		byID[it.Target.Kind] = it
+	}
+	if byID["comment"].TitleParams["context_id"] != "review-root-42" || byID["comment"].TitleParams["content_name"] != "数据结构课程评价" {
+		t.Fatalf("missing comment context_id: %+v", byID["comment"])
+	}
+	if _, hasCtx := byID["resource"].TitleParams["context_id"]; hasCtx {
+		t.Fatalf("non-comment target must not expose context_id: %+v", byID["resource"])
+	}
+	if byID["resource"].TitleParams["reason_code"] != "copyright_claim" {
+		t.Fatalf("missing reason_code: %+v", byID["resource"])
+	}
+
+	// Legacy List omits read-only parameters (content_name, content_name_state, context_id) while keeping stored reason_code.
+	legacyPage, err := f.s.List(ctx, "alice", "", 10)
+	if err != nil || len(legacyPage.Items) != 2 {
+		t.Fatal(legacyPage, err)
+	}
+	for _, it := range legacyPage.Items {
+		if _, hasCtx := it.TitleParams["context_id"]; hasCtx {
+			t.Fatalf("legacy list leaked context_id: %+v", it)
+		}
+	}
+
+	// Inaccessible, unavailable, or unsafe context_id values are never exposed.
+	batch.state = "inaccessible"
+	inaccPage, err := f.s.ListWithContentNames(ctx, "alice", "", 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, it := range inaccPage.Items {
+		if _, hasCtx := it.TitleParams["context_id"]; hasCtx {
+			t.Fatalf("inaccessible target must not expose context_id: %+v", it)
+		}
+	}
+	batch.state = "accessible"
+	for _, unsafeID := range []string{"", "review/evil", "review?x=1", "review#frag", "..", "bad\nid", strings.Repeat("r", 257)} {
+		batch.contextID = unsafeID
+		unsafePage, e := f.s.ListWithContentNames(ctx, "alice", "", 10)
+		if e != nil {
+			t.Fatal(e)
+		}
+		for _, it := range unsafePage.Items {
+			if _, hasCtx := it.TitleParams["context_id"]; hasCtx {
+				t.Fatalf("unsafe context_id %q exposed: %+v", unsafeID, it)
+			}
+		}
+	}
+
+	var persisted int
+	if err = f.db.QueryRow(`SELECT count(*) FROM notifications.items WHERE title_params ? 'context_id'`).Scan(&persisted); err != nil || persisted != 0 {
+		t.Fatal("context_id persisted in database", persisted, err)
 	}
 }

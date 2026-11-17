@@ -92,7 +92,7 @@ export interface components {
     schemas: {
         Target: {
             /** @enum {string} */
-            kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+            kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
             id: string;
         };
         Notification: {
@@ -113,7 +113,7 @@ export interface components {
             /** @enum {string} */
             target_status: "accessible" | "inaccessible" | "unavailable";
             count: number;
-        } & (components["schemas"]["InteractionReplyTitlePayload"] | components["schemas"]["InteractionLikeTitlePayload"] | components["schemas"]["ContentApprovedTitlePayload"] | components["schemas"]["ContentRejectedTitlePayload"] | components["schemas"]["ContentRemovedTitlePayload"] | components["schemas"]["ResourceRemovalApprovedTitlePayload"] | components["schemas"]["ResourceRemovalRejectedTitlePayload"] | components["schemas"]["ReportApprovedTitlePayload"] | components["schemas"]["ReportRejectedTitlePayload"] | components["schemas"]["StudentVerificationApprovedTitlePayload"] | components["schemas"]["StudentVerificationRejectedTitlePayload"] | components["schemas"]["IdentityVerificationApprovedTitlePayload"] | components["schemas"]["IdentityVerificationRejectedTitlePayload"] | components["schemas"]["VerificationRevocationApprovedTitlePayload"] | components["schemas"]["VerificationRevocationRejectedTitlePayload"] | components["schemas"]["VerificationDeletionApprovedTitlePayload"] | components["schemas"]["VerificationDeletionRejectedTitlePayload"] | components["schemas"]["TeacherVerificationApprovedTitlePayload"] | components["schemas"]["TeacherVerificationRejectedTitlePayload"] | components["schemas"]["StudentVerificationRevokedTitlePayload"] | components["schemas"]["SystemNoticeTitlePayload"] | components["schemas"]["SystemSecurityTitlePayload"] | components["schemas"]["SystemAccountTitlePayload"]);
+        } & (components["schemas"]["InteractionReplyTitlePayload"] | components["schemas"]["InteractionLikeTitlePayload"] | components["schemas"]["ContentApprovedTitlePayload"] | components["schemas"]["ContentRejectedTitlePayload"] | components["schemas"]["ContentRemovedTitlePayload"] | components["schemas"]["ResourceRemovalApprovedTitlePayload"] | components["schemas"]["ResourceRemovalRejectedTitlePayload"] | components["schemas"]["ReportApprovedTitlePayload"] | components["schemas"]["ReportRejectedTitlePayload"] | components["schemas"]["StudentVerificationApprovedTitlePayload"] | components["schemas"]["StudentVerificationRejectedTitlePayload"] | components["schemas"]["IdentityVerificationApprovedTitlePayload"] | components["schemas"]["IdentityVerificationRejectedTitlePayload"] | components["schemas"]["VerificationRevocationApprovedTitlePayload"] | components["schemas"]["VerificationRevocationRejectedTitlePayload"] | components["schemas"]["VerificationDeletionApprovedTitlePayload"] | components["schemas"]["VerificationDeletionRejectedTitlePayload"] | components["schemas"]["TeacherVerificationApprovedTitlePayload"] | components["schemas"]["TeacherVerificationRejectedTitlePayload"] | components["schemas"]["StudentVerificationRevokedTitlePayload"] | components["schemas"]["ContentDraftExpiringTitlePayload"] | components["schemas"]["StudentVerificationSupplementRequiredTitlePayload"] | components["schemas"]["TeacherVerificationSupplementRequiredTitlePayload"] | components["schemas"]["AppealApprovedTitlePayload"] | components["schemas"]["AppealRejectedTitlePayload"] | components["schemas"]["GroupMembershipGraceExpiringTitlePayload"] | components["schemas"]["StorageContributionExitCompletedTitlePayload"] | components["schemas"]["BillingTopupReviewRequiredTitlePayload"] | components["schemas"]["BillingRefundCompletedTitlePayload"] | components["schemas"]["BillingRefundRejectedTitlePayload"] | components["schemas"]["SystemNoticeTitlePayload"] | components["schemas"]["SystemSecurityTitlePayload"] | components["schemas"]["SystemAccountTitlePayload"]);
         Page: {
             items: components["schemas"]["Notification"][];
             next_cursor: string;
@@ -132,7 +132,12 @@ export interface components {
          * @description 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
          * @enum {string}
          */
-        TitleKey: "notifications.interaction.reply" | "notifications.interaction.like" | "notifications.content.approved" | "notifications.content.rejected" | "notifications.content.removed" | "notifications.resource_removal.approved" | "notifications.resource_removal.rejected" | "notifications.report.approved" | "notifications.report.rejected" | "notifications.student_verification.approved" | "notifications.student_verification.rejected" | "notifications.identity_verification.approved" | "notifications.identity_verification.rejected" | "notifications.verification_revocation.approved" | "notifications.verification_revocation.rejected" | "notifications.verification_deletion.approved" | "notifications.verification_deletion.rejected" | "notifications.teacher_verification.approved" | "notifications.teacher_verification.rejected" | "notifications.student_verification.revoked" | "notifications.system.notice" | "notifications.system.security" | "notifications.system.account";
+        TitleKey: "notifications.interaction.reply" | "notifications.interaction.like" | "notifications.content.approved" | "notifications.content.rejected" | "notifications.content.removed" | "notifications.resource_removal.approved" | "notifications.resource_removal.rejected" | "notifications.report.approved" | "notifications.report.rejected" | "notifications.student_verification.approved" | "notifications.student_verification.rejected" | "notifications.identity_verification.approved" | "notifications.identity_verification.rejected" | "notifications.verification_revocation.approved" | "notifications.verification_revocation.rejected" | "notifications.verification_deletion.approved" | "notifications.verification_deletion.rejected" | "notifications.teacher_verification.approved" | "notifications.teacher_verification.rejected" | "notifications.student_verification.revoked" | "notifications.content.draft_expiring" | "notifications.student_verification.supplement_required" | "notifications.teacher_verification.supplement_required" | "notifications.appeal.approved" | "notifications.appeal.rejected" | "notifications.group_membership.grace_expiring" | "notifications.storage_contribution.exit_completed" | "notifications.billing.topup_review_required" | "notifications.billing.refund_completed" | "notifications.billing.refund_rejected" | "notifications.system.notice" | "notifications.system.security" | "notifications.system.account";
+        /**
+         * @description 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+         * @enum {string}
+         */
+        ReasonCode: "duplicate_material" | "copyright_claim" | "community_guidelines" | "off_topic" | "privacy_exposure" | "low_quality" | "author_request" | "insufficient_evidence" | "expired_document" | "unclear_material" | "identity_mismatch" | "ineligible_status" | "eligibility_revoked" | "duplicate_binding" | "policy_violation" | "payment_channel_rejected";
         /** @description 收到回复 */
         InteractionReplyTitlePayload: {
             /** @enum {string} */
@@ -154,6 +159,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 收到点赞 */
@@ -177,6 +184,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 内容审核通过 */
@@ -200,6 +209,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 内容审核驳回 */
@@ -216,6 +227,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 content_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
                 /**
@@ -223,6 +235,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 内容下架 */
@@ -239,6 +253,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 content_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
                 /**
@@ -246,6 +261,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 资料下架申请通过 */
@@ -278,6 +295,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 request_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 举报处理通过 */
@@ -310,6 +328,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 report_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 学生认证通过 */
@@ -342,6 +361,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 实名核验通过 */
@@ -374,6 +394,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 operation_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 认证撤销申请通过 */
@@ -406,6 +427,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 request_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 认证删除申请通过 */
@@ -438,6 +460,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 request_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 教师认证通过 */
@@ -470,6 +493,7 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 学生认证被撤销 */
@@ -486,6 +510,178 @@ export interface components {
             title_params: {
                 /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
                 credential_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 撤回重编草稿即将过期 */
+        ContentDraftExpiringTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.content.draft_expiring";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "review";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                content_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name?: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+            };
+        };
+        /** @description 学生认证需补充材料 */
+        StudentVerificationSupplementRequiredTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.student_verification.supplement_required";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "verification_application";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 教师认证需补充材料 */
+        TeacherVerificationSupplementRequiredTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.teacher_verification.supplement_required";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "teacher_application";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 审核申诉通过 */
+        AppealApprovedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.appeal.approved";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "moderation_appeal";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                appeal_id: string;
+            };
+        };
+        /** @description 审核申诉驳回 */
+        AppealRejectedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.appeal.rejected";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "moderation_appeal";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                appeal_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 群准入资格宽限期即将到期 */
+        GroupMembershipGraceExpiringTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.group_membership.grace_expiring";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "group_membership";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                group_id: string;
+            };
+        };
+        /** @description 存储贡献退出完成 */
+        StorageContributionExitCompletedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.storage_contribution.exit_completed";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "storage_contribution";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                contribution_id: string;
+            };
+        };
+        /** @description 充值订单转人工核查 */
+        BillingTopupReviewRequiredTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.billing.topup_review_required";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "billing_order";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                order_id: string;
+            };
+        };
+        /** @description 退款打款完成 */
+        BillingRefundCompletedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.billing.refund_completed";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "billing_order";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                order_id: string;
+            };
+        };
+        /** @description 退款申请驳回 */
+        BillingRefundRejectedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.billing.refund_rejected";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "billing_order";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                order_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 系统通知 */
@@ -496,7 +692,7 @@ export interface components {
             type: "business";
             target: {
                 /** @enum {string} */
-                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
                 id: string;
             };
             title_params: {
@@ -509,6 +705,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 安全通知 */
@@ -519,7 +717,7 @@ export interface components {
             type: "security";
             target: {
                 /** @enum {string} */
-                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
                 id: string;
             };
             title_params: {
@@ -532,6 +730,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 账号通知 */
@@ -542,7 +742,7 @@ export interface components {
             type: "account";
             target: {
                 /** @enum {string} */
-                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
                 id: string;
             };
             title_params: {
@@ -555,6 +755,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly context_id?: string;
             };
         };
     };

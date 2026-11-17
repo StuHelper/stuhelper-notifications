@@ -37,6 +37,7 @@ scenario_tests:
   NT-07:
     - http_compatibility_test.go#TestLegacyHTTPParametersAndExplicitNameExpansion
     - target_titles_test.go#TestNotificationNamesAreCurrentBoundedAndNeverPersisted
+    - target_titles_test.go#TestCommentContextIDAndReasonCodeReadBehavior
     - title_catalog_test.go#TestTitleCatalogAdmissionAndRejectedWrites
     - title_catalog_test.go#TestInteractionTitleUsesServerAggregateCount
   NT-08:

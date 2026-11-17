@@ -103,8 +103,9 @@ type TargetRef struct {
 	Target Target
 }
 type TargetResolution struct {
-	Status string
-	Name   string
+	Status    string
+	Name      string
+	ContextID string
 }
 
 // BatchResolver performs current authorization and name lookup through each

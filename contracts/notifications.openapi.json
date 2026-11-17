@@ -407,11 +407,15 @@
               "resource",
               "resource_removal_request",
               "report",
+              "moderation_appeal",
               "verification_application",
               "teacher_application",
               "verification_credential",
               "verification_removal_request",
-              "verification_operation"
+              "verification_operation",
+              "group_membership",
+              "storage_contribution",
+              "billing_order"
             ]
           },
           "id": {
@@ -548,6 +552,36 @@
                 "$ref": "#/components/schemas/StudentVerificationRevokedTitlePayload"
               },
               {
+                "$ref": "#/components/schemas/ContentDraftExpiringTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/StudentVerificationSupplementRequiredTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/TeacherVerificationSupplementRequiredTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/AppealApprovedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/AppealRejectedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/GroupMembershipGraceExpiringTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/StorageContributionExitCompletedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/BillingTopupReviewRequiredTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/BillingRefundCompletedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/BillingRefundRejectedTitlePayload"
+              },
+              {
                 "$ref": "#/components/schemas/SystemNoticeTitlePayload"
               },
               {
@@ -637,11 +671,43 @@
           "notifications.teacher_verification.approved",
           "notifications.teacher_verification.rejected",
           "notifications.student_verification.revoked",
+          "notifications.content.draft_expiring",
+          "notifications.student_verification.supplement_required",
+          "notifications.teacher_verification.supplement_required",
+          "notifications.appeal.approved",
+          "notifications.appeal.rejected",
+          "notifications.group_membership.grace_expiring",
+          "notifications.storage_contribution.exit_completed",
+          "notifications.billing.topup_review_required",
+          "notifications.billing.refund_completed",
+          "notifications.billing.refund_rejected",
           "notifications.system.notice",
           "notifications.system.security",
           "notifications.system.account"
         ],
         "description": "封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。"
+      },
+      "ReasonCode": {
+        "type": "string",
+        "enum": [
+          "duplicate_material",
+          "copyright_claim",
+          "community_guidelines",
+          "off_topic",
+          "privacy_exposure",
+          "low_quality",
+          "author_request",
+          "insufficient_evidence",
+          "expired_document",
+          "unclear_material",
+          "identity_mismatch",
+          "ineligible_status",
+          "eligibility_revoked",
+          "duplicate_binding",
+          "policy_violation",
+          "payment_channel_rejected"
+        ],
+        "description": "封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。"
       },
       "InteractionReplyTitlePayload": {
         "type": "object",
@@ -717,6 +783,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -796,6 +869,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -875,6 +955,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -939,6 +1026,9 @@
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
               },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              },
               "content_name": {
                 "type": "string",
                 "maxLength": 256,
@@ -954,6 +1044,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -1018,6 +1115,9 @@
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
               },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              },
               "content_name": {
                 "type": "string",
                 "maxLength": 256,
@@ -1033,6 +1133,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -1155,6 +1262,9 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1277,6 +1387,9 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1399,6 +1512,9 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1521,6 +1637,9 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1643,6 +1762,9 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1765,6 +1887,9 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1887,6 +2012,9 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1948,6 +2076,647 @@
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
                 "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "ContentDraftExpiringTitlePayload": {
+        "type": "object",
+        "description": "撤回重编草稿即将过期",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.content.draft_expiring"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "review"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "content_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "content_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              }
+            }
+          }
+        }
+      },
+      "StudentVerificationSupplementRequiredTitlePayload": {
+        "type": "object",
+        "description": "学生认证需补充材料",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.student_verification.supplement_required"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "verification_application"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "application_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "application_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "TeacherVerificationSupplementRequiredTitlePayload": {
+        "type": "object",
+        "description": "教师认证需补充材料",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.teacher_verification.supplement_required"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "teacher_application"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "application_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "application_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "AppealApprovedTitlePayload": {
+        "type": "object",
+        "description": "审核申诉通过",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.appeal.approved"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "moderation_appeal"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "appeal_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "appeal_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "AppealRejectedTitlePayload": {
+        "type": "object",
+        "description": "审核申诉驳回",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.appeal.rejected"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "moderation_appeal"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "appeal_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "appeal_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "GroupMembershipGraceExpiringTitlePayload": {
+        "type": "object",
+        "description": "群准入资格宽限期即将到期",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.group_membership.grace_expiring"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "group_membership"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "group_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "group_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "StorageContributionExitCompletedTitlePayload": {
+        "type": "object",
+        "description": "存储贡献退出完成",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.storage_contribution.exit_completed"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "storage_contribution"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "contribution_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "contribution_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "BillingTopupReviewRequiredTitlePayload": {
+        "type": "object",
+        "description": "充值订单转人工核查",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.billing.topup_review_required"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "billing_order"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "BillingRefundCompletedTitlePayload": {
+        "type": "object",
+        "description": "退款打款完成",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.billing.refund_completed"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "billing_order"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "BillingRefundRejectedTitlePayload": {
+        "type": "object",
+        "description": "退款申请驳回",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.billing.refund_rejected"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "billing_order"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1991,11 +2760,15 @@
                   "resource",
                   "resource_removal_request",
                   "report",
+                  "moderation_appeal",
                   "verification_application",
                   "teacher_application",
                   "verification_credential",
                   "verification_removal_request",
-                  "verification_operation"
+                  "verification_operation",
+                  "group_membership",
+                  "storage_contribution",
+                  "billing_order"
                 ]
               },
               "id": {
@@ -2034,6 +2807,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -2077,11 +2857,15 @@
                   "resource",
                   "resource_removal_request",
                   "report",
+                  "moderation_appeal",
                   "verification_application",
                   "teacher_application",
                   "verification_credential",
                   "verification_removal_request",
-                  "verification_operation"
+                  "verification_operation",
+                  "group_membership",
+                  "storage_contribution",
+                  "billing_order"
                 ]
               },
               "id": {
@@ -2120,6 +2904,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -2163,11 +2954,15 @@
                   "resource",
                   "resource_removal_request",
                   "report",
+                  "moderation_appeal",
                   "verification_application",
                   "teacher_application",
                   "verification_credential",
                   "verification_removal_request",
-                  "verification_operation"
+                  "verification_operation",
+                  "group_membership",
+                  "storage_contribution",
+                  "billing_order"
                 ]
               },
               "id": {
@@ -2206,6 +3001,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。"
               }
             }
           }
@@ -2233,7 +3035,8 @@
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.interaction.like": {
@@ -2249,7 +3052,8 @@
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.content.approved": {
@@ -2265,7 +3069,8 @@
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.content.rejected": {
@@ -2279,9 +3084,13 @@
       "parameters": [
         "content_id"
       ],
+      "optional_parameters": [
+        "reason_code"
+      ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.content.removed": {
@@ -2295,9 +3104,13 @@
       "parameters": [
         "content_id"
       ],
+      "optional_parameters": [
+        "reason_code"
+      ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.resource_removal.approved": {
@@ -2318,6 +3131,9 @@
       ],
       "parameters": [
         "request_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.report.approved": {
@@ -2338,6 +3154,9 @@
       ],
       "parameters": [
         "report_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.student_verification.approved": {
@@ -2358,6 +3177,9 @@
       ],
       "parameters": [
         "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.identity_verification.approved": {
@@ -2378,6 +3200,9 @@
       ],
       "parameters": [
         "operation_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.verification_revocation.approved": {
@@ -2398,6 +3223,9 @@
       ],
       "parameters": [
         "request_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.verification_deletion.approved": {
@@ -2418,6 +3246,9 @@
       ],
       "parameters": [
         "request_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.teacher_verification.approved": {
@@ -2438,6 +3269,9 @@
       ],
       "parameters": [
         "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.student_verification.revoked": {
@@ -2448,6 +3282,125 @@
       ],
       "parameters": [
         "credential_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.content.draft_expiring": {
+      "description": "撤回重编草稿即将过期",
+      "type": "business",
+      "target_kinds": [
+        "review"
+      ],
+      "parameters": [
+        "content_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
+      ]
+    },
+    "notifications.student_verification.supplement_required": {
+      "description": "学生认证需补充材料",
+      "type": "business",
+      "target_kinds": [
+        "verification_application"
+      ],
+      "parameters": [
+        "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.teacher_verification.supplement_required": {
+      "description": "教师认证需补充材料",
+      "type": "business",
+      "target_kinds": [
+        "teacher_application"
+      ],
+      "parameters": [
+        "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.appeal.approved": {
+      "description": "审核申诉通过",
+      "type": "business",
+      "target_kinds": [
+        "moderation_appeal"
+      ],
+      "parameters": [
+        "appeal_id"
+      ]
+    },
+    "notifications.appeal.rejected": {
+      "description": "审核申诉驳回",
+      "type": "business",
+      "target_kinds": [
+        "moderation_appeal"
+      ],
+      "parameters": [
+        "appeal_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.group_membership.grace_expiring": {
+      "description": "群准入资格宽限期即将到期",
+      "type": "business",
+      "target_kinds": [
+        "group_membership"
+      ],
+      "parameters": [
+        "group_id"
+      ]
+    },
+    "notifications.storage_contribution.exit_completed": {
+      "description": "存储贡献退出完成",
+      "type": "business",
+      "target_kinds": [
+        "storage_contribution"
+      ],
+      "parameters": [
+        "contribution_id"
+      ]
+    },
+    "notifications.billing.topup_review_required": {
+      "description": "充值订单转人工核查",
+      "type": "business",
+      "target_kinds": [
+        "billing_order"
+      ],
+      "parameters": [
+        "order_id"
+      ]
+    },
+    "notifications.billing.refund_completed": {
+      "description": "退款打款完成",
+      "type": "business",
+      "target_kinds": [
+        "billing_order"
+      ],
+      "parameters": [
+        "order_id"
+      ]
+    },
+    "notifications.billing.refund_rejected": {
+      "description": "退款申请驳回",
+      "type": "business",
+      "target_kinds": [
+        "billing_order"
+      ],
+      "parameters": [
+        "order_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.system.notice": {
@@ -2459,18 +3412,23 @@
         "resource",
         "resource_removal_request",
         "report",
+        "moderation_appeal",
         "verification_application",
         "teacher_application",
         "verification_credential",
         "verification_removal_request",
-        "verification_operation"
+        "verification_operation",
+        "group_membership",
+        "storage_contribution",
+        "billing_order"
       ],
       "parameters": [
         "reference_id"
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.system.security": {
@@ -2482,18 +3440,23 @@
         "resource",
         "resource_removal_request",
         "report",
+        "moderation_appeal",
         "verification_application",
         "teacher_application",
         "verification_credential",
         "verification_removal_request",
-        "verification_operation"
+        "verification_operation",
+        "group_membership",
+        "storage_contribution",
+        "billing_order"
       ],
       "parameters": [
         "reference_id"
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.system.account": {
@@ -2505,18 +3468,23 @@
         "resource",
         "resource_removal_request",
         "report",
+        "moderation_appeal",
         "verification_application",
         "teacher_application",
         "verification_credential",
         "verification_removal_request",
-        "verification_operation"
+        "verification_operation",
+        "group_membership",
+        "storage_contribution",
+        "billing_order"
       ],
       "parameters": [
         "reference_id"
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     }
   },

@@ -52,6 +52,7 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		item.TitleParams = maps.Clone(item.TitleParams)
 		delete(item.TitleParams, "content_name")
 		delete(item.TitleParams, "content_name_state")
+		delete(item.TitleParams, "context_id")
 		rule := titleCatalog[item.TitleKey]
 		if !includeNames || !slices.Contains(rule.ReadParameters, "content_name") || !slices.Contains([]string{"review", "comment", "resource"}, item.Target.Kind) {
 			continue
@@ -73,5 +74,14 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		}
 		item.TitleParams["content_name"] = name
 		item.TitleParams["content_name_state"] = nameState
+		if item.Target.Kind == "comment" && state == "accessible" && slices.Contains(rule.ReadParameters, "context_id") {
+			if contextID := strings.TrimSpace(resolved.ContextID); validContextID(contextID) {
+				item.TitleParams["context_id"] = contextID
+			}
+		}
 	}
+}
+
+func validContextID(s string) bool {
+	return s != "" && len(s) <= 256 && utf8.ValidString(s) && s != "." && s != ".." && !strings.ContainsFunc(s, unicode.IsControl) && !strings.ContainsAny(s, " /?#\\")
 }
