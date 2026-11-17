@@ -381,7 +381,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Preferences"
+                "$ref": "#/components/schemas/PreferencesUpdate"
               }
             }
           }
@@ -595,11 +595,41 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "interaction_enabled"
+          "interaction_enabled",
+          "reply_enabled",
+          "like_enabled"
         ],
         "properties": {
           "interaction_enabled": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "互动通知总状态；当 reply_enabled 或 like_enabled 任一为 true 时为 true。"
+          },
+          "reply_enabled": {
+            "type": "boolean",
+            "description": "评论回复通知独立开关，默认 true。"
+          },
+          "like_enabled": {
+            "type": "boolean",
+            "description": "点赞通知独立开关，默认 true。"
+          }
+        }
+      },
+      "PreferencesUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "interaction_enabled": {
+            "type": "boolean",
+            "description": "兼容旧客户端的总开关；仅传该字段时同步设置 reply_enabled 与 like_enabled。"
+          },
+          "reply_enabled": {
+            "type": "boolean",
+            "description": "评论回复通知独立开关。"
+          },
+          "like_enabled": {
+            "type": "boolean",
+            "description": "点赞通知独立开关。"
           }
         }
       },

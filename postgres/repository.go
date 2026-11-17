@@ -68,13 +68,24 @@ func (r *Repository) CheckRuntime(ctx context.Context) error {
 
 // Locking the recipient preference row serializes aggregation, preference changes,
 // and read transitions across different source subjects.
-func lock(ctx context.Context, tx *sql.Tx, owner string) (bool, error) {
+func lock(ctx context.Context, tx *sql.Tx, owner string) (n.Preferences, error) {
 	if _, e := tx.ExecContext(ctx, `INSERT INTO notifications.preferences(owner) VALUES($1) ON CONFLICT DO NOTHING`, owner); e != nil {
-		return false, e
+		return n.Preferences{}, e
 	}
-	var enabled bool
-	e := tx.QueryRowContext(ctx, `SELECT interaction_enabled FROM notifications.preferences WHERE owner=$1 FOR UPDATE`, owner).Scan(&enabled)
-	return enabled, e
+	var prefs n.Preferences
+	e := tx.QueryRowContext(ctx, `SELECT interaction_enabled,reply_enabled,like_enabled FROM notifications.preferences WHERE owner=$1 FOR UPDATE`, owner).Scan(&prefs.InteractionEnabled, &prefs.ReplyEnabled, &prefs.LikeEnabled)
+	return prefs, e
+}
+
+func interactionAllowed(titleKey string, prefs n.Preferences) bool {
+	switch titleKey {
+	case "notifications.interaction.reply":
+		return prefs.InteractionEnabled && prefs.ReplyEnabled
+	case "notifications.interaction.like":
+		return prefs.InteractionEnabled && prefs.LikeEnabled
+	default:
+		return prefs.InteractionEnabled
+	}
 }
 
 var _ n.Repository = (*Repository)(nil)
@@ -122,11 +133,11 @@ func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now ti
 		if result.Ignored {
 			entry.SuppressionReason = n.SuppressionStaleRevision
 		} else {
-			enabled, err := lock(ctx, tx, recipient)
+			prefs, err := lock(ctx, tx, recipient)
 			if err != nil {
 				return n.Result{}, safe(err)
 			}
-			if d.Type == "interaction" && !enabled {
+			if d.Type == "interaction" && !interactionAllowed(d.TitleKey, prefs) {
 				entry.SuppressionReason = n.SuppressionInteractionDisabled
 			}
 			entry, e = writeNotification(ctx, tx, d, entry, now, window)
@@ -238,22 +249,53 @@ func (r *Repository) MarkAllRead(ctx context.Context, owner string, now time.Tim
 	return r.mark(ctx, owner, "", now)
 }
 func (r *Repository) Preferences(ctx context.Context, owner string, value *bool) (n.Preferences, error) {
+	if value != nil {
+		return r.UpdatePreferences(ctx, owner, n.PreferencesUpdate{InteractionEnabled: value})
+	}
+	var prefs n.Preferences
+	e := r.DB.QueryRowContext(ctx, `SELECT interaction_enabled,reply_enabled,like_enabled FROM notifications.preferences WHERE owner=$1`, owner).Scan(&prefs.InteractionEnabled, &prefs.ReplyEnabled, &prefs.LikeEnabled)
+	if errors.Is(e, sql.ErrNoRows) {
+		return n.Preferences{InteractionEnabled: true, ReplyEnabled: true, LikeEnabled: true}, nil
+	}
+	if e != nil {
+		return n.Preferences{}, safe(e)
+	}
+	return prefs, nil
+}
+
+func (r *Repository) UpdatePreferences(ctx context.Context, owner string, patch n.PreferencesUpdate) (n.Preferences, error) {
+	if patch.InteractionEnabled == nil && patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
+		return n.Preferences{}, n.ErrInput
+	}
 	tx, e := r.DB.BeginTx(ctx, nil)
 	if e != nil {
 		return n.Preferences{}, safe(e)
 	}
 	defer tx.Rollback()
-	enabled, e := lock(ctx, tx, owner)
+	prefs, e := lock(ctx, tx, owner)
 	if e != nil {
 		return n.Preferences{}, safe(e)
 	}
-	if value != nil {
-		enabled = *value
-		if _, e = tx.ExecContext(ctx, `UPDATE notifications.preferences SET interaction_enabled=$2 WHERE owner=$1`, owner, enabled); e != nil {
-			return n.Preferences{}, safe(e)
+	if patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
+		v := *patch.InteractionEnabled
+		prefs = n.Preferences{InteractionEnabled: v, ReplyEnabled: v, LikeEnabled: v}
+	} else {
+		if patch.ReplyEnabled != nil {
+			prefs.ReplyEnabled = *patch.ReplyEnabled
 		}
+		if patch.LikeEnabled != nil {
+			prefs.LikeEnabled = *patch.LikeEnabled
+		}
+		derived := prefs.ReplyEnabled || prefs.LikeEnabled
+		if patch.InteractionEnabled != nil && *patch.InteractionEnabled != derived {
+			return n.Preferences{}, n.ErrInput
+		}
+		prefs.InteractionEnabled = derived
 	}
-	return n.Preferences{InteractionEnabled: enabled}, safe(tx.Commit())
+	if _, e = tx.ExecContext(ctx, `UPDATE notifications.preferences SET interaction_enabled=$2,reply_enabled=$3,like_enabled=$4 WHERE owner=$1`, owner, prefs.InteractionEnabled, prefs.ReplyEnabled, prefs.LikeEnabled); e != nil {
+		return n.Preferences{}, safe(e)
+	}
+	return prefs, safe(tx.Commit())
 }
 func (r *Repository) Cleanup(ctx context.Context, before time.Time, limit int) (int64, error) {
 	if limit < 1 || limit > 10000 {

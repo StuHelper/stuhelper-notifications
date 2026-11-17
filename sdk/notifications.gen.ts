@@ -123,7 +123,20 @@ export interface components {
             count: number;
         };
         Preferences: {
+            /** @description 互动通知总状态；当 reply_enabled 或 like_enabled 任一为 true 时为 true。 */
             interaction_enabled: boolean;
+            /** @description 评论回复通知独立开关，默认 true。 */
+            reply_enabled: boolean;
+            /** @description 点赞通知独立开关，默认 true。 */
+            like_enabled: boolean;
+        };
+        PreferencesUpdate: {
+            /** @description 兼容旧客户端的总开关；仅传该字段时同步设置 reply_enabled 与 like_enabled。 */
+            interaction_enabled?: boolean;
+            /** @description 评论回复通知独立开关。 */
+            reply_enabled?: boolean;
+            /** @description 点赞通知独立开关。 */
+            like_enabled?: boolean;
         };
         Error: {
             code: string;
@@ -859,7 +872,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Preferences"];
+                "application/json": components["schemas"]["PreferencesUpdate"];
             };
         };
         responses: {

@@ -1,8 +1,16 @@
 CREATE SCHEMA IF NOT EXISTS notifications;
 CREATE TABLE IF NOT EXISTS notifications.preferences (
  owner text PRIMARY KEY,
- interaction_enabled boolean NOT NULL DEFAULT true
+ interaction_enabled boolean NOT NULL DEFAULT true,
+ reply_enabled boolean NOT NULL DEFAULT true,
+ like_enabled boolean NOT NULL DEFAULT true
 );
+ALTER TABLE notifications.preferences ADD COLUMN IF NOT EXISTS reply_enabled boolean;
+UPDATE notifications.preferences SET reply_enabled = interaction_enabled WHERE reply_enabled IS NULL;
+ALTER TABLE notifications.preferences ALTER COLUMN reply_enabled SET DEFAULT true, ALTER COLUMN reply_enabled SET NOT NULL;
+ALTER TABLE notifications.preferences ADD COLUMN IF NOT EXISTS like_enabled boolean;
+UPDATE notifications.preferences SET like_enabled = interaction_enabled WHERE like_enabled IS NULL;
+ALTER TABLE notifications.preferences ALTER COLUMN like_enabled SET DEFAULT true, ALTER COLUMN like_enabled SET NOT NULL;
 CREATE TABLE IF NOT EXISTS notifications.items (
  id uuid PRIMARY KEY,
  owner text NOT NULL,

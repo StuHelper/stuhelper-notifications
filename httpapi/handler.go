@@ -72,11 +72,13 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		out, e = h.Service.Preferences(ctx, owner, nil)
 	case r.Method == http.MethodPut && path == "/preferences":
 		var in struct {
-			Enabled *bool `json:"interaction_enabled"`
+			Interaction strictBool `json:"interaction_enabled"`
+			Reply       strictBool `json:"reply_enabled"`
+			Like        strictBool `json:"like_enabled"`
 		}
 		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096))
 		decoder.DisallowUnknownFields()
-		if decoder.Decode(&in) != nil || in.Enabled == nil {
+		if decoder.Decode(&in) != nil || (!in.Interaction.set && !in.Reply.set && !in.Like.set) {
 			failure(w, n.ErrInput)
 			return
 		}
@@ -85,7 +87,11 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, n.ErrInput)
 			return
 		}
-		out, e = h.Service.Preferences(ctx, owner, in.Enabled)
+		out, e = h.Service.UpdatePreferences(ctx, owner, n.PreferencesUpdate{
+			InteractionEnabled: in.Interaction.ptr(),
+			ReplyEnabled:       in.Reply.ptr(),
+			LikeEnabled:        in.Like.ptr(),
+		})
 	case r.Method == http.MethodPost && path == "/read-all":
 		e = h.Service.MarkAllRead(ctx, owner)
 	case r.Method == http.MethodPost && strings.HasSuffix(path, "/read"):
@@ -121,4 +127,30 @@ func failure(w http.ResponseWriter, e error) {
 	_ = json.NewEncoder(w).Encode(struct {
 		Code string `json:"code"`
 	}{code})
+}
+
+type strictBool struct {
+	set   bool
+	value bool
+}
+
+func (b *strictBool) UnmarshalJSON(raw []byte) error {
+	if string(raw) == "null" {
+		return n.ErrInput
+	}
+	var v bool
+	if err := json.Unmarshal(raw, &v); err != nil {
+		return err
+	}
+	b.set = true
+	b.value = v
+	return nil
+}
+
+func (b strictBool) ptr() *bool {
+	if !b.set {
+		return nil
+	}
+	v := b.value
+	return &v
 }

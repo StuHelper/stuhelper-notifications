@@ -1744,7 +1744,26 @@ type Page struct {
 
 // Preferences defines model for Preferences.
 type Preferences struct {
+	// InteractionEnabled 互动通知总状态；当 reply_enabled 或 like_enabled 任一为 true 时为 true。
 	InteractionEnabled bool `json:"interaction_enabled"`
+
+	// LikeEnabled 点赞通知独立开关，默认 true。
+	LikeEnabled bool `json:"like_enabled"`
+
+	// ReplyEnabled 评论回复通知独立开关，默认 true。
+	ReplyEnabled bool `json:"reply_enabled"`
+}
+
+// PreferencesUpdate defines model for PreferencesUpdate.
+type PreferencesUpdate struct {
+	// InteractionEnabled 兼容旧客户端的总开关；仅传该字段时同步设置 reply_enabled 与 like_enabled。
+	InteractionEnabled *bool `json:"interaction_enabled,omitempty"`
+
+	// LikeEnabled 点赞通知独立开关。
+	LikeEnabled *bool `json:"like_enabled,omitempty"`
+
+	// ReplyEnabled 评论回复通知独立开关。
+	ReplyEnabled *bool `json:"reply_enabled,omitempty"`
 }
 
 // ReportApprovedTitlePayload 举报处理通过
@@ -2170,7 +2189,7 @@ type ListNotificationsParams struct {
 }
 
 // SetPreferencesJSONRequestBody defines body for SetPreferences for application/json ContentType.
-type SetPreferencesJSONRequestBody = Preferences
+type SetPreferencesJSONRequestBody = PreferencesUpdate
 
 // AsInteractionReplyTitlePayload returns the union data inside the Notification as a InteractionReplyTitlePayload
 func (t Notification) AsInteractionReplyTitlePayload() (InteractionReplyTitlePayload, error) {
