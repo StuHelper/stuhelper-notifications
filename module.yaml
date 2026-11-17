@@ -23,8 +23,11 @@ capabilities:
 scenario_tests:
   NT-01:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+    - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
+    - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
+    - b01_filter_test.go#TestBoxColumnMigrationBackfillsExistingItems
   NT-03:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:

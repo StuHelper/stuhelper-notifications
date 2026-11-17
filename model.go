@@ -34,6 +34,48 @@ type Page struct {
 	Items      []Notification `json:"items"`
 	NextCursor string         `json:"next_cursor"`
 }
+
+const (
+	BoxInteraction  = "interaction"
+	BoxReview       = "review"
+	BoxVerification = "verification"
+	BoxSystem       = "system"
+)
+
+type UnreadByBox struct {
+	Interaction  int64 `json:"interaction"`
+	Review       int64 `json:"review"`
+	Verification int64 `json:"verification"`
+	System       int64 `json:"system"`
+}
+
+type UnreadByType struct {
+	Interaction int64 `json:"interaction"`
+	Business    int64 `json:"business"`
+	Security    int64 `json:"security"`
+	Account     int64 `json:"account"`
+}
+
+type UnreadSummary struct {
+	Count  int64        `json:"count"`
+	ByBox  UnreadByBox  `json:"by_box"`
+	ByType UnreadByType `json:"by_type"`
+}
+
+type ListQuery struct {
+	Cursor              string
+	Limit               int
+	Box                 string
+	Type                string
+	UnreadOnly          bool
+	IncludeContentNames bool
+}
+
+type ReadFilter struct {
+	Box  string
+	Type string
+}
+
 type Preferences struct {
 	InteractionEnabled bool `json:"interaction_enabled"`
 }
@@ -78,15 +120,21 @@ type Resolver interface {
 	Resolve(context.Context, string, string, Target) (string, error)
 }
 type Cursor struct {
-	CreatedAt time.Time
-	ID        string
+	CreatedAt  time.Time `json:"CreatedAt"`
+	ID         string    `json:"ID"`
+	Box        string    `json:"box,omitempty"`
+	Type       string    `json:"type,omitempty"`
+	UnreadOnly bool      `json:"unread_only,omitempty"`
 }
 type Repository interface {
 	Consume(context.Context, Event, string, time.Time, time.Duration) (Result, error)
 	List(context.Context, string, Cursor, int) ([]Notification, error)
+	ListFiltered(context.Context, string, ListQuery, Cursor, int) ([]Notification, error)
 	Unread(context.Context, string) (int64, error)
+	UnreadSummary(context.Context, string) (UnreadSummary, error)
 	MarkRead(context.Context, string, string, time.Time) error
 	MarkAllRead(context.Context, string, time.Time) error
+	MarkAllReadFiltered(context.Context, string, ReadFilter, time.Time) error
 	Preferences(context.Context, string, *bool) (Preferences, error)
 	Cleanup(context.Context, time.Time, int) (int64, error)
 }

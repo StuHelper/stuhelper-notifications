@@ -6,9 +6,11 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	n "github.com/StuHelper/stuhelper-notifications"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"strings"
 	"time"
 )
 
@@ -170,7 +172,7 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 			_, e = tx.ExecContext(ctx, `UPDATE notifications.items SET count=count+1 WHERE id=$1`, result.ID)
 		} else {
 			result.ID = uuid.NewString()
-			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,type,source_module,target_kind,target_id,title_key,title_params,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, result.ID, result.Recipient, d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
+			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,box,type,source_module,target_kind,target_id,title_key,title_params,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, result.ID, result.Recipient, n.BoxForTitleKey(d.TitleKey), d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
 		}
 		if e != nil {
 			return n.RecipientResult{}, safe(e)
@@ -179,7 +181,32 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 	return result, nil
 }
 func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit int) ([]n.Notification, error) {
-	rows, e := r.DB.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND ($2 OR (created_at,id)<($3,$4::uuid)) ORDER BY created_at DESC,id DESC LIMIT $5`, owner, c.ID == "", c.CreatedAt, emptyUUID(c.ID), limit)
+	return r.ListFiltered(ctx, owner, n.ListQuery{}, c, limit)
+}
+func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQuery, c n.Cursor, limit int) ([]n.Notification, error) {
+	if limit < 1 || limit > 101 {
+		return nil, n.ErrInput
+	}
+	clauses := []string{"owner=$1"}
+	args := []any{owner}
+	if q.Box != "" {
+		args = append(args, q.Box)
+		clauses = append(clauses, fmt.Sprintf("box=$%d", len(args)))
+	}
+	if q.Type != "" {
+		args = append(args, q.Type)
+		clauses = append(clauses, fmt.Sprintf("type=$%d", len(args)))
+	}
+	if q.UnreadOnly {
+		clauses = append(clauses, "read_at IS NULL")
+	}
+	if c.ID != "" {
+		args = append(args, c.CreatedAt, c.ID)
+		clauses = append(clauses, fmt.Sprintf("(created_at,id)<($%d,$%d::uuid)", len(args)-1, len(args)))
+	}
+	args = append(args, limit)
+	query := fmt.Sprintf("SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE %s ORDER BY created_at DESC,id DESC LIMIT $%d", strings.Join(clauses, " AND "), len(args))
+	rows, e := r.DB.QueryContext(ctx, query, args...)
 	if e != nil {
 		return nil, safe(e)
 	}
@@ -198,18 +225,48 @@ func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit i
 	}
 	return out, safe(rows.Err())
 }
-func emptyUUID(s string) string {
-	if s == "" {
-		return uuid.Nil.String()
-	}
-	return s
-}
 func (r *Repository) Unread(ctx context.Context, owner string) (int64, error) {
-	var count int64
-	e := r.DB.QueryRowContext(ctx, `SELECT count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL`, owner).Scan(&count)
-	return count, safe(e)
+	summary, e := r.UnreadSummary(ctx, owner)
+	return summary.Count, e
 }
-func (r *Repository) mark(ctx context.Context, owner, id string, now time.Time) error {
+func (r *Repository) UnreadSummary(ctx context.Context, owner string) (n.UnreadSummary, error) {
+	rows, e := r.DB.QueryContext(ctx, `SELECT box,type,count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL GROUP BY box,type`, owner)
+	if e != nil {
+		return n.UnreadSummary{}, safe(e)
+	}
+	defer rows.Close()
+	var out n.UnreadSummary
+	for rows.Next() {
+		var box, kind string
+		var cnt int64
+		if e = rows.Scan(&box, &kind, &cnt); e != nil {
+			return n.UnreadSummary{}, safe(e)
+		}
+		out.Count += cnt
+		switch box {
+		case n.BoxInteraction:
+			out.ByBox.Interaction += cnt
+		case n.BoxReview:
+			out.ByBox.Review += cnt
+		case n.BoxVerification:
+			out.ByBox.Verification += cnt
+		default:
+			out.ByBox.System += cnt
+		}
+		switch kind {
+		case "interaction":
+			out.ByType.Interaction += cnt
+		case "business":
+			out.ByType.Business += cnt
+		case "security":
+			out.ByType.Security += cnt
+		case "account":
+			out.ByType.Account += cnt
+		}
+	}
+	return out, safe(rows.Err())
+}
+func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Time) error {
 	tx, e := r.DB.BeginTx(ctx, nil)
 	if e != nil {
 		return safe(e)
@@ -218,7 +275,7 @@ func (r *Repository) mark(ctx context.Context, owner, id string, now time.Time) 
 	if _, e = lock(ctx, tx, owner); e != nil {
 		return safe(e)
 	}
-	result, e := tx.ExecContext(ctx, `UPDATE notifications.items SET read_at=COALESCE(read_at,$3) WHERE owner=$1 AND ($2='' OR id=$4::uuid)`, owner, id, now, emptyUUID(id))
+	result, e := tx.ExecContext(ctx, `UPDATE notifications.items SET read_at=COALESCE(read_at,$3) WHERE owner=$1 AND id=$2::uuid`, owner, id, now)
 	if e != nil {
 		return safe(e)
 	}
@@ -226,16 +283,38 @@ func (r *Repository) mark(ctx context.Context, owner, id string, now time.Time) 
 	if e != nil {
 		return safe(e)
 	}
-	if id != "" && affected == 0 {
+	if affected == 0 {
 		return n.ErrNotFound
 	}
 	return safe(tx.Commit())
 }
-func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Time) error {
-	return r.mark(ctx, owner, id, now)
-}
 func (r *Repository) MarkAllRead(ctx context.Context, owner string, now time.Time) error {
-	return r.mark(ctx, owner, "", now)
+	return r.MarkAllReadFiltered(ctx, owner, n.ReadFilter{}, now)
+}
+func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filter n.ReadFilter, now time.Time) error {
+	tx, e := r.DB.BeginTx(ctx, nil)
+	if e != nil {
+		return safe(e)
+	}
+	defer tx.Rollback()
+	if _, e = lock(ctx, tx, owner); e != nil {
+		return safe(e)
+	}
+	clauses := []string{"owner=$1", "read_at IS NULL"}
+	args := []any{owner, now}
+	if filter.Box != "" {
+		args = append(args, filter.Box)
+		clauses = append(clauses, fmt.Sprintf("box=$%d", len(args)))
+	}
+	if filter.Type != "" {
+		args = append(args, filter.Type)
+		clauses = append(clauses, fmt.Sprintf("type=$%d", len(args)))
+	}
+	query := fmt.Sprintf("UPDATE notifications.items SET read_at=$2 WHERE %s", strings.Join(clauses, " AND "))
+	if _, e = tx.ExecContext(ctx, query, args...); e != nil {
+		return safe(e)
+	}
+	return safe(tx.Commit())
 }
 func (r *Repository) Preferences(ctx context.Context, owner string, value *bool) (n.Preferences, error) {
 	tx, e := r.DB.BeginTx(ctx, nil)

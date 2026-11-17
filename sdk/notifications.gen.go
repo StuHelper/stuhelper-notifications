@@ -18,6 +18,30 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for Box.
+const (
+	BoxInteraction  Box = "interaction"
+	BoxReview       Box = "review"
+	BoxSystem       Box = "system"
+	BoxVerification Box = "verification"
+)
+
+// Valid indicates whether the value is a known member of the Box enum.
+func (e Box) Valid() bool {
+	switch e {
+	case BoxInteraction:
+		return true
+	case BoxReview:
+		return true
+	case BoxSystem:
+		return true
+	case BoxVerification:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContentApprovedTitlePayloadTargetKind.
 const (
 	ContentApprovedTitlePayloadTargetKindComment  ContentApprovedTitlePayloadTargetKind = "comment"
@@ -1500,6 +1524,57 @@ func (e VerificationRevocationRejectedTitlePayloadType) Valid() bool {
 	}
 }
 
+// Defines values for ListNotificationsParamsType.
+const (
+	ListNotificationsParamsTypeAccount     ListNotificationsParamsType = "account"
+	ListNotificationsParamsTypeBusiness    ListNotificationsParamsType = "business"
+	ListNotificationsParamsTypeInteraction ListNotificationsParamsType = "interaction"
+	ListNotificationsParamsTypeSecurity    ListNotificationsParamsType = "security"
+)
+
+// Valid indicates whether the value is a known member of the ListNotificationsParamsType enum.
+func (e ListNotificationsParamsType) Valid() bool {
+	switch e {
+	case ListNotificationsParamsTypeAccount:
+		return true
+	case ListNotificationsParamsTypeBusiness:
+		return true
+	case ListNotificationsParamsTypeInteraction:
+		return true
+	case ListNotificationsParamsTypeSecurity:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MarkAllReadParamsType.
+const (
+	MarkAllReadParamsTypeAccount     MarkAllReadParamsType = "account"
+	MarkAllReadParamsTypeBusiness    MarkAllReadParamsType = "business"
+	MarkAllReadParamsTypeInteraction MarkAllReadParamsType = "interaction"
+	MarkAllReadParamsTypeSecurity    MarkAllReadParamsType = "security"
+)
+
+// Valid indicates whether the value is a known member of the MarkAllReadParamsType enum.
+func (e MarkAllReadParamsType) Valid() bool {
+	switch e {
+	case MarkAllReadParamsTypeAccount:
+		return true
+	case MarkAllReadParamsTypeBusiness:
+		return true
+	case MarkAllReadParamsTypeInteraction:
+		return true
+	case MarkAllReadParamsTypeSecurity:
+		return true
+	default:
+		return false
+	}
+}
+
+// Box 通知中心分箱标识。
+type Box string
+
 // ContentApprovedTitlePayload 内容审核通过
 type ContentApprovedTitlePayload struct {
 	Target struct {
@@ -2064,7 +2139,25 @@ type TitleKey string
 
 // Unread defines model for Unread.
 type Unread struct {
-	Count int64 `json:"count"`
+	ByBox  UnreadByBox  `json:"by_box"`
+	ByType UnreadByType `json:"by_type"`
+	Count  int64        `json:"count"`
+}
+
+// UnreadByBox defines model for UnreadByBox.
+type UnreadByBox struct {
+	Interaction  int64 `json:"interaction"`
+	Review       int64 `json:"review"`
+	System       int64 `json:"system"`
+	Verification int64 `json:"verification"`
+}
+
+// UnreadByType defines model for UnreadByType.
+type UnreadByType struct {
+	Account     int64 `json:"account"`
+	Business    int64 `json:"business"`
+	Interaction int64 `json:"interaction"`
+	Security    int64 `json:"security"`
 }
 
 // VerificationDeletionApprovedTitlePayload 认证删除申请通过
@@ -2167,7 +2260,31 @@ type ListNotificationsParams struct {
 
 	// IncludeContentNames 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。
 	IncludeContentNames *bool `form:"include_content_names,omitempty" json:"include_content_names,omitempty"`
+
+	// Box 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。
+	Box *Box `form:"box,omitempty" json:"box,omitempty"`
+
+	// Type 按通知底层类别过滤。
+	Type *ListNotificationsParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// UnreadOnly 仅返回未读通知（read_at 为 null）。
+	UnreadOnly *bool `form:"unread_only,omitempty" json:"unread_only,omitempty"`
 }
+
+// ListNotificationsParamsType defines parameters for ListNotifications.
+type ListNotificationsParamsType string
+
+// MarkAllReadParams defines parameters for MarkAllRead.
+type MarkAllReadParams struct {
+	// Box 可选按分箱批量标为已读；省略时标记本人全部未读通知。
+	Box *Box `form:"box,omitempty" json:"box,omitempty"`
+
+	// Type 可选按通知类别批量标为已读。
+	Type *MarkAllReadParamsType `form:"type,omitempty" json:"type,omitempty"`
+}
+
+// MarkAllReadParamsType defines parameters for MarkAllRead.
+type MarkAllReadParamsType string
 
 // SetPreferencesJSONRequestBody defines body for SetPreferences for application/json ContentType.
 type SetPreferencesJSONRequestBody = Preferences
@@ -3012,7 +3129,7 @@ type ClientInterface interface {
 	SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
-	MarkAllRead(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	MarkAllRead(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 	GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3076,8 +3193,8 @@ func (c *Client) SetPreferences(ctx context.Context, body SetPreferencesJSONRequ
 }
 
 // MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
-func (c *Client) MarkAllRead(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewMarkAllReadRequest(c.Server)
+func (c *Client) MarkAllRead(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMarkAllReadRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3178,6 +3295,42 @@ func NewListNotificationsRequest(server string, params *ListNotificationsParams)
 
 		}
 
+		if params.Box != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.UnreadOnly != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "unread_only", *params.UnreadOnly, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if encoded := queryValues.Encode(); encoded != "" {
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
@@ -3260,7 +3413,7 @@ func NewSetPreferencesRequestWithBody(server string, contentType string, body io
 }
 
 // NewMarkAllReadRequest constructs an http.Request for the MarkAllRead method
-func NewMarkAllReadRequest(server string) (*http.Request, error) {
+func NewMarkAllReadRequest(server string, params *MarkAllReadParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3276,6 +3429,45 @@ func NewMarkAllReadRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Box != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
@@ -3414,7 +3606,7 @@ type ClientWithResponsesInterface interface {
 	// MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 	//
 	// Returns a wrapper object for the known response body format(s).
-	MarkAllReadWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error)
+	MarkAllReadWithResponse(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error)
 
 	// GetUnreadCountWithResponse performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 	//
@@ -3874,8 +4066,8 @@ func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, bo
 // MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 //
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error) {
-	rsp, err := c.MarkAllRead(ctx, reqEditors...)
+func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error) {
+	rsp, err := c.MarkAllRead(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
