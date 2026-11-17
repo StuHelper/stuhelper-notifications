@@ -5,6 +5,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
@@ -13,6 +14,7 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 	if len(items) == 0 {
 		return
 	}
+	started := time.Now()
 	refs := []TargetRef{}
 	seen := map[TargetRef]bool{}
 	for _, item := range items {
@@ -23,7 +25,8 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		}
 	}
 	results := map[TargetRef]TargetResolution{}
-	if batch, ok := s.resolver.(BatchResolver); ok {
+	batch, isBatch := s.resolver.(BatchResolver)
+	if isBatch {
 		call, cancel := context.WithTimeout(ctx, s.config.ResolveTimeout)
 		values, err := batch.ResolveBatch(call, owner, refs)
 		cancel()
@@ -40,12 +43,19 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 			}
 		}
 	}
+	var accessible, inaccessible, unavailable int
 	for i := range items {
 		item := &items[i]
 		resolved := results[TargetRef{item.SourceModule, item.Target}]
 		state := resolved.Status
-		if state != "accessible" && state != "inaccessible" {
+		switch state {
+		case "accessible":
+			accessible++
+		case "inaccessible":
+			inaccessible++
+		default:
 			state = "unavailable"
+			unavailable++
 		}
 		item.TargetStatus = state
 		// Clone to avoid retaining a name in a repository implementation's object.
@@ -73,5 +83,15 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		}
 		item.TitleParams["content_name"] = name
 		item.TitleParams["content_name_state"] = nameState
+	}
+	if s.config.Observer != nil {
+		s.config.Observer.ObserveResolve(ResolveObservation{
+			Batch:        isBatch,
+			Targets:      len(refs),
+			Accessible:   accessible,
+			Inaccessible: inaccessible,
+			Unavailable:  unavailable,
+			Duration:     time.Since(started),
+		})
 	}
 }

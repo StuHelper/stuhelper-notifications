@@ -42,7 +42,33 @@ func ownerOK(owner string) error {
 	}
 	return nil
 }
-func (s *Service) Consume(ctx context.Context, d Event) (Result, error) {
+func (s *Service) Consume(ctx context.Context, d Event) (res Result, retErr error) {
+	started := time.Now()
+	defer func() {
+		if s.config.Observer == nil {
+			return
+		}
+		suppressed := map[string]int{}
+		delivered := 0
+		for _, entry := range res.Recipients {
+			if entry.ID != "" {
+				delivered++
+			}
+			if entry.SuppressionReason != "" {
+				suppressed[entry.SuppressionReason]++
+			}
+		}
+		s.config.Observer.ObserveConsume(ConsumeObservation{
+			Source:     d.Source,
+			Type:       d.Type,
+			TitleKey:   d.TitleKey,
+			Delivered:  delivered,
+			Suppressed: suppressed,
+			Ignored:    res.Ignored,
+			Err:        retErr,
+			Duration:   time.Since(started),
+		})
+	}()
 	if d.Revision < 1 || !valid(d.Subject, 512) || !valid(d.EventType, 128) || !valid(d.ID, 256) || !valid(d.Source, 80) || !valid(d.Target.Kind, 80) || !valid(d.Target.ID, 256) || !valid(d.TitleKey, 256) {
 		return Result{}, ErrInput
 	}
@@ -140,5 +166,20 @@ func (s *Service) Preferences(ctx context.Context, owner string, enabled *bool) 
 
 // Cleanup performs one bounded batch. The host schedules further batches.
 func (s *Service) Cleanup(ctx context.Context) (int64, error) {
-	return s.repo.Cleanup(ctx, s.now().UTC().Add(-s.config.Retention), s.config.CleanupBatch)
+	started := time.Now()
+	deleted, err := s.repo.Cleanup(ctx, s.now().UTC().Add(-s.config.Retention), s.config.CleanupBatch)
+	if s.config.Observer != nil {
+		s.config.Observer.ObserveCleanup(CleanupObservation{
+			Deleted:   deleted,
+			FullBatch: err == nil && deleted == int64(s.config.CleanupBatch),
+			Err:       err,
+			Duration:  time.Since(started),
+		})
+	}
+	return deleted, err
+}
+
+// MaintenanceStats reports PII-free retention backlog and deduplication table growth.
+func (s *Service) MaintenanceStats(ctx context.Context) (MaintenanceStats, error) {
+	return s.repo.MaintenanceStats(ctx, s.now().UTC().Add(-s.config.Retention))
 }

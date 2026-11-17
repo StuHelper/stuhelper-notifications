@@ -34,11 +34,13 @@ scenario_tests:
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
+    - b06_observability_test.go#TestMaintenanceStatsAndOperationalObserver
   NT-07:
     - http_compatibility_test.go#TestLegacyHTTPParametersAndExplicitNameExpansion
     - target_titles_test.go#TestNotificationNamesAreCurrentBoundedAndNeverPersisted
     - title_catalog_test.go#TestTitleCatalogAdmissionAndRejectedWrites
     - title_catalog_test.go#TestInteractionTitleUsesServerAggregateCount
+    - b06_observability_test.go#TestCatalogPayloadSchemaSynthesisFromXTitleCatalog
   NT-08:
     - consume_test.go#TestConsumeRevisionOrderingAndOriginalResults
     - consume_test.go#TestConsumeRollbackRestoresAggregateAndRevision

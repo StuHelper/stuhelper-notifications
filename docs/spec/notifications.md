@@ -1,7 +1,7 @@
 ---
 type: spec
 status: Accepted
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # 通知模块实现说明
@@ -24,13 +24,15 @@ updated: 2026-11-17
 
 通知、inbox 和已处理修订在同一数据库事务写入。清理按创建时间删除超过保留期限的通知，每次最多 CleanupBatch 条。并发清理跳过已锁定行。未到保留期限边界的通知继续保留。
 
+MaintenanceStats 查询过期未删通知数、最早过期时间及 inbox 与 revisions 估算行数，不含个人信息。Config.Observer 可选记录消费分布、目标解析降级与清理批次指标。
+
 inbox 和修订记录不随通知清理。inbox 保存来源、事件 ID、subject、revision、映射摘要及原结果，不保存标题参数。记录长期增长，回收需要明确上游最大重投期限，否则旧事件可能重新入站。
 
 当前只实现站内渠道。邮件、QQ、客户端推送、免打扰及提醒提前量未接入，不对外声明可用。
 
 ## 标题键目录
 
-OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，Notification 的条件 schema 校验每种组合。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
+OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，scripts/generate.mjs 据此自动生成各 TitlePayload 子模式并校验一致性。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
 
 下表参数全部必填，只允许 1 至 64 位 ASCII 字母、数字及点、下划线、冒号、短横线，首位为字母或数字。参数是显示用业务编号，不能填姓名、学号、证件号、联系方式或正文。格式校验不能识别所有敏感编号，生产者须保证数据来源正确。
 

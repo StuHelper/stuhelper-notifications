@@ -89,12 +89,55 @@ type Repository interface {
 	MarkAllRead(context.Context, string, time.Time) error
 	Preferences(context.Context, string, *bool) (Preferences, error)
 	Cleanup(context.Context, time.Time, int) (int64, error)
+	MaintenanceStats(context.Context, time.Time) (MaintenanceStats, error)
 }
+
+type MaintenanceStats struct {
+	ExpiredItems          int64      `json:"expired_items"`
+	OldestExpiredAt       *time.Time `json:"oldest_expired_at"`
+	EstimatedInboxRows    int64      `json:"estimated_inbox_rows"`
+	EstimatedRevisionRows int64      `json:"estimated_revision_rows"`
+}
+
+type ConsumeObservation struct {
+	Source     string
+	Type       string
+	TitleKey   string
+	Delivered  int
+	Suppressed map[string]int
+	Ignored    bool
+	Err        error
+	Duration   time.Duration
+}
+
+type ResolveObservation struct {
+	Batch        bool
+	Targets      int
+	Accessible   int
+	Inaccessible int
+	Unavailable  int
+	Duration     time.Duration
+}
+
+type CleanupObservation struct {
+	Deleted   int64
+	FullBatch bool
+	Err       error
+	Duration  time.Duration
+}
+
+type Observer interface {
+	ObserveConsume(ConsumeObservation)
+	ObserveResolve(ResolveObservation)
+	ObserveCleanup(CleanupObservation)
+}
+
 type Config struct {
 	Retention         time.Duration
 	AggregationWindow time.Duration
 	CleanupBatch      int
 	ResolveTimeout    time.Duration
+	Observer          Observer
 }
 
 // TargetRef is a comparable key for a page-scoped, deduplicated lookup.
