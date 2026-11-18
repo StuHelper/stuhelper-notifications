@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -143,7 +144,26 @@ func TestURIDSNSetupAndDesensitizedDiagnostics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	uriDSN := fmt.Sprintf("postgres://%s@%s:%d/%s?sslmode=disable", cfg.User, cfg.Host, cfg.Port, cfg.Database)
+	var uriDSN string
+	if strings.HasPrefix(cfg.Host, "/") {
+		q := url.Values{}
+		q.Set("host", cfg.Host)
+		q.Set("port", fmt.Sprint(cfg.Port))
+		q.Set("sslmode", "disable")
+		u := url.URL{
+			Scheme:   "postgres",
+			User:     url.User(cfg.User),
+			Path:     "/" + cfg.Database,
+			RawQuery: q.Encode(),
+		}
+		uriDSN = u.String()
+	} else {
+		uriDSN = fmt.Sprintf("postgres://%s@%s:%d/%s?sslmode=disable", url.PathEscape(cfg.User), cfg.Host, cfg.Port, url.PathEscape(cfg.Database))
+	}
+	parsedSocketURI, err := pgx.ParseConfig("postgres://runner@/postgres?host=%2Ftmp%2Fstuhelper-sock&port=55439&sslmode=disable")
+	if err != nil || parsedSocketURI.Host != "/tmp/stuhelper-sock" || parsedSocketURI.Port != 55439 || parsedSocketURI.Database != "postgres" {
+		t.Fatalf("unexpected socket URI parse result: cfg=%+v err=%v", parsedSocketURI, err)
+	}
 	t.Setenv("STUHELPER_NOTIFICATIONS_TEST_DSN", uriDSN)
 
 	f := setup(t)
