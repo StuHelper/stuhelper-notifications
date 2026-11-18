@@ -120,9 +120,36 @@ export interface components {
             items: components["schemas"]["Notification"][];
             next_cursor: string;
         };
+        /**
+         * @description 通知中心分箱标识。
+         * @enum {string}
+         */
+        Box: "interaction" | "review" | "verification" | "system";
+        UnreadByBox: {
+            /** Format: int64 */
+            interaction: number;
+            /** Format: int64 */
+            review: number;
+            /** Format: int64 */
+            verification: number;
+            /** Format: int64 */
+            system: number;
+        };
+        UnreadByType: {
+            /** Format: int64 */
+            interaction: number;
+            /** Format: int64 */
+            business: number;
+            /** Format: int64 */
+            security: number;
+            /** Format: int64 */
+            account: number;
+        };
         Unread: {
             /** Format: int64 */
             count: number;
+            by_box: components["schemas"]["UnreadByBox"];
+            by_type: components["schemas"]["UnreadByType"];
         };
         Preferences: {
             interaction_enabled: boolean;
@@ -576,6 +603,12 @@ export interface operations {
                 limit?: number;
                 /** @description 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。 */
                 include_content_names?: boolean;
+                /** @description 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。 */
+                box?: components["schemas"]["Box"];
+                /** @description 按通知底层类别过滤。 */
+                type?: "interaction" | "business" | "security" | "account";
+                /** @description 仅返回未读通知（read_at 为 null）。 */
+                unread_only?: boolean;
             };
             header?: never;
             path?: never;
@@ -771,7 +804,12 @@ export interface operations {
     };
     markAllRead: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 可选按分箱批量标为已读；省略时标记本人全部未读通知。 */
+                box?: components["schemas"]["Box"];
+                /** @description 可选按通知类别批量标为已读。 */
+                type?: "interaction" | "business" | "security" | "account";
+            };
             header?: never;
             path?: never;
             cookie?: never;

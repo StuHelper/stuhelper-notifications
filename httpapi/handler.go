@@ -43,52 +43,73 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var out any
 	switch {
 	case r.Method == http.MethodGet && path == "":
-		query, qErr := url.ParseQuery(r.URL.RawQuery)
-		if qErr != nil {
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
 			failure(w, n.ErrInput)
 			return
 		}
-		for key, values := range query {
-			if len(values) != 1 || (key != "limit" && key != "cursor" && key != "include_content_names") {
+		for k := range query {
+			switch k {
+			case "cursor", "limit", "include_content_names", "box", "type", "unread_only":
+			default:
 				failure(w, n.ErrInput)
 				return
 			}
 		}
 		limit := 30
 		if values, ok := query["limit"]; ok {
+			if len(values) != 1 {
+				failure(w, n.ErrInput)
+				return
+			}
 			limit, e = strconv.Atoi(values[0])
 			if e != nil {
 				failure(w, n.ErrInput)
 				return
 			}
 		}
-		includeNames := false
-		if values, ok := query["include_content_names"]; ok {
-			if values[0] != "true" && values[0] != "false" {
+		cursor := ""
+		if values, ok := query["cursor"]; ok {
+			if len(values) != 1 || (values[0] != "" && strings.TrimSpace(values[0]) == "") {
 				failure(w, n.ErrInput)
 				return
 			}
-			includeNames = values[0] == "true"
-		}
-		cursor := ""
-		if values, ok := query["cursor"]; ok {
 			cursor = values[0]
 		}
-		if includeNames {
-			out, e = h.Service.ListWithContentNames(ctx, owner, cursor, limit)
-		} else {
-			out, e = h.Service.List(ctx, owner, cursor, limit)
+		box, ok := singleQuery(query, "box")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
 		}
+		kind, ok := singleQuery(query, "type")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
+		}
+		includeNames, ok := boolQuery(query, "include_content_names")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
+		}
+		unreadOnly, ok := boolQuery(query, "unread_only")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
+		}
+		out, e = h.Service.ListFiltered(ctx, owner, n.ListQuery{
+			Cursor:              cursor,
+			Limit:               limit,
+			Box:                 box,
+			Type:                kind,
+			UnreadOnly:          unreadOnly,
+			IncludeContentNames: includeNames,
+		})
 	case r.Method == http.MethodGet && path == "/unread-count":
 		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)
 			return
 		}
-		var count int64
-		count, e = h.Service.Unread(ctx, owner)
-		out = struct {
-			Count int64 `json:"count"`
-		}{count}
+		out, e = h.Service.UnreadSummary(ctx, owner)
 	case r.Method == http.MethodGet && path == "/preferences":
 		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)
@@ -116,11 +137,28 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		out, e = h.Service.Preferences(ctx, owner, in.Enabled)
 	case r.Method == http.MethodPost && path == "/read-all":
-		if !emptyQuery(r.URL.RawQuery) {
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
 			failure(w, n.ErrInput)
 			return
 		}
-		e = h.Service.MarkAllRead(ctx, owner)
+		for k := range query {
+			if k != "box" && k != "type" {
+				failure(w, n.ErrInput)
+				return
+			}
+		}
+		box, ok := singleQuery(query, "box")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
+		}
+		kind, ok := singleQuery(query, "type")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
+		}
+		e = h.Service.MarkAllReadFiltered(ctx, owner, n.ReadFilter{Box: box, Type: kind})
 	case r.Method == http.MethodPost && isSingleRead:
 		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)
@@ -180,4 +218,26 @@ func failure(w http.ResponseWriter, e error) {
 	_ = json.NewEncoder(w).Encode(struct {
 		Code string `json:"code"`
 	}{code})
+}
+
+func singleQuery(q url.Values, name string) (string, bool) {
+	values, ok := q[name]
+	if !ok {
+		return "", true
+	}
+	if len(values) != 1 || strings.TrimSpace(values[0]) == "" {
+		return "", false
+	}
+	return values[0], true
+}
+
+func boolQuery(q url.Values, name string) (bool, bool) {
+	values, ok := q[name]
+	if !ok {
+		return false, true
+	}
+	if len(values) != 1 || (values[0] != "true" && values[0] != "false") {
+		return false, false
+	}
+	return values[0] == "true", true
 }

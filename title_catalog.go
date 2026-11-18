@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"regexp"
 	"slices"
+	"strings"
 )
 
 // The embedded provider contract is the single source of allowed delivery titles.
@@ -42,4 +43,40 @@ func validateTitle(d Event) error {
 		}
 	}
 	return nil
+}
+
+// BoxForTitleKey maps a title catalog key to its message-center box.
+func BoxForTitleKey(titleKey string) string {
+	subject := strings.TrimPrefix(titleKey, "notifications.")
+	if i := strings.IndexByte(subject, '.'); i >= 0 {
+		subject = subject[:i]
+	}
+	switch {
+	case subject == "interaction":
+		return BoxInteraction
+	case subject == "content" || subject == "resource_removal" || subject == "report" || subject == "appeal":
+		return BoxReview
+	case strings.HasSuffix(subject, "_verification") || strings.HasPrefix(subject, "verification_"):
+		return BoxVerification
+	default:
+		return BoxSystem
+	}
+}
+
+func validBox(box string) bool {
+	switch box {
+	case BoxInteraction, BoxReview, BoxVerification, BoxSystem:
+		return true
+	default:
+		return false
+	}
+}
+
+func validNotificationType(kind string) bool {
+	switch kind {
+	case "interaction", "business", "security", "account":
+		return true
+	default:
+		return false
+	}
 }
