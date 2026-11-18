@@ -41,6 +41,7 @@ scenario_tests:
     - query_efficiency_test.go#TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds
     - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
     - b01_filter_test.go#TestBoxColumnMigrationBackfillsExistingItems
+    - b07_delete_test.go#TestDeleteNotificationOwnershipIdempotencyAndNoResurrection
   NT-03:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:
@@ -53,6 +54,7 @@ scenario_tests:
     - http_contract_sdk_test.go#TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes
     - b04_preferences_test.go#TestGranularReplyAndLikePreferencesAndLegacyCompatibility
     - b04_preferences_test.go#TestPreferencesMigrationPreservesDisabledLegacyUsers
+    - b07_delete_test.go#TestDeleteNotificationOwnershipIdempotencyAndNoResurrection
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients

@@ -133,6 +133,10 @@ func (r *Repository) CheckRuntime(ctx context.Context) error {
 			return n.UnavailableError{Reason: n.ReasonRuntimeMissingDelete}
 		}
 	}
+	var canDelete bool
+	if e = r.DB.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,'notifications.items','DELETE')`).Scan(&canDelete); e != nil || !canDelete {
+		return n.ErrUnavailable
+	}
 	return nil
 }
 
@@ -531,6 +535,36 @@ func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filt
 	query := fmt.Sprintf("UPDATE notifications.items SET read_at=$2 WHERE %s", strings.Join(clauses, " AND "))
 	if _, e = tx.ExecContext(ctx, query, args...); e != nil {
 		return safe(e)
+	}
+	return safe(tx.Commit())
+}
+func (r *Repository) Delete(ctx context.Context, owner, id string) error {
+	db, e := r.db()
+	if e != nil {
+		return e
+	}
+	tx, e := db.BeginTx(ctx, nil)
+	if e != nil {
+		return safe(e)
+	}
+	defer tx.Rollback()
+	closed, _, e := lockOwner(ctx, tx, owner)
+	if closed {
+		return n.ErrForbidden
+	}
+	if e != nil {
+		return safe(e)
+	}
+	result, e := tx.ExecContext(ctx, `DELETE FROM notifications.items WHERE owner=$1 AND id=$2::uuid`, owner, id)
+	if e != nil {
+		return safe(e)
+	}
+	affected, e := result.RowsAffected()
+	if e != nil {
+		return safe(e)
+	}
+	if affected == 0 {
+		return n.ErrNotFound
 	}
 	return safe(tx.Commit())
 }
