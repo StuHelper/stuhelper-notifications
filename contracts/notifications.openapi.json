@@ -45,6 +45,16 @@
               }
             }
           },
+          "403": {
+            "description": "请求人账号已注销",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -132,6 +142,16 @@
               }
             }
           },
+          "403": {
+            "description": "请求人账号已注销",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -174,6 +194,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "请求人账号已注销",
             "content": {
               "application/json": {
                 "schema": {
@@ -243,6 +273,16 @@
               }
             }
           },
+          "403": {
+            "description": "请求人账号已注销",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -300,6 +340,16 @@
               }
             }
           },
+          "403": {
+            "description": "请求人账号已注销",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -347,6 +397,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "请求人账号已注销",
             "content": {
               "application/json": {
                 "schema": {

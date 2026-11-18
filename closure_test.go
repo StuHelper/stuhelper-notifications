@@ -7,6 +7,7 @@ import (
 	n "github.com/StuHelper/stuhelper-notifications"
 	"github.com/StuHelper/stuhelper-notifications/httpapi"
 	"github.com/StuHelper/stuhelper-notifications/postgres"
+	"github.com/StuHelper/stuhelper-notifications/sdk"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -166,6 +167,16 @@ func TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP(t *t
 		if rec.Code != http.StatusForbidden || !strings.Contains(rec.Body.String(), `"code":"forbidden"`) {
 			t.Fatalf("%s %s: status=%d body=%s", tc.method, tc.path, rec.Code, rec.Body.String())
 		}
+	}
+	server := httptest.NewServer(h)
+	defer server.Close()
+	client, err := sdk.NewClientWithResponses(server.URL, sdk.WithRequestEditorFn(func(_ context.Context, r *http.Request) error { r.Header.Set("Test-Owner", "alice"); return nil }))
+	if err != nil {
+		t.Fatal(err)
+	}
+	prefs, err := client.GetPreferencesWithResponse(ctx)
+	if err != nil || prefs.JSON403 == nil || prefs.JSON403.Code != "forbidden" {
+		t.Fatalf("SDK closed account response: %+v %v", prefs, err)
 	}
 	if e = f.db.QueryRow(`SELECT count(*) FROM notifications.preferences WHERE owner='alice'`).Scan(&alicePrefs); e != nil || alicePrefs != 0 {
 		t.Fatal("forbidden access recreated alice preferences", alicePrefs, e)
