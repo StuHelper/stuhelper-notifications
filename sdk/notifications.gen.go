@@ -1713,9 +1713,9 @@ type InteractionReplyTitlePayloadType string
 
 // Notification defines model for Notification.
 type Notification struct {
-	Count        int                      `json:"count"`
+	Count        int64                    `json:"count"`
 	CreatedAt    time.Time                `json:"created_at"`
-	Id           string                   `json:"id"`
+	Id           openapi_types.UUID       `json:"id"`
 	ReadAt       *time.Time               `json:"read_at"`
 	SourceModule string                   `json:"source_module"`
 	Target       Target                   `json:"target"`
