@@ -129,6 +129,13 @@ type ReadFilter struct {
 
 type Preferences struct {
 	InteractionEnabled bool `json:"interaction_enabled"`
+	ReplyEnabled       bool `json:"reply_enabled"`
+	LikeEnabled        bool `json:"like_enabled"`
+}
+type PreferencesUpdate struct {
+	InteractionEnabled *bool `json:"interaction_enabled,omitempty"`
+	ReplyEnabled       *bool `json:"reply_enabled,omitempty"`
+	LikeEnabled        *bool `json:"like_enabled,omitempty"`
 }
 
 // Event is a trusted, complete notification mapping of one source event.
@@ -191,6 +198,7 @@ type Repository interface {
 	MarkAllRead(context.Context, string, time.Time) error
 	MarkAllReadFiltered(context.Context, string, ReadFilter, time.Time) error
 	Preferences(context.Context, string, *bool) (Preferences, error)
+	UpdatePreferences(context.Context, string, PreferencesUpdate) (Preferences, error)
 	Cleanup(context.Context, time.Time, int) (int64, error)
 }
 
