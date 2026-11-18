@@ -129,7 +129,7 @@ Consume 返回 nil error 后，relay 才可 ConfirmOutbox。确认丢失时重�
 
 relay 对提供方频道 LISTEN，通知到达后读取最多 100 条未发送事件。重连后立即补读，并每 60 秒兜底读取。失败从 5 秒指数退避，单次最长 1 小时，累计 24 小时后进入待处理队列。
 
-inbox 的 result JSON 保存整批消费结果，不随通知清理。业务运行身份仅持有 inbox 的 SELECT、INSERT 和 revisions 的 SELECT、INSERT、UPDATE。启动时 CheckRuntime 验证权限，迁移身份不进入业务进程。
+inbox 的 result JSON 保存整批消费结果，不随通知清理。业务运行身份仅持有 schema USAGE、items/preferences 的读写删、revisions 的读写改及 inbox 的 SELECT、INSERT，不得拥有对象或持有 TRUNCATE 权限。CheckRuntime 验证最小权限，错误包装固定脱敏原因码。
 
 空的单收件人候选 inbox 可原位迁移，保留运行权限和已有通知。有记录的候选 inbox 会拒绝自动升级并保留数据，因为部分记录缺少收件人。负责人须依据原始事件恢复收件人与规范化摘要后再升级，不能直接清空去重历史。
 

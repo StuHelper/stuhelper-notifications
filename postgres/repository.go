@@ -8,6 +8,7 @@ import (
 	"errors"
 	n "github.com/StuHelper/stuhelper-notifications"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"time"
 )
@@ -16,6 +17,13 @@ import (
 var Schema string
 
 type Repository struct{ DB *sql.DB }
+
+func (r *Repository) db() (*sql.DB, error) {
+	if r == nil || r.DB == nil {
+		return nil, n.UnavailableError{Reason: n.ReasonDatabaseNil}
+	}
+	return r.DB, nil
+}
 
 func safe(e error) error {
 	if e == nil {
@@ -27,9 +35,37 @@ func safe(e error) error {
 	if errors.Is(e, context.Canceled) || errors.Is(e, context.DeadlineExceeded) {
 		return e
 	}
-	return n.ErrUnavailable
+	var classified n.UnavailableError
+	if errors.As(e, &classified) {
+		return classified
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(e, &pgErr) && len(pgErr.Code) >= 2 {
+		switch pgErr.Code[:2] {
+		case "08":
+			return n.UnavailableError{Reason: n.ReasonDatabaseConnection}
+		case "22", "23":
+			return n.UnavailableError{Reason: n.ReasonDatabaseConstraint}
+		case "28", "42":
+			return n.UnavailableError{Reason: n.ReasonDatabasePrivilegeSchema}
+		case "40":
+			return n.UnavailableError{Reason: n.ReasonDatabaseSerialization}
+		case "53":
+			return n.UnavailableError{Reason: n.ReasonDatabaseResources}
+		case "55":
+			return n.UnavailableError{Reason: n.ReasonDatabaseState}
+		case "57":
+			return n.UnavailableError{Reason: n.ReasonDatabaseIntervention}
+		case "P0":
+			return n.UnavailableError{Reason: n.ReasonDatabaseException}
+		}
+	}
+	return n.UnavailableError{Reason: n.ReasonDatabaseError}
 }
 func Migrate(ctx context.Context, db *sql.DB) error {
+	if db == nil {
+		return n.UnavailableError{Reason: n.ReasonDatabaseNil}
+	}
 	tx, e := db.BeginTx(ctx, nil)
 	if e != nil {
 		return e
@@ -44,23 +80,50 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 	return tx.Commit()
 }
 func (r *Repository) CheckRuntime(ctx context.Context) error {
-	var unsafe bool
-	e := r.DB.QueryRowContext(ctx, `SELECT rolsuper OR rolcreaterole OR rolcreatedb OR has_schema_privilege(current_user,'notifications','CREATE') OR has_table_privilege(current_user,'notifications.inbox','UPDATE,DELETE') OR has_table_privilege(current_user,'notifications.revisions','DELETE') FROM pg_roles WHERE rolname=current_user`).Scan(&unsafe)
-	if e != nil || unsafe {
-		return n.ErrUnavailable
+	db, e := r.db()
+	if e != nil {
+		return e
 	}
-	for _, table := range []string{"items", "preferences", "inbox", "revisions", "closed_owners"} {
+	var hasUsage bool
+	if e = db.QueryRowContext(ctx, `SELECT has_schema_privilege(current_user,'notifications','USAGE')`).Scan(&hasUsage); e != nil {
+		return safe(e)
+	}
+	if !hasUsage {
+		return n.UnavailableError{Reason: n.ReasonRuntimeMissingSchema}
+	}
+	var unsafe bool
+	e = db.QueryRowContext(ctx, `SELECT rolsuper OR rolcreaterole OR rolcreatedb OR has_schema_privilege(current_user,'notifications','CREATE') OR has_table_privilege(current_user,'notifications.inbox','UPDATE,DELETE,TRUNCATE') OR has_table_privilege(current_user,'notifications.revisions','DELETE,TRUNCATE') OR has_table_privilege(current_user,'notifications.closed_owners','UPDATE,DELETE,TRUNCATE') OR EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='notifications' AND pg_has_role(current_user,nspowner,'USAGE')) OR EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname='notifications' AND pg_has_role(current_user,c.relowner,'USAGE')) FROM pg_roles WHERE rolname=current_user`).Scan(&unsafe)
+	if e != nil {
+		return safe(e)
+	}
+	if unsafe {
+		return n.UnavailableError{Reason: n.ReasonRuntimeUnsafePrivilege}
+	}
+	for _, table := range []string{"items", "preferences", "inbox", "revisions", "closed_owners", "closed_owners"} {
 		var allowed bool
-		e = r.DB.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,$1,'SELECT') AND has_table_privilege(current_user,$1,'INSERT')`, "notifications."+table).Scan(&allowed)
-		if e != nil || !allowed {
-			return n.ErrUnavailable
+		if e = db.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,$1,'SELECT') AND has_table_privilege(current_user,$1,'INSERT')`, "notifications."+table).Scan(&allowed); e != nil {
+			return safe(e)
+		}
+		if !allowed {
+			return n.UnavailableError{Reason: n.ReasonRuntimeMissingReadWrite}
 		}
 	}
 	for _, table := range []string{"items", "preferences", "revisions"} {
 		var allowed bool
-		e = r.DB.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,$1,'UPDATE')`, "notifications."+table).Scan(&allowed)
-		if e != nil || !allowed {
-			return n.ErrUnavailable
+		if e = db.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,$1,'UPDATE')`, "notifications."+table).Scan(&allowed); e != nil {
+			return safe(e)
+		}
+		if !allowed {
+			return n.UnavailableError{Reason: n.ReasonRuntimeMissingUpdate}
+		}
+	}
+	for _, table := range []string{"items", "preferences"} {
+		var allowed bool
+		if e = db.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,$1,'DELETE')`, "notifications."+table).Scan(&allowed); e != nil {
+			return safe(e)
+		}
+		if !allowed {
+			return n.UnavailableError{Reason: n.ReasonRuntimeMissingDelete}
 		}
 	}
 	return nil
@@ -101,7 +164,11 @@ var (
 )
 
 func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now time.Time, window time.Duration) (n.Result, error) {
-	tx, e := r.DB.BeginTx(ctx, nil)
+	db, e := r.db()
+	if e != nil {
+		return n.Result{}, e
+	}
+	tx, e := db.BeginTx(ctx, nil)
 	if e != nil {
 		return n.Result{}, safe(e)
 	}
@@ -124,7 +191,7 @@ func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now ti
 			return n.Result{Ignored: true}, nil
 		}
 		if e = json.Unmarshal(saved, &result); e != nil {
-			return n.Result{}, n.ErrUnavailable
+			return n.Result{}, n.UnavailableError{Reason: n.ReasonCorruptStoredJSON}
 		}
 		return result, nil
 	}
@@ -205,10 +272,14 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 	return result, nil
 }
 func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit int) ([]n.Notification, error) {
+	db, e := r.db()
+	if e != nil {
+		return nil, e
+	}
 	if e := r.ensureOpenOwner(ctx, owner); e != nil {
 		return nil, e
 	}
-	rows, e := r.DB.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND ($2 OR (created_at,id)<($3,$4::uuid)) ORDER BY created_at DESC,id DESC LIMIT $5`, owner, c.ID == "", c.CreatedAt, emptyUUID(c.ID), limit)
+	rows, e := db.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND ($2 OR (created_at,id)<($3,$4::uuid)) ORDER BY created_at DESC,id DESC LIMIT $5`, owner, c.ID == "", c.CreatedAt, emptyUUID(c.ID), limit)
 	if e != nil {
 		return nil, safe(e)
 	}
@@ -221,7 +292,7 @@ func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit i
 			return nil, safe(e)
 		}
 		if e = json.Unmarshal(params, &v.TitleParams); e != nil {
-			return nil, n.ErrUnavailable
+			return nil, n.UnavailableError{Reason: n.ReasonCorruptStoredJSON}
 		}
 		out = append(out, v)
 	}
@@ -234,15 +305,23 @@ func emptyUUID(s string) string {
 	return s
 }
 func (r *Repository) Unread(ctx context.Context, owner string) (int64, error) {
+	db, e := r.db()
+	if e != nil {
+		return 0, e
+	}
 	if e := r.ensureOpenOwner(ctx, owner); e != nil {
 		return 0, e
 	}
 	var count int64
-	e := r.DB.QueryRowContext(ctx, `SELECT count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL`, owner).Scan(&count)
+	e = db.QueryRowContext(ctx, `SELECT count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL`, owner).Scan(&count)
 	return count, safe(e)
 }
 func (r *Repository) mark(ctx context.Context, owner, id string, now time.Time) error {
-	tx, e := r.DB.BeginTx(ctx, nil)
+	db, e := r.db()
+	if e != nil {
+		return e
+	}
+	tx, e := db.BeginTx(ctx, nil)
 	if e != nil {
 		return safe(e)
 	}
@@ -274,9 +353,13 @@ func (r *Repository) MarkAllRead(ctx context.Context, owner string, now time.Tim
 	return r.mark(ctx, owner, "", now)
 }
 func (r *Repository) Preferences(ctx context.Context, owner string, value *bool) (n.Preferences, error) {
+	db, e := r.db()
+	if e != nil {
+		return n.Preferences{}, e
+	}
 	if value == nil {
 		var closed, enabled bool
-		e := r.DB.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notifications.closed_owners WHERE owner=$1), COALESCE((SELECT interaction_enabled FROM notifications.preferences WHERE owner=$1), true)`, owner).Scan(&closed, &enabled)
+		e := db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notifications.closed_owners WHERE owner=$1), COALESCE((SELECT interaction_enabled FROM notifications.preferences WHERE owner=$1), true)`, owner).Scan(&closed, &enabled)
 		if e != nil {
 			return n.Preferences{}, safe(e)
 		}
@@ -285,7 +368,7 @@ func (r *Repository) Preferences(ctx context.Context, owner string, value *bool)
 		}
 		return n.Preferences{InteractionEnabled: enabled}, nil
 	}
-	tx, e := r.DB.BeginTx(ctx, nil)
+	tx, e := db.BeginTx(ctx, nil)
 	if e != nil {
 		return n.Preferences{}, safe(e)
 	}
@@ -304,7 +387,11 @@ func (r *Repository) Preferences(ctx context.Context, owner string, value *bool)
 	return n.Preferences{InteractionEnabled: enabled}, safe(tx.Commit())
 }
 func (r *Repository) CloseAccount(ctx context.Context, owner, closureID string, now time.Time) error {
-	tx, e := r.DB.BeginTx(ctx, nil)
+	db, e := r.db()
+	if e != nil {
+		return e
+	}
+	tx, e := db.BeginTx(ctx, nil)
 	if e != nil {
 		return safe(e)
 	}
@@ -338,7 +425,11 @@ func (r *Repository) Cleanup(ctx context.Context, before time.Time, limit int) (
 	if limit < 1 || limit > 10000 {
 		return 0, n.ErrInput
 	}
-	result, e := r.DB.ExecContext(ctx, `WITH expired AS (SELECT id FROM notifications.items WHERE created_at<$1 ORDER BY created_at,id LIMIT $2 FOR UPDATE SKIP LOCKED) DELETE FROM notifications.items WHERE id IN (SELECT id FROM expired)`, before, limit)
+	db, e := r.db()
+	if e != nil {
+		return 0, e
+	}
+	result, e := db.ExecContext(ctx, `WITH expired AS (SELECT id FROM notifications.items WHERE created_at<$1 ORDER BY created_at,id LIMIT $2 FOR UPDATE SKIP LOCKED) DELETE FROM notifications.items WHERE id IN (SELECT id FROM expired)`, before, limit)
 	if e != nil {
 		return 0, safe(e)
 	}

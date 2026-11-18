@@ -15,6 +15,56 @@ var (
 	ErrUnavailable     = errors.New("unavailable")
 )
 
+const (
+	ReasonDatabaseNil             = "db_nil"
+	ReasonDatabaseConnection      = "db_connection"
+	ReasonDatabaseConstraint      = "db_constraint"
+	ReasonDatabasePrivilegeSchema = "db_privilege_or_schema"
+	ReasonDatabaseSerialization   = "db_serialization"
+	ReasonDatabaseResources       = "db_resources"
+	ReasonDatabaseState           = "db_state"
+	ReasonDatabaseIntervention    = "db_intervention"
+	ReasonDatabaseException       = "db_exception"
+	ReasonDatabaseError           = "db_error"
+	ReasonCorruptStoredJSON       = "corrupt_stored_json"
+	ReasonRuntimeUnsafePrivilege  = "runtime_unsafe_privilege"
+	ReasonRuntimeMissingSchema    = "runtime_missing_schema_usage"
+	ReasonRuntimeMissingReadWrite = "runtime_missing_select_insert"
+	ReasonRuntimeMissingUpdate    = "runtime_missing_update"
+	ReasonRuntimeMissingDelete    = "runtime_missing_delete"
+	ReasonResolveTimeout          = "resolve_timeout"
+	ReasonResolveCanceled         = "resolve_canceled"
+	ReasonResolveError            = "resolve_error"
+	ReasonResolveInvalidStatus    = "resolve_invalid_status"
+	ReasonResolveInvalidName      = "resolve_invalid_name"
+)
+
+// UnavailableError wraps ErrUnavailable with a closed, desensitized reason code.
+// It never carries SQL queries, parameters, DSNs, or user identifiers.
+type UnavailableError struct {
+	Reason string
+}
+
+func (e UnavailableError) Error() string {
+	if e.Reason == "" {
+		return ErrUnavailable.Error()
+	}
+	return ErrUnavailable.Error() + ": " + e.Reason
+}
+
+func (e UnavailableError) Unwrap() error {
+	return ErrUnavailable
+}
+
+// UnavailableReason extracts the desensitized reason code when err wraps UnavailableError.
+func UnavailableReason(err error) string {
+	var u UnavailableError
+	if errors.As(err, &u) {
+		return u.Reason
+	}
+	return ""
+}
+
 type Target struct {
 	Kind string `json:"kind"`
 	ID   string `json:"id"`
@@ -103,6 +153,8 @@ type Config struct {
 	AggregationWindow time.Duration
 	CleanupBatch      int
 	ResolveTimeout    time.Duration
+	// Diagnostics optionally receives desensitized operation and reason codes.
+	Diagnostics func(operation, reason string)
 }
 
 // TargetRef is a comparable key for a page-scoped, deduplicated lookup.

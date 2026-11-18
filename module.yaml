@@ -30,12 +30,14 @@ scenario_tests:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
+    - runtime_diagnostics_test.go#TestURIDSNSetupAndDesensitizedDiagnostics
   NT-05:
     - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
     - validation_test.go#TestStrictUTF8ControlAndWhitespaceValidation
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
+    - runtime_diagnostics_test.go#TestCheckRuntimeEnforcesLeastPrivilegeAndOwnership
     - closure_test.go#TestInboxDetailRetentionCleanupAndLegacyUpgrade
   PC-07:
     - closure_test.go#TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP
