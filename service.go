@@ -124,7 +124,13 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 		}
 		dec := json.NewDecoder(strings.NewReader(string(b)))
 		dec.DisallowUnknownFields()
-		if dec.Decode(&cursor) != nil || cursor.CreatedAt.IsZero() {
+		if dec.Decode(&cursor) != nil {
+			return Page{}, ErrInput
+		}
+		if cursor.UpdatedAt.IsZero() {
+			cursor.UpdatedAt = cursor.CreatedAt
+		}
+		if cursor.UpdatedAt.IsZero() {
 			return Page{}, ErrInput
 		}
 		id, e := parseUUID(cursor.ID)
@@ -135,6 +141,11 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 		if cursor.Box != q.Box || cursor.Type != q.Type || cursor.UnreadOnly != q.UnreadOnly {
 			return Page{}, ErrInput
 		}
+		u, e := uuid.Parse(cursor.ID)
+		if e != nil {
+			return Page{}, ErrInput
+		}
+		cursor.ID = u.String()
 	}
 	rows, e := s.repo.ListFiltered(ctx, owner, q, cursor, q.Limit+1)
 	if e != nil {
@@ -144,7 +155,7 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 	if len(rows) > q.Limit {
 		out.Items = rows[:q.Limit]
 		last := out.Items[q.Limit-1]
-		b, _ := json.Marshal(Cursor{CreatedAt: last.CreatedAt, ID: last.ID, Box: q.Box, Type: q.Type, UnreadOnly: q.UnreadOnly})
+		b, _ := json.Marshal(Cursor{UpdatedAt: last.UpdatedAt, ID: last.ID, Box: q.Box, Type: q.Type, UnreadOnly: q.UnreadOnly})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
 	if e = s.resolvePage(ctx, owner, out.Items, q.IncludeContentNames); e != nil {

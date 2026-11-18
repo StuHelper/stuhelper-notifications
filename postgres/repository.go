@@ -19,8 +19,8 @@ import (
 var Schema string
 
 const (
-	ListFirstPageQuery = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 ORDER BY created_at DESC,id DESC LIMIT $2`
-	ListCursorQuery    = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND (created_at,id)<($2,$3::uuid) ORDER BY created_at DESC,id DESC LIMIT $4`
+	ListFirstPageQuery = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 ORDER BY updated_at DESC,id DESC LIMIT $2`
+	ListCursorQuery    = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 AND (updated_at,id)<($2,$3::uuid) ORDER BY updated_at DESC,id DESC LIMIT $4`
 )
 
 type Repository struct{ DB *sql.DB }
@@ -347,10 +347,10 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 			}
 		}
 		if result.ID != "" {
-			_, e = tx.ExecContext(ctx, `UPDATE notifications.items SET count=count+1 WHERE id=$1`, result.ID)
+			_, e = tx.ExecContext(ctx, `UPDATE notifications.items SET count=count+1,updated_at=GREATEST(updated_at,$2) WHERE id=$1`, result.ID, now)
 		} else {
 			result.ID = uuid.NewString()
-			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,box,type,source_module,target_kind,target_id,title_key,title_params,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, result.ID, result.Recipient, n.BoxForTitleKey(d.TitleKey), d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
+			_, e = tx.ExecContext(ctx, `INSERT INTO notifications.items(id,owner,box,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10)`, result.ID, result.Recipient, n.BoxForTitleKey(d.TitleKey), d.Type, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now)
 		}
 		if e != nil {
 			return n.RecipientResult{}, safe(e)
@@ -369,7 +369,11 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 	if e = r.ensureOpenOwner(ctx, owner); e != nil {
 		return nil, e
 	}
-	if limit < 1 || limit > 101 || (c.ID == "") != c.CreatedAt.IsZero() {
+	cursorAt := c.UpdatedAt
+	if cursorAt.IsZero() {
+		cursorAt = c.CreatedAt
+	}
+	if limit < 1 || limit > 101 || (c.ID == "") != cursorAt.IsZero() {
 		return nil, n.ErrInput
 	}
 	clauses := []string{"owner=$1"}
@@ -386,11 +390,11 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 		clauses = append(clauses, "read_at IS NULL")
 	}
 	if c.ID != "" {
-		args = append(args, c.CreatedAt, c.ID)
-		clauses = append(clauses, fmt.Sprintf("(created_at,id)<($%d,$%d::uuid)", len(args)-1, len(args)))
+		args = append(args, cursorAt, c.ID)
+		clauses = append(clauses, fmt.Sprintf("(updated_at,id)<($%d,$%d::uuid)", len(args)-1, len(args)))
 	}
 	args = append(args, limit)
-	query := fmt.Sprintf("SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE %s ORDER BY created_at DESC,id DESC LIMIT $%d", strings.Join(clauses, " AND "), len(args))
+	query := fmt.Sprintf("SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE %s ORDER BY updated_at DESC,id DESC LIMIT $%d", strings.Join(clauses, " AND "), len(args))
 	if q.Box == "" && q.Type == "" && !q.UnreadOnly {
 		if c.ID == "" {
 			query = ListFirstPageQuery
@@ -407,7 +411,7 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 	for rows.Next() {
 		var v n.Notification
 		var params []byte
-		if e = rows.Scan(&v.ID, &v.Type, &v.SourceModule, &v.Target.Kind, &v.Target.ID, &v.TitleKey, &params, &v.CreatedAt, &v.ReadAt, &v.Count); e != nil {
+		if e = rows.Scan(&v.ID, &v.Type, &v.SourceModule, &v.Target.Kind, &v.Target.ID, &v.TitleKey, &params, &v.CreatedAt, &v.UpdatedAt, &v.ReadAt, &v.Count); e != nil {
 			return nil, safe(e)
 		}
 		if e = json.Unmarshal(params, &v.TitleParams); e != nil {

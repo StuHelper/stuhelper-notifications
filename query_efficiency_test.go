@@ -149,12 +149,12 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 	}
 	for i := 1; i < len(collected); i++ {
 		prev, cur := collected[i-1], collected[i]
-		if cur.CreatedAt.After(prev.CreatedAt) || (cur.CreatedAt.Equal(prev.CreatedAt) && cur.ID >= prev.ID) {
-			t.Fatalf("cursor ordering violated at %d: prev=%v/%s cur=%v/%s", i, prev.CreatedAt, prev.ID, cur.CreatedAt, cur.ID)
+		if cur.UpdatedAt.After(prev.UpdatedAt) || (cur.UpdatedAt.Equal(prev.UpdatedAt) && cur.ID >= prev.ID) {
+			t.Fatalf("cursor ordering violated at %d: prev=%v/%s cur=%v/%s", i, prev.UpdatedAt, prev.ID, cur.UpdatedAt, cur.ID)
 		}
 	}
 
-	// Verify under PostgreSQL force_generic_plan that the cursor query pushes (created_at, id) into Index Cond without Filter.
+	// Verify under PostgreSQL force_generic_plan that the cursor query pushes (updated_at, id) into Index Cond without Filter.
 	tx, err := f.db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -163,7 +163,7 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 	if _, err = tx.ExecContext(ctx, `SET LOCAL enable_seqscan = off; SET LOCAL plan_cache_mode = force_generic_plan`); err != nil {
 		t.Fatal(err)
 	}
-	rows, err := tx.QueryContext(ctx, `EXPLAIN (COSTS OFF) `+postgres.ListCursorQuery, "alice", collected[9].CreatedAt, collected[9].ID, 11)
+	rows, err := tx.QueryContext(ctx, `EXPLAIN (COSTS OFF) `+postgres.ListCursorQuery, "alice", collected[9].UpdatedAt, collected[9].ID, 11)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +177,7 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 		planLines = append(planLines, line)
 	}
 	plan := strings.Join(planLines, "\n")
-	if !strings.Contains(plan, "items_owner_cursor") || !strings.Contains(plan, "created_at") || strings.Contains(plan, "Filter:") {
-		t.Fatalf("generic plan did not push cursor predicate into items_owner_cursor Index Cond:\n%s", plan)
+	if !strings.Contains(plan, "items_owner_updated_cursor") || !strings.Contains(plan, "updated_at") || strings.Contains(plan, "Filter:") {
+		t.Fatalf("generic plan did not push cursor predicate into items_owner_updated_cursor Index Cond:\n%s", plan)
 	}
 }

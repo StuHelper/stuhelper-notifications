@@ -32,6 +32,8 @@ scenario_tests:
     - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
     - interaction_consistency_test.go#TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate
     - b04_preferences_test.go#TestGranularReplyAndLikePreferencesAndLegacyCompatibility
+    - b05_updated_at_test.go#TestAggregationUpdatedAtFloatingOrderAndMigration
+    - b05_updated_at_test.go#TestUpdatedAtMigrationAcceptsPreviousWriter
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
     - validation_test.go#TestStrictUUIDValidationRejectsNonCanonicalFormatsWith400
