@@ -34,6 +34,9 @@ scenario_tests:
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
+    - closure_test.go#TestInboxDetailRetentionCleanupAndLegacyUpgrade
+  PC-07:
+    - closure_test.go#TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP
   NT-07:
     - http_compatibility_test.go#TestLegacyHTTPParametersAndExplicitNameExpansion
     - target_titles_test.go#TestNotificationNamesAreCurrentBoundedAndNeverPersisted

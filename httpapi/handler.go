@@ -110,7 +110,7 @@ func failure(w http.ResponseWriter, e error) {
 	for _, entry := range []struct {
 		err    error
 		status int
-	}{{n.ErrInput, 400}, {n.ErrUnauthenticated, 401}, {n.ErrNotFound, 404}} {
+	}{{n.ErrInput, 400}, {n.ErrUnauthenticated, 401}, {n.ErrForbidden, 403}, {n.ErrNotFound, 404}} {
 		if errors.Is(e, entry.err) {
 			status = entry.status
 			code = entry.err.Error()
