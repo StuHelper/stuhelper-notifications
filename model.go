@@ -9,6 +9,7 @@ import (
 var (
 	ErrInput           = errors.New("invalid_input")
 	ErrUnauthenticated = errors.New("unauthenticated")
+	ErrForbidden       = errors.New("forbidden")
 	ErrNotFound        = errors.New("not_found")
 	ErrConflict        = errors.New("idempotency_conflict")
 	ErrUnavailable     = errors.New("unavailable")
@@ -57,6 +58,7 @@ type Event struct {
 const (
 	SuppressionInteractionDisabled = "interaction_disabled"
 	SuppressionStaleRevision       = "stale_revision"
+	SuppressionAccountClosed       = "account_closed"
 )
 
 type RecipientResult struct {
@@ -89,6 +91,12 @@ type Repository interface {
 	MarkAllRead(context.Context, string, time.Time) error
 	Preferences(context.Context, string, *bool) (Preferences, error)
 	Cleanup(context.Context, time.Time, int) (int64, error)
+}
+
+// AccountCloser permanently removes personal notifications and preferences while
+// recording an owner closure fence in the same transaction.
+type AccountCloser interface {
+	CloseAccount(context.Context, string, string, time.Time) error
 }
 type Config struct {
 	Retention         time.Duration

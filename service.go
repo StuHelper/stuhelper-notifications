@@ -142,3 +142,21 @@ func (s *Service) Preferences(ctx context.Context, owner string, enabled *bool) 
 func (s *Service) Cleanup(ctx context.Context) (int64, error) {
 	return s.repo.Cleanup(ctx, s.now().UTC().Add(-s.config.Retention), s.config.CleanupBatch)
 }
+
+// CloseAccount permanently deletes personal notifications and preferences for owner
+// and installs a durable write fence against delayed event delivery or access.
+func (s *Service) CloseAccount(ctx context.Context, owner, closureID string) error {
+	if !valid(owner, 256) || !valid(closureID, 256) {
+		return ErrInput
+	}
+	closer, ok := s.repo.(AccountCloser)
+	if !ok {
+		return ErrUnavailable
+	}
+	return closer.CloseAccount(ctx, owner, closureID, s.now().UTC())
+}
+
+// CloseOwner is an alias for CloseAccount matching owner-key closure callers.
+func (s *Service) CloseOwner(ctx context.Context, owner, closureID string) error {
+	return s.CloseAccount(ctx, owner, closureID)
+}
