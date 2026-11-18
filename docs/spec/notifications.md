@@ -46,7 +46,7 @@ inbox 去重键和修订记录不随通知条目清理。inbox 保存来源、�
 
 OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，Notification 的条件 schema 校验每种组合。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
 
-下表参数全部必填，只允许 1 至 64 位 ASCII 字母、数字及点、下划线、冒号、短横线，首位为字母或数字。参数是显示用业务编号，不能填姓名、学号、证件号、联系方式或正文。格式校验不能识别所有敏感编号，生产者须保证数据来源正确。
+下表必填参数只允许 1 至 64 位 ASCII 字母、数字及点、下划线、冒号、短横线，首位为字母或数字。参数是显示用业务编号，不能填姓名、学号、证件号、联系方式或正文。驳回、下架、撤销与补件键可附带封闭枚举参数 reason_code（见 OpenAPI ReasonCode），禁止传入自由文本或审核员备注。
 
 互动文案使用顶层 count 作为复数参数。Consumer 不传 count，首次为 1，聚合由仓库累加。客户端将 count 与 title_params 组合传给公共国际化接口，按语言选择复数形式。
 
@@ -57,12 +57,16 @@ OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目�
 | notifications.content.approved | business | review, comment, resource | content_id |
 | notifications.content.rejected | business | review, comment, resource | content_id |
 | notifications.content.removed | business | review, comment, resource | content_id |
+| notifications.content.draft_expiring | business | review | content_id |
 | notifications.resource_removal.approved | business | resource_removal_request | request_id |
 | notifications.resource_removal.rejected | business | resource_removal_request | request_id |
 | notifications.report.approved | business | report | report_id |
 | notifications.report.rejected | business | report | report_id |
+| notifications.appeal.approved | business | moderation_appeal | appeal_id |
+| notifications.appeal.rejected | business | moderation_appeal | appeal_id |
 | notifications.student_verification.approved | business | verification_application | application_id |
 | notifications.student_verification.rejected | business | verification_application | application_id |
+| notifications.student_verification.supplement_required | business | verification_application | application_id |
 | notifications.identity_verification.approved | account | verification_operation | operation_id |
 | notifications.identity_verification.rejected | account | verification_operation | operation_id |
 | notifications.verification_revocation.approved | account | verification_removal_request | request_id |
@@ -71,10 +75,16 @@ OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目�
 | notifications.verification_deletion.rejected | account | verification_removal_request | request_id |
 | notifications.teacher_verification.approved | business | teacher_application | application_id |
 | notifications.teacher_verification.rejected | business | teacher_application | application_id |
+| notifications.teacher_verification.supplement_required | business | teacher_application | application_id |
 | notifications.student_verification.revoked | account | verification_credential | credential_id |
-| notifications.system.notice | business | review, comment, resource, resource_removal_request, report, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation | reference_id |
-| notifications.system.security | security | review, comment, resource, resource_removal_request, report, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation | reference_id |
-| notifications.system.account | account | review, comment, resource, resource_removal_request, report, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation | reference_id |
+| notifications.group_membership.grace_expiring | business | group_membership | group_id |
+| notifications.storage_contribution.exit_completed | business | storage_contribution | contribution_id |
+| notifications.billing.topup_review_required | business | billing_order | order_id |
+| notifications.billing.refund_completed | business | billing_order | order_id |
+| notifications.billing.refund_rejected | business | billing_order | order_id |
+| notifications.system.notice | business | review, comment, resource, resource_removal_request, report, moderation_appeal, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation, group_membership, storage_contribution, billing_order | reference_id |
+| notifications.system.security | security | review, comment, resource, resource_removal_request, report, moderation_appeal, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation, group_membership, storage_contribution, billing_order | reference_id |
+| notifications.system.account | account | review, comment, resource, resource_removal_request, report, moderation_appeal, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation, group_membership, storage_contribution, billing_order | reference_id |
 
 ## 目标路由约定
 
@@ -83,15 +93,19 @@ target.id 是对应模块对象的原始 ID，title_params 是用于显示的业
 | target.kind | 对象与页面 |
 | --- | --- |
 | review | reviews 的评价详情 |
-| comment | reviews 的评论对象；通过评论公开接口定位所属评价 |
+| comment | reviews 的评论对象；启用名称解析且可访问时附带所属根评价 context_id |
 | resource | resources 的资料详情 |
 | resource_removal_request | resources 的下架申请或投诉回执，进入本人资料申请结果 |
 | report | moderation 的举报回执，进入本人举报处理结果 |
+| moderation_appeal | moderation 的处置申诉复核记录，进入本人申诉结果 |
 | verification_application | verification 的学生认证 Application，进入本人申请详情 |
 | teacher_application | verification 的教师认证 Application，进入本人教师申请详情 |
 | verification_credential | verification 的学生 Credential，进入本人认证记录 |
 | verification_removal_request | verification 的 RemovalRequest，进入本人撤销或删除申请结果 |
 | verification_operation | verification 的 Operation，进入本人实名核验操作结果 |
+| group_membership | groups 的本人群准入与成员资格记录，进入我的群页面 |
+| storage_contribution | storage-contribution 的本人存储贡献记录，进入存储贡献面板 |
+| billing_order | billing 的本人充值或退款订单记录，进入账户明细页面 |
 
 系统通知的三个键均指向目录内已有业务对象，使用 reference_id 展示引用编号。目录不定义任意系统正文、外部链接或尚不存在的公告对象。来源模块与 Resolver 装配须能查询该对象，否则返回 unavailable。
 
@@ -192,6 +206,8 @@ content_name_state 为 available 时，content_name 为当前评价标题或资�
 
 宿主实现 BatchResolver，一次处理本页去重后的目标，并按所属模块使用批量接口。旧 Resolver 继续兼容；未提供名称解析的旧宿主返回名称暂不可用。通知分页、计数、消费幂等与原编号字段保持原行为。
 
-读取参数由 x-title-catalog 的 read_parameters 声明，生产者参数仍由 parameters 封闭校验。旧客户端继续使用编号参数，新客户端按名称状态选择可读标题或占位文案。
+读取参数由 x-title-catalog 的 read_parameters 声明，生产者参数仍由 parameters 与 optional_parameters 封闭校验。旧客户端继续使用编号参数，新客户端按名称状态选择可读标题或占位文案。
+
+comment 目标在 target_status 为 accessible 时一并解析所属根评价 ID 作为 context_id，不可访问或标识异常时不返回，供新客户端构造一步直达路由。
 
 旧 HTTP 请求和 Go List 保留原封闭参数结构。新客户端通过 include_content_names=true 或 Go ListWithContentNames 启用名称。参数只接受单个 true 或 false，未指定时为 false。
