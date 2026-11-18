@@ -84,7 +84,7 @@
               "type": "string",
               "maxLength": 1024
             },
-            "description": "不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。"
+            "description": "不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。"
           },
           {
             "name": "limit",
@@ -554,6 +554,7 @@
           "title_key",
           "title_params",
           "created_at",
+          "updated_at",
           "read_at",
           "target_status",
           "count"
@@ -591,6 +592,11 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。"
           },
           "read_at": {
             "type": "string",

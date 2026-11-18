@@ -77,6 +77,7 @@ type Notification struct {
 	TitleKey     string            `json:"title_key"`
 	TitleParams  map[string]string `json:"title_params"`
 	CreatedAt    time.Time         `json:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at"`
 	ReadAt       *time.Time        `json:"read_at"`
 	TargetStatus string            `json:"target_status"`
 	Count        int64             `json:"count"`
@@ -182,7 +183,8 @@ type Resolver interface {
 	Resolve(context.Context, string, string, Target) (string, error)
 }
 type Cursor struct {
-	CreatedAt  time.Time `json:"CreatedAt"`
+	UpdatedAt  time.Time `json:"updated_at,omitempty"`
+	CreatedAt  time.Time `json:"CreatedAt,omitempty"`
 	ID         string    `json:"ID"`
 	Box        string    `json:"box,omitempty"`
 	Type       string    `json:"type,omitempty"`

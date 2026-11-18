@@ -2611,7 +2611,10 @@ type Notification struct {
 	// TitleParams 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。
 	TitleParams map[string]string `json:"title_params"`
 	Type        NotificationType  `json:"type"`
-	union       json.RawMessage
+
+	// UpdatedAt 最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。
+	UpdatedAt time.Time `json:"updated_at"`
+	union     json.RawMessage
 }
 
 // NotificationTargetStatus defines model for Notification.TargetStatus.
@@ -3190,7 +3193,7 @@ type VerificationRevocationRejectedTitlePayloadType string
 
 // ListNotificationsParams defines parameters for ListNotifications.
 type ListNotificationsParams struct {
-	// Cursor 不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。
+	// Cursor 不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -4148,6 +4151,11 @@ func (t Notification) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error marshaling 'type': %w", err)
 	}
 
+	object["updated_at"], err = json.Marshal(t.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'updated_at': %w", err)
+	}
+
 	b, err = json.Marshal(object)
 	return b, err
 }
@@ -4230,6 +4238,13 @@ func (t *Notification) UnmarshalJSON(b []byte) error {
 		err = json.Unmarshal(raw, &t.Type)
 		if err != nil {
 			return fmt.Errorf("error reading 'type': %w", err)
+		}
+	}
+
+	if raw, found := object["updated_at"]; found {
+		err = json.Unmarshal(raw, &t.UpdatedAt)
+		if err != nil {
+			return fmt.Errorf("error reading 'updated_at': %w", err)
 		}
 	}
 

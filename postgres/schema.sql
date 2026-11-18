@@ -54,12 +54,36 @@ BEGIN
   ALTER TABLE notifications.items ADD CONSTRAINT items_box_check CHECK (box IN ('interaction','review','verification','system'));
  END IF;
 END $$;
+ALTER TABLE notifications.items ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+UPDATE notifications.items SET updated_at = created_at WHERE updated_at IS NULL;
+-- Previous writers specify only created_at. Preserve their event timestamp on insert.
+CREATE OR REPLACE FUNCTION notifications.set_initial_updated_at() RETURNS trigger
+LANGUAGE plpgsql SET search_path=pg_catalog AS $$
+BEGIN
+ NEW.updated_at:=NEW.created_at;
+ RETURN NEW;
+END $$;
+CREATE OR REPLACE TRIGGER set_initial_updated_at BEFORE INSERT ON notifications.items
+FOR EACH ROW WHEN (NEW.updated_at IS NULL) EXECUTE FUNCTION notifications.set_initial_updated_at();
+ALTER TABLE notifications.items ALTER COLUMN updated_at SET NOT NULL;
+DO $$
+BEGIN
+ IF NOT EXISTS (
+  SELECT 1 FROM pg_constraint c
+  JOIN pg_class t ON c.conrelid = t.oid
+  JOIN pg_namespace n ON t.relnamespace = n.oid
+  WHERE n.nspname = 'notifications' AND t.relname = 'items' AND pg_get_constraintdef(c.oid) LIKE '%updated_at%'
+ ) THEN
+  ALTER TABLE notifications.items ADD CONSTRAINT items_updated_at_check CHECK (updated_at >= created_at);
+ END IF;
+END $$;
+CREATE INDEX IF NOT EXISTS items_owner_updated_cursor ON notifications.items(owner,updated_at DESC,id DESC);
 CREATE INDEX IF NOT EXISTS items_owner_cursor ON notifications.items(owner,created_at DESC,id DESC);
-CREATE INDEX IF NOT EXISTS items_owner_box_cursor ON notifications.items(owner,box,created_at DESC,id DESC);
-CREATE INDEX IF NOT EXISTS items_owner_type_cursor ON notifications.items(owner,type,created_at DESC,id DESC);
-CREATE INDEX IF NOT EXISTS items_owner_unread_cursor ON notifications.items(owner,created_at DESC,id DESC) WHERE read_at IS NULL;
-CREATE INDEX IF NOT EXISTS items_owner_box_unread_cursor ON notifications.items(owner,box,created_at DESC,id DESC) WHERE read_at IS NULL;
-CREATE INDEX IF NOT EXISTS items_owner_type_unread_cursor ON notifications.items(owner,type,created_at DESC,id DESC) WHERE read_at IS NULL;
+CREATE INDEX IF NOT EXISTS items_owner_box_updated_cursor ON notifications.items(owner,box,updated_at DESC,id DESC);
+CREATE INDEX IF NOT EXISTS items_owner_type_updated_cursor ON notifications.items(owner,type,updated_at DESC,id DESC);
+CREATE INDEX IF NOT EXISTS items_owner_unread_updated_cursor ON notifications.items(owner,updated_at DESC,id DESC) WHERE read_at IS NULL;
+CREATE INDEX IF NOT EXISTS items_owner_box_unread_updated_cursor ON notifications.items(owner,box,updated_at DESC,id DESC) WHERE read_at IS NULL;
+CREATE INDEX IF NOT EXISTS items_owner_type_unread_updated_cursor ON notifications.items(owner,type,updated_at DESC,id DESC) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_unread ON notifications.items(owner) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_unread_grouped ON notifications.items(owner,box,type) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_expiry ON notifications.items(created_at,id);
