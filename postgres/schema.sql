@@ -60,7 +60,52 @@ CREATE TABLE IF NOT EXISTS notifications.revisions (
  source text NOT NULL,
  subject text NOT NULL,
  revision bigint NOT NULL CHECK (revision>=0),
+ interaction_title_key text NOT NULL DEFAULT '',
  PRIMARY KEY(source,subject)
 );
+ALTER TABLE notifications.revisions ADD COLUMN IF NOT EXISTS interaction_title_key text NOT NULL DEFAULT '';
+-- Existing receipts identify the recipient and item. Its title key establishes the interaction kind.
+DO $$
+BEGIN
+ IF to_regclass('notifications.like_subjects') IS NULL THEN
+  IF EXISTS(SELECT 1 FROM notifications.inbox WHERE result IS NULL) THEN
+   RAISE EXCEPTION 'legacy delivery details expired; reconstruct interaction deduplication from source records before upgrading';
+  END IF;
+  CREATE TEMP TABLE legacy_interaction_delivery ON COMMIT DROP AS
+   SELECT i.source,i.subject,r->>'recipient' AS owner,item.title_key
+   FROM notifications.inbox i
+   CROSS JOIN LATERAL jsonb_array_elements(i.result->'recipients') r
+   LEFT JOIN notifications.items item ON item.id=nullif(r->>'id','')::uuid
+      AND item.owner=r->>'recipient' AND item.source_module=i.source
+   WHERE coalesce(r->>'id','')<>'' AND NOT EXISTS
+     (SELECT 1 FROM notifications.closed_owners c WHERE c.owner=r->>'recipient');
+  IF EXISTS(SELECT 1 FROM legacy_interaction_delivery WHERE title_key IS NULL)
+     OR EXISTS(SELECT 1 FROM legacy_interaction_delivery
+       WHERE title_key IN ('notifications.interaction.like','notifications.interaction.reply')
+       GROUP BY source,subject HAVING count(DISTINCT title_key)>1) THEN
+   RAISE EXCEPTION 'legacy delivery has missing or conflicting interaction evidence; source reconstruction required';
+  END IF;
+  CREATE TABLE notifications.like_subjects (
+   owner text NOT NULL,source text NOT NULL,subject text NOT NULL,PRIMARY KEY(owner,source,subject)
+  );
+  INSERT INTO notifications.like_subjects(owner,source,subject)
+   SELECT DISTINCT owner,source,subject FROM legacy_interaction_delivery WHERE title_key='notifications.interaction.like';
+  UPDATE notifications.revisions rev SET interaction_title_key=known.title_key
+   FROM (SELECT DISTINCT source,subject,title_key FROM legacy_interaction_delivery
+         WHERE title_key IN ('notifications.interaction.like','notifications.interaction.reply')) known
+   WHERE rev.source=known.source AND rev.subject=known.subject;
+ END IF;
+END $$;
+
+-- The runtime may insert immutable delivery facts. Only an account closure can erase them.
+CREATE OR REPLACE FUNCTION notifications.clear_closed_like_subjects() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
+BEGIN
+ DELETE FROM notifications.like_subjects WHERE owner=NEW.owner;
+ RETURN NEW;
+END $$;
+REVOKE ALL ON FUNCTION notifications.clear_closed_like_subjects() FROM PUBLIC;
+CREATE OR REPLACE TRIGGER clear_closed_like_subjects AFTER INSERT ON notifications.closed_owners
+FOR EACH ROW EXECUTE FUNCTION notifications.clear_closed_like_subjects();
 REVOKE ALL ON SCHEMA notifications FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA notifications FROM PUBLIC;

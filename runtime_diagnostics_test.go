@@ -52,7 +52,7 @@ func TestCheckRuntimeEnforcesLeastPrivilegeAndOwnership(t *testing.T) {
 			`GRANT USAGE ON SCHEMA notifications TO ` + role + `; ` +
 			`GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO ` + role + `; ` +
 			`GRANT SELECT,INSERT,UPDATE ON notifications.revisions TO ` + role + `; ` +
-			`GRANT SELECT,INSERT ON notifications.inbox,notifications.closed_owners TO ` + role + `; `
+			`GRANT SELECT,INSERT ON notifications.inbox,notifications.closed_owners,notifications.like_subjects TO ` + role + `; `
 		if _, err := f.db.Exec(base + grantSQL); err != nil {
 			t.Fatal(suffix, err)
 		}
@@ -92,7 +92,7 @@ func TestCheckRuntimeEnforcesLeastPrivilegeAndOwnership(t *testing.T) {
 				`GRANT USAGE ON SCHEMA notifications TO ` + role + `; ` +
 				`GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO ` + role + `; ` +
 				`GRANT SELECT,INSERT,UPDATE ON notifications.revisions TO ` + role + `; ` +
-				`GRANT SELECT,INSERT ON notifications.inbox,notifications.closed_owners TO ` + role + `; ` +
+				`GRANT SELECT,INSERT ON notifications.inbox,notifications.closed_owners,notifications.like_subjects TO ` + role + `; ` +
 				tc.sql + role
 			if _, err := f.db.Exec(base); err != nil {
 				t.Fatal(err)

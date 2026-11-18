@@ -78,7 +78,22 @@ func (s *Service) Consume(ctx context.Context, d Event) (Result, error) {
 		return Result{}, ErrInput
 	}
 	hash := sha256.Sum256(raw)
-	return s.repo.Consume(ctx, d, hex.EncodeToString(hash[:]), s.now().UTC(), s.config.AggregationWindow)
+	digest := hex.EncodeToString(hash[:])
+	if d.TitleKey == "notifications.interaction.like" && (d.Subject == d.Target.ID || d.Subject == d.Target.Kind+"/"+d.Target.ID) {
+		// A pre-upgrade writer may already have committed this identity.
+		if reader, ok := s.repo.(interface {
+			ReplayDelivery(context.Context, string, string, string) (Result, bool, error)
+		}); ok {
+			if saved, found, err := reader.ReplayDelivery(ctx, d.Source, d.ID, digest); found || err != nil {
+				return saved, err
+			}
+		}
+		return Result{}, ErrInput
+	}
+	if clocked, ok := s.repo.(ClockedConsumerRepository); ok {
+		return clocked.ConsumeWithClock(ctx, d, digest, func() time.Time { return s.now().UTC() }, s.config.AggregationWindow)
+	}
+	return s.repo.Consume(ctx, d, digest, s.now().UTC(), s.config.AggregationWindow)
 }
 func (s *Service) List(ctx context.Context, owner, after string, limit int) (Page, error) {
 	return s.list(ctx, owner, after, limit, false)
