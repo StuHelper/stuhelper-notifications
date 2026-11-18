@@ -27,6 +27,8 @@ scenario_tests:
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
     - validation_test.go#TestStrictUUIDValidationRejectsNonCanonicalFormatsWith400
+    - query_efficiency_test.go#TestReadOnlyPreferencesAndUnreadOnlyMarkUpdates
+    - query_efficiency_test.go#TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds
   NT-03:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:

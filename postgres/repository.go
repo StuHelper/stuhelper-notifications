@@ -16,6 +16,11 @@ import (
 //go:embed schema.sql
 var Schema string
 
+const (
+	ListFirstPageQuery = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 ORDER BY created_at DESC,id DESC LIMIT $2`
+	ListCursorQuery    = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND (created_at,id)<($2,$3::uuid) ORDER BY created_at DESC,id DESC LIMIT $4`
+)
+
 type Repository struct{ DB *sql.DB }
 
 func (r *Repository) db() (*sql.DB, error) {
@@ -345,7 +350,15 @@ func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit i
 	if e := r.ensureOpenOwner(ctx, owner); e != nil {
 		return nil, e
 	}
-	rows, e := db.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND ($2 OR (created_at,id)<($3,$4::uuid)) ORDER BY created_at DESC,id DESC LIMIT $5`, owner, c.ID == "", c.CreatedAt, emptyUUID(c.ID), limit)
+	if limit < 1 || limit > 101 || (c.ID == "") != c.CreatedAt.IsZero() {
+		return nil, n.ErrInput
+	}
+	var rows *sql.Rows
+	if c.ID == "" {
+		rows, e = db.QueryContext(ctx, ListFirstPageQuery, owner, limit)
+	} else {
+		rows, e = db.QueryContext(ctx, ListCursorQuery, owner, c.CreatedAt, c.ID, limit)
+	}
 	if e != nil {
 		return nil, safe(e)
 	}
@@ -363,12 +376,6 @@ func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit i
 		out = append(out, v)
 	}
 	return out, safe(rows.Err())
-}
-func emptyUUID(s string) string {
-	if s == "" {
-		return uuid.Nil.String()
-	}
-	return s
 }
 func (r *Repository) Unread(ctx context.Context, owner string) (int64, error) {
 	db, e := r.db()
@@ -399,16 +406,18 @@ func (r *Repository) mark(ctx context.Context, owner, id string, now time.Time) 
 	if closed {
 		return n.ErrForbidden
 	}
-	result, e := tx.ExecContext(ctx, `UPDATE notifications.items SET read_at=COALESCE(read_at,$3) WHERE owner=$1 AND ($2='' OR id=$4::uuid)`, owner, id, now, emptyUUID(id))
+	if id == "" {
+		_, e = tx.ExecContext(ctx, `UPDATE notifications.items SET read_at=$2 WHERE owner=$1 AND read_at IS NULL`, owner, now)
+	} else {
+		var exists bool
+		e = tx.QueryRowContext(ctx, `WITH updated AS (UPDATE notifications.items SET read_at=$3 WHERE owner=$1 AND id=$2::uuid AND read_at IS NULL)
+ SELECT EXISTS(SELECT 1 FROM notifications.items WHERE owner=$1 AND id=$2::uuid)`, owner, id, now).Scan(&exists)
+		if e == nil && !exists {
+			return n.ErrNotFound
+		}
+	}
 	if e != nil {
 		return safe(e)
-	}
-	affected, e := result.RowsAffected()
-	if e != nil {
-		return safe(e)
-	}
-	if id != "" && affected == 0 {
-		return n.ErrNotFound
 	}
 	return safe(tx.Commit())
 }
