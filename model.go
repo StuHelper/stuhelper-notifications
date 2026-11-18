@@ -91,6 +91,8 @@ type Preferences struct {
 
 // Event is a trusted, complete notification mapping of one source event.
 // Source, ID, EventType, Subject and Revision retain the producer's identity.
+// For interaction events, Subject must identify the independent interaction entity
+// (such as a comment ID or a unique target+actor like relation), never a shared target.
 // The relay validates the CloudEvents envelope and maps only supported results.
 type Event struct {
 	Source      string
@@ -106,9 +108,10 @@ type Event struct {
 }
 
 const (
-	SuppressionInteractionDisabled = "interaction_disabled"
-	SuppressionStaleRevision       = "stale_revision"
-	SuppressionAccountClosed       = "account_closed"
+	SuppressionInteractionDisabled  = "interaction_disabled"
+	SuppressionStaleRevision        = "stale_revision"
+	SuppressionAccountClosed        = "account_closed"
+	SuppressionDuplicateInteraction = "duplicate_interaction"
 )
 
 type RecipientResult struct {
@@ -147,6 +150,12 @@ type Repository interface {
 // recording an owner closure fence in the same transaction.
 type AccountCloser interface {
 	CloseAccount(context.Context, string, string, time.Time) error
+}
+
+// ClockedConsumerRepository allows sampling the event timestamp after acquiring
+// database locks so concurrent deliveries never observe inverted timestamps.
+type ClockedConsumerRepository interface {
+	ConsumeWithClock(context.Context, Event, string, func() time.Time, time.Duration) (Result, error)
 }
 type Config struct {
 	Retention         time.Duration

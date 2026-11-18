@@ -92,14 +92,14 @@ func (r *Repository) CheckRuntime(ctx context.Context) error {
 		return n.UnavailableError{Reason: n.ReasonRuntimeMissingSchema}
 	}
 	var unsafe bool
-	e = db.QueryRowContext(ctx, `SELECT rolsuper OR rolcreaterole OR rolcreatedb OR has_schema_privilege(current_user,'notifications','CREATE') OR has_table_privilege(current_user,'notifications.inbox','UPDATE,DELETE,TRUNCATE') OR has_table_privilege(current_user,'notifications.revisions','DELETE,TRUNCATE') OR has_table_privilege(current_user,'notifications.closed_owners','UPDATE,DELETE,TRUNCATE') OR EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='notifications' AND pg_has_role(current_user,nspowner,'USAGE')) OR EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname='notifications' AND pg_has_role(current_user,c.relowner,'USAGE')) FROM pg_roles WHERE rolname=current_user`).Scan(&unsafe)
+	e = db.QueryRowContext(ctx, `SELECT rolsuper OR rolcreaterole OR rolcreatedb OR has_schema_privilege(current_user,'notifications','CREATE') OR has_table_privilege(current_user,'notifications.inbox','UPDATE,DELETE,TRUNCATE') OR has_table_privilege(current_user,'notifications.revisions','DELETE,TRUNCATE') OR has_table_privilege(current_user,'notifications.like_subjects','UPDATE,DELETE,TRUNCATE') OR has_table_privilege(current_user,'notifications.closed_owners','UPDATE,DELETE,TRUNCATE') OR EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='notifications' AND pg_has_role(current_user,nspowner,'USAGE')) OR EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace ns ON ns.oid=c.relnamespace WHERE ns.nspname='notifications' AND pg_has_role(current_user,c.relowner,'USAGE')) FROM pg_roles WHERE rolname=current_user`).Scan(&unsafe)
 	if e != nil {
 		return safe(e)
 	}
 	if unsafe {
 		return n.UnavailableError{Reason: n.ReasonRuntimeUnsafePrivilege}
 	}
-	for _, table := range []string{"items", "preferences", "inbox", "revisions", "closed_owners", "closed_owners"} {
+	for _, table := range []string{"items", "preferences", "inbox", "revisions", "closed_owners", "like_subjects"} {
 		var allowed bool
 		if e = db.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,$1,'SELECT') AND has_table_privilege(current_user,$1,'INSERT')`, "notifications."+table).Scan(&allowed); e != nil {
 			return safe(e)
@@ -159,11 +159,53 @@ func (r *Repository) ensureOpenOwner(ctx context.Context, owner string) error {
 }
 
 var (
-	_ n.Repository    = (*Repository)(nil)
-	_ n.AccountCloser = (*Repository)(nil)
+	_ n.AccountCloser             = (*Repository)(nil)
+	_ n.Repository                = (*Repository)(nil)
+	_ n.ClockedConsumerRepository = (*Repository)(nil)
 )
 
+type receiptReader interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+func readDeliveryReceipt(ctx context.Context, reader receiptReader, source, id, hash string) (n.Result, bool, error) {
+	var old string
+	var saved []byte
+	var result n.Result
+	err := reader.QueryRowContext(ctx, `SELECT fingerprint,result FROM notifications.inbox WHERE source=$1 AND event_id=$2`, source, id).Scan(&old, &saved)
+	if errors.Is(err, sql.ErrNoRows) {
+		return result, false, nil
+	}
+	if err != nil {
+		return result, false, safe(err)
+	}
+	if old != hash {
+		return result, true, n.ErrConflict
+	}
+	if len(saved) == 0 {
+		return n.Result{Ignored: true}, true, nil
+	}
+	if err = json.Unmarshal(saved, &result); err != nil {
+		return n.Result{}, true, n.UnavailableError{Reason: n.ReasonCorruptStoredJSON}
+	}
+	return result, true, nil
+}
+
+func (r *Repository) ReplayDelivery(ctx context.Context, source, id, hash string) (n.Result, bool, error) {
+	db, err := r.db()
+	if err != nil {
+		return n.Result{}, false, err
+	}
+	return readDeliveryReceipt(ctx, db, source, id, hash)
+}
 func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now time.Time, window time.Duration) (n.Result, error) {
+	return r.ConsumeWithClock(ctx, d, hash, func() time.Time { return now }, window)
+}
+
+func (r *Repository) ConsumeWithClock(ctx context.Context, d n.Event, hash string, nowFn func() time.Time, window time.Duration) (n.Result, error) {
+	if nowFn == nil {
+		nowFn = time.Now
+	}
 	db, e := r.db()
 	if e != nil {
 		return n.Result{}, e
@@ -179,62 +221,86 @@ func (r *Repository) Consume(ctx context.Context, d n.Event, hash string, now ti
 	if _, e = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", string(identity)); e != nil {
 		return n.Result{}, safe(e)
 	}
-	var old string
-	var saved []byte
-	var result n.Result
-	e = tx.QueryRowContext(ctx, `SELECT fingerprint,result FROM notifications.inbox WHERE source=$1 AND event_id=$2`, d.Source, d.ID).Scan(&old, &saved)
-	if e == nil {
-		if old != hash {
-			return n.Result{}, n.ErrConflict
-		}
-		if len(saved) == 0 {
-			return n.Result{Ignored: true}, nil
-		}
-		if e = json.Unmarshal(saved, &result); e != nil {
-			return n.Result{}, n.UnavailableError{Reason: n.ReasonCorruptStoredJSON}
-		}
-		return result, nil
+	result, found, e := readDeliveryReceipt(ctx, tx, d.Source, d.ID, hash)
+	if e != nil || found {
+		return result, e
 	}
-	if !errors.Is(e, sql.ErrNoRows) {
-		return n.Result{}, safe(e)
+	expectedInteractionKey := ""
+	if d.Type == "interaction" {
+		expectedInteractionKey = d.TitleKey
 	}
-	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.revisions(source,subject,revision) VALUES($1,$2,0) ON CONFLICT DO NOTHING`, d.Source, d.Subject); e != nil {
+	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.revisions(source,subject,revision,interaction_title_key) VALUES($1,$2,0,$3) ON CONFLICT DO NOTHING`, d.Source, d.Subject, expectedInteractionKey); e != nil {
 		return n.Result{}, safe(e)
 	}
 	var revision int64
-	if e = tx.QueryRowContext(ctx, `SELECT revision FROM notifications.revisions WHERE source=$1 AND subject=$2 FOR UPDATE`, d.Source, d.Subject).Scan(&revision); e != nil {
+	var boundKey string
+	if e = tx.QueryRowContext(ctx, `SELECT revision,interaction_title_key FROM notifications.revisions WHERE source=$1 AND subject=$2 FOR UPDATE`, d.Source, d.Subject).Scan(&revision, &boundKey); e != nil {
 		return n.Result{}, safe(e)
 	}
+	if expectedInteractionKey != "" {
+		if boundKey == "" {
+			if _, e = tx.ExecContext(ctx, `UPDATE notifications.revisions SET interaction_title_key=$3 WHERE source=$1 AND subject=$2`, d.Source, d.Subject, expectedInteractionKey); e != nil {
+				return n.Result{}, safe(e)
+			}
+		} else if boundKey != expectedInteractionKey {
+			return n.Result{}, n.ErrInput
+		}
+	}
 	result.Ignored = d.Revision <= revision
-	// Service supplies unique recipients in sorted order. Consistent lock ordering
-	// prevents deadlocks between different events with overlapping recipient sets.
-	for _, recipient := range d.Recipients {
-		entry := n.RecipientResult{Recipient: recipient}
-		if result.Ignored {
-			entry.SuppressionReason = n.SuppressionStaleRevision
-		} else {
+	var now time.Time
+	if result.Ignored {
+		now = nowFn().UTC()
+		for _, recipient := range d.Recipients {
+			result.Recipients = append(result.Recipients, n.RecipientResult{
+				Recipient:         recipient,
+				SuppressionReason: n.SuppressionStaleRevision,
+			})
+		}
+	} else {
+		// Lock all recipients in sorted order first, then sample the clock so
+		// concurrent deliveries never evaluate aggregation with an older pre-lock timestamp.
+		closedByRecipient := make([]bool, len(d.Recipients))
+		enabledByRecipient := make([]bool, len(d.Recipients))
+		for i, recipient := range d.Recipients {
 			closed, enabled, err := lockOwner(ctx, tx, recipient)
 			if err != nil {
 				return n.Result{}, safe(err)
 			}
-			if closed {
+			closedByRecipient[i], enabledByRecipient[i] = closed, enabled
+		}
+		now = nowFn().UTC()
+		for i, recipient := range d.Recipients {
+			entry := n.RecipientResult{Recipient: recipient}
+			if closedByRecipient[i] {
 				entry.SuppressionReason = n.SuppressionAccountClosed
-			} else if d.Type == "interaction" && !enabled {
+			} else if d.Type == "interaction" && !enabledByRecipient[i] {
 				entry.SuppressionReason = n.SuppressionInteractionDisabled
+			} else if d.TitleKey == "notifications.interaction.like" {
+				ins, err := tx.ExecContext(ctx, `INSERT INTO notifications.like_subjects(owner,source,subject) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, recipient, d.Source, d.Subject)
+				if err != nil {
+					return n.Result{}, safe(err)
+				}
+				rows, err := ins.RowsAffected()
+				if err != nil {
+					return n.Result{}, safe(err)
+				}
+				if rows == 0 {
+					entry.SuppressionReason = n.SuppressionDuplicateInteraction
+				}
 			}
 			entry, e = writeNotification(ctx, tx, d, entry, now, window)
 			if e != nil {
 				return n.Result{}, e
 			}
+			result.Recipients = append(result.Recipients, entry)
 		}
-		result.Recipients = append(result.Recipients, entry)
 	}
 	if !result.Ignored {
 		if _, e = tx.ExecContext(ctx, `UPDATE notifications.revisions SET revision=$3 WHERE source=$1 AND subject=$2`, d.Source, d.Subject, d.Revision); e != nil {
 			return n.Result{}, safe(e)
 		}
 	}
-	saved, e = json.Marshal(result)
+	saved, e := json.Marshal(result)
 	if e != nil {
 		return n.Result{}, n.ErrUnavailable
 	}
@@ -254,7 +320,7 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 	}
 	if result.SuppressionReason == "" {
 		if d.Type == "interaction" {
-			e = tx.QueryRowContext(ctx, `SELECT id FROM notifications.items WHERE owner=$1 AND type='interaction' AND source_module=$2 AND target_kind=$3 AND target_id=$4 AND title_key=$5 AND title_params=$6 AND created_at>$7 AND created_at<=$8 AND read_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1 FOR UPDATE`, result.Recipient, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now.Add(-window), now).Scan(&result.ID)
+			e = tx.QueryRowContext(ctx, `SELECT id FROM notifications.items WHERE owner=$1 AND type='interaction' AND source_module=$2 AND target_kind=$3 AND target_id=$4 AND title_key=$5 AND title_params=$6 AND created_at>$7 AND read_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1 FOR UPDATE`, result.Recipient, d.Source, d.Target.Kind, d.Target.ID, d.TitleKey, params, now.Add(-window)).Scan(&result.ID)
 			if e != nil && !errors.Is(e, sql.ErrNoRows) {
 				return n.RecipientResult{}, safe(e)
 			}
