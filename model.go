@@ -202,6 +202,7 @@ type Repository interface {
 	Preferences(context.Context, string, *bool) (Preferences, error)
 	UpdatePreferences(context.Context, string, PreferencesUpdate) (Preferences, error)
 	Cleanup(context.Context, time.Time, int) (int64, error)
+	MaintenanceStats(context.Context, time.Time) (MaintenanceStats, error)
 }
 
 // AccountCloser permanently removes personal notifications and preferences while
@@ -215,6 +216,46 @@ type AccountCloser interface {
 type ClockedConsumerRepository interface {
 	ConsumeWithClock(context.Context, Event, string, func() time.Time, time.Duration) (Result, error)
 }
+type MaintenanceStats struct {
+	ExpiredItems          int64      `json:"expired_items"`
+	OldestExpiredAt       *time.Time `json:"oldest_expired_at"`
+	EstimatedInboxRows    int64      `json:"estimated_inbox_rows"`
+	EstimatedRevisionRows int64      `json:"estimated_revision_rows"`
+}
+
+type ConsumeObservation struct {
+	Source     string
+	Type       string
+	TitleKey   string
+	Delivered  int
+	Suppressed map[string]int
+	Ignored    bool
+	Err        error
+	Duration   time.Duration
+}
+
+type ResolveObservation struct {
+	Batch        bool
+	Targets      int
+	Accessible   int
+	Inaccessible int
+	Unavailable  int
+	Duration     time.Duration
+}
+
+type CleanupObservation struct {
+	Deleted   int64
+	FullBatch bool
+	Err       error
+	Duration  time.Duration
+}
+
+type Observer interface {
+	ObserveConsume(ConsumeObservation)
+	ObserveResolve(ResolveObservation)
+	ObserveCleanup(CleanupObservation)
+}
+
 type Config struct {
 	Retention         time.Duration
 	AggregationWindow time.Duration
@@ -222,6 +263,7 @@ type Config struct {
 	ResolveTimeout    time.Duration
 	// Diagnostics optionally receives desensitized operation and reason codes.
 	Diagnostics func(operation, reason string)
+	Observer    Observer
 }
 
 // TargetRef is a comparable key for a page-scoped, deduplicated lookup.

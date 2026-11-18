@@ -664,3 +664,52 @@ func CleanupInboxDetails(ctx context.Context, db *sql.DB, before time.Time, limi
 	count, e := result.RowsAffected()
 	return count, safe(e)
 }
+
+func (r *Repository) MaintenanceStats(ctx context.Context, before time.Time) (n.MaintenanceStats, error) {
+	var stats n.MaintenanceStats
+	var oldest sql.NullTime
+	db, e := r.db()
+	if e != nil {
+		return n.MaintenanceStats{}, e
+	}
+	e = db.QueryRowContext(ctx, `SELECT count(*),min(created_at) FROM notifications.items WHERE created_at<$1`, before).Scan(&stats.ExpiredItems, &oldest)
+	if e != nil {
+		return n.MaintenanceStats{}, safe(e)
+	}
+	if oldest.Valid {
+		t := oldest.Time.UTC()
+		stats.OldestExpiredAt = &t
+	}
+	inboxEst, e := r.estimateTableRows(ctx, "inbox")
+	if e != nil {
+		return n.MaintenanceStats{}, e
+	}
+	revEst, e := r.estimateTableRows(ctx, "revisions")
+	if e != nil {
+		return n.MaintenanceStats{}, e
+	}
+	stats.EstimatedInboxRows = inboxEst
+	stats.EstimatedRevisionRows = revEst
+	return stats, nil
+}
+
+func (r *Repository) estimateTableRows(ctx context.Context, table string) (int64, error) {
+	var estimate float64
+	e := r.DB.QueryRowContext(ctx, `SELECT c.reltuples FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='notifications' AND c.relname=$1`, table).Scan(&estimate)
+	if e != nil {
+		return 0, safe(e)
+	}
+	if estimate >= 0 {
+		return int64(estimate), nil
+	}
+	var bounded int64
+	switch table {
+	case "inbox":
+		e = r.DB.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT 1 FROM notifications.inbox LIMIT 100000) s`).Scan(&bounded)
+	case "revisions":
+		e = r.DB.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT 1 FROM notifications.revisions LIMIT 100000) s`).Scan(&bounded)
+	default:
+		return 0, n.ErrInput
+	}
+	return bounded, safe(e)
+}
