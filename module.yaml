@@ -25,12 +25,14 @@ scenario_tests:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
+    - validation_test.go#TestStrictUUIDValidationRejectsNonCanonicalFormatsWith400
   NT-03:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
   NT-05:
     - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
+    - validation_test.go#TestStrictUTF8ControlAndWhitespaceValidation
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
