@@ -42,7 +42,11 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var out any
 	switch {
 	case r.Method == http.MethodGet && path == "":
-		query := r.URL.Query()
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			failure(w, n.ErrInput)
+			return
+		}
 		for k := range query {
 			switch k {
 			case "cursor", "limit", "include_content_names", "box", "type", "unread_only":
@@ -120,7 +124,11 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		out, e = h.Service.Preferences(ctx, owner, in.Enabled)
 	case r.Method == http.MethodPost && path == "/read-all":
-		query := r.URL.Query()
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			failure(w, n.ErrInput)
+			return
+		}
 		for k := range query {
 			if k != "box" && k != "type" {
 				failure(w, n.ErrInput)

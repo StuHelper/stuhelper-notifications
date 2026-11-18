@@ -136,6 +136,25 @@ func TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead(t *testing.T) {
 	}
 
 	// Scoped mark-all-read on interaction box leaves review, verification, and system unread.
+	for _, query := range []string{"box=%ZZ", "box=review;ignored=1"} {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, srv.URL+"/api/v1/notifications/read-all?"+query, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("X-Owner", "alice")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode != http.StatusBadRequest {
+			t.Fatalf("invalid filter %q returned %d", query, res.StatusCode)
+		}
+	}
+	afterInvalid, err := f.s.UnreadSummary(ctx, "alice")
+	if err != nil || afterInvalid != summary {
+		t.Fatalf("malformed filters changed unread notifications: %+v %v", afterInvalid, err)
+	}
 	markResp, err := client.MarkAllReadWithResponse(ctx, &sdk.MarkAllReadParams{Box: &intBox})
 	if err != nil || markResp.StatusCode() != 204 {
 		t.Fatal(err, markResp.StatusCode())
