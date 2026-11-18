@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 )
 
 var _ Consumer = (*Service)(nil)
@@ -31,7 +33,17 @@ func New(repo Repository, resolver Resolver, config Config, now func() time.Time
 	return &Service{repo, resolver, config, now}, nil
 }
 func valid(s string, max int) bool {
-	return strings.TrimSpace(s) != "" && len(s) <= max && !strings.ContainsRune(s, 0)
+	return s != "" && len(s) <= max && strings.TrimSpace(s) == s && utf8.ValidString(s) && !strings.ContainsFunc(s, unicode.IsControl)
+}
+func parseUUID(s string) (string, error) {
+	if len(s) != 36 {
+		return "", ErrInput
+	}
+	u, err := uuid.Parse(s)
+	if err != nil {
+		return "", ErrInput
+	}
+	return u.String(), nil
 }
 func ownerOK(owner string) error {
 	if owner == "" {
@@ -92,9 +104,11 @@ func (s *Service) list(ctx context.Context, owner, after string, limit int, incl
 		if json.Unmarshal(b, &cursor) != nil || cursor.CreatedAt.IsZero() {
 			return Page{}, ErrInput
 		}
-		if _, e = uuid.Parse(cursor.ID); e != nil {
+		normalizedID, e := parseUUID(cursor.ID)
+		if e != nil {
 			return Page{}, ErrInput
 		}
+		cursor.ID = normalizedID
 	}
 	rows, e := s.repo.List(ctx, owner, cursor, limit+1)
 	if e != nil {
@@ -120,10 +134,11 @@ func (s *Service) MarkRead(ctx context.Context, owner, id string) error {
 	if e := ownerOK(owner); e != nil {
 		return e
 	}
-	if _, e := uuid.Parse(id); e != nil {
+	normalizedID, e := parseUUID(id)
+	if e != nil {
 		return ErrInput
 	}
-	return s.repo.MarkRead(ctx, owner, id, s.now().UTC())
+	return s.repo.MarkRead(ctx, owner, normalizedID, s.now().UTC())
 }
 func (s *Service) MarkAllRead(ctx context.Context, owner string) error {
 	if e := ownerOK(owner); e != nil {
