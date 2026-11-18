@@ -8,7 +8,8 @@ import (
 	n "github.com/StuHelper/stuhelper-notifications"
 	"github.com/StuHelper/stuhelper-notifications/httpapi"
 	"github.com/StuHelper/stuhelper-notifications/postgres"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -43,25 +44,31 @@ func setup(t *testing.T) *fixture {
 	if dsn == "" {
 		t.Fatal("isolated PostgreSQL required")
 	}
-	admin, e := sql.Open("pgx", dsn)
+	adminCfg, e := pgx.ParseConfig(dsn)
 	if e != nil {
 		t.Fatal(e)
 	}
+	admin := stdlib.OpenDB(*adminCfg)
 	name := fmt.Sprintf("notifications_%d", time.Now().UnixNano())
 	role := name + "_runtime"
+	var owner, runtime *sql.DB
+	t.Cleanup(func() {
+		if runtime != nil {
+			_ = runtime.Close()
+		}
+		if owner != nil {
+			_ = owner.Close()
+		}
+		_, _ = admin.Exec("DROP DATABASE IF EXISTS " + name + " WITH(FORCE)")
+		_, _ = admin.Exec("DROP ROLE IF EXISTS " + role)
+		_ = admin.Close()
+	})
 	if _, e = admin.Exec("CREATE DATABASE " + name); e != nil {
 		t.Fatal(e)
 	}
-	owner, e := sql.Open("pgx", dsn+" dbname="+name)
-	if e != nil {
-		t.Fatal(e)
-	}
-	t.Cleanup(func() {
-		owner.Close()
-		admin.Exec("DROP DATABASE " + name + " WITH(FORCE)")
-		admin.Exec("DROP ROLE " + role)
-		admin.Close()
-	})
+	ownerCfg := adminCfg.Copy()
+	ownerCfg.Database = name
+	owner = stdlib.OpenDB(*ownerCfg)
 	for range 2 {
 		if e = postgres.Migrate(context.Background(), owner); e != nil {
 			t.Fatal(e)
@@ -71,11 +78,9 @@ func setup(t *testing.T) *fixture {
 	if e != nil {
 		t.Fatal(e)
 	}
-	runtime, e := sql.Open("pgx", dsn+" dbname="+name+" user="+role)
-	if e != nil {
-		t.Fatal(e)
-	}
-	t.Cleanup(func() { runtime.Close() })
+	runtimeCfg := ownerCfg.Copy()
+	runtimeCfg.User = role
+	runtime = stdlib.OpenDB(*runtimeCfg)
 	repo := &postgres.Repository{DB: runtime}
 	if e = repo.CheckRuntime(context.Background()); e != nil {
 		t.Fatal(e)
