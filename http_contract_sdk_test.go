@@ -120,7 +120,8 @@ func TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes(t *testing.T) {
 		t.Fatalf("SDK GetPreferences failed: %+v err=%v", prefsResp.JSON200, err)
 	}
 
-	setResp, err := authedClient.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{InteractionEnabled: false})
+	disabled := false
+	setResp, err := authedClient.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{InteractionEnabled: &disabled})
 	if err != nil || setResp.StatusCode() != http.StatusOK || setResp.JSON200 == nil || setResp.JSON200.InteractionEnabled {
 		t.Fatalf("SDK SetPreferences failed: %+v err=%v", setResp.JSON200, err)
 	}

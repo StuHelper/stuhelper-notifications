@@ -31,6 +31,7 @@ scenario_tests:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
     - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
     - interaction_consistency_test.go#TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate
+    - b04_preferences_test.go#TestGranularReplyAndLikePreferencesAndLegacyCompatibility
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
     - validation_test.go#TestStrictUUIDValidationRejectsNonCanonicalFormatsWith400
@@ -48,6 +49,8 @@ scenario_tests:
     - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
     - validation_test.go#TestStrictUTF8ControlAndWhitespaceValidation
     - http_contract_sdk_test.go#TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes
+    - b04_preferences_test.go#TestGranularReplyAndLikePreferencesAndLegacyCompatibility
+    - b04_preferences_test.go#TestPreferencesMigrationPreservesDisabledLegacyUsers
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients

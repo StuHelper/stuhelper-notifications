@@ -194,7 +194,20 @@ func (s *Service) Preferences(ctx context.Context, owner string, enabled *bool) 
 	if e := ownerOK(owner); e != nil {
 		return Preferences{}, e
 	}
-	return s.repo.Preferences(ctx, owner, enabled)
+	if enabled == nil {
+		return s.repo.Preferences(ctx, owner, nil)
+	}
+	return s.UpdatePreferences(ctx, owner, PreferencesUpdate{InteractionEnabled: enabled})
+}
+
+func (s *Service) UpdatePreferences(ctx context.Context, owner string, patch PreferencesUpdate) (Preferences, error) {
+	if e := ownerOK(owner); e != nil {
+		return Preferences{}, e
+	}
+	if patch.InteractionEnabled == nil && patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
+		return Preferences{}, ErrInput
+	}
+	return s.repo.UpdatePreferences(ctx, owner, patch)
 }
 
 // Cleanup performs one bounded batch. The host schedules further batches.

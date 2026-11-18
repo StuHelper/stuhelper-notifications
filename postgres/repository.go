@@ -138,20 +138,34 @@ func (r *Repository) CheckRuntime(ctx context.Context) error {
 
 // lockOwner serializes per-recipient mutations (delivery, preference changes,
 // read transitions, and account closure) without recreating rows for closed owners.
-func lockOwner(ctx context.Context, tx *sql.Tx, owner string) (bool, bool, error) {
+func lockOwner(ctx context.Context, tx *sql.Tx, owner string) (bool, n.Preferences, error) {
 	if _, e := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, "notifications:owner:"+owner); e != nil {
-		return false, false, e
+		return false, n.Preferences{}, e
 	}
 	var closed bool
 	if e := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notifications.closed_owners WHERE owner=$1)`, owner).Scan(&closed); e != nil {
-		return false, false, e
+		return false, n.Preferences{}, e
 	}
 	if closed {
-		return true, false, nil
+		return true, n.Preferences{}, nil
 	}
-	var enabled bool
-	e := tx.QueryRowContext(ctx, `SELECT COALESCE((SELECT interaction_enabled FROM notifications.preferences WHERE owner=$1 FOR UPDATE), true)`, owner).Scan(&enabled)
-	return false, enabled, e
+	var prefs n.Preferences
+	err := tx.QueryRowContext(ctx, `SELECT interaction_enabled,reply_enabled,like_enabled FROM notifications.preferences WHERE owner=$1 FOR UPDATE`, owner).Scan(&prefs.InteractionEnabled, &prefs.ReplyEnabled, &prefs.LikeEnabled)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, n.Preferences{InteractionEnabled: true, ReplyEnabled: true, LikeEnabled: true}, nil
+	}
+	return false, prefs, err
+}
+
+func interactionAllowed(titleKey string, prefs n.Preferences) bool {
+	switch titleKey {
+	case "notifications.interaction.reply":
+		return prefs.InteractionEnabled && prefs.ReplyEnabled
+	case "notifications.interaction.like":
+		return prefs.InteractionEnabled && prefs.LikeEnabled
+	default:
+		return prefs.InteractionEnabled
+	}
 }
 
 func (r *Repository) ensureOpenOwner(ctx context.Context, owner string) error {
@@ -267,20 +281,20 @@ func (r *Repository) ConsumeWithClock(ctx context.Context, d n.Event, hash strin
 		// Lock all recipients in sorted order first, then sample the clock so
 		// concurrent deliveries never evaluate aggregation with an older pre-lock timestamp.
 		closedByRecipient := make([]bool, len(d.Recipients))
-		enabledByRecipient := make([]bool, len(d.Recipients))
+		prefsByRecipient := make([]n.Preferences, len(d.Recipients))
 		for i, recipient := range d.Recipients {
-			closed, enabled, err := lockOwner(ctx, tx, recipient)
+			closed, prefs, err := lockOwner(ctx, tx, recipient)
 			if err != nil {
 				return n.Result{}, safe(err)
 			}
-			closedByRecipient[i], enabledByRecipient[i] = closed, enabled
+			closedByRecipient[i], prefsByRecipient[i] = closed, prefs
 		}
 		now = nowFn().UTC()
 		for i, recipient := range d.Recipients {
 			entry := n.RecipientResult{Recipient: recipient}
 			if closedByRecipient[i] {
 				entry.SuppressionReason = n.SuppressionAccountClosed
-			} else if d.Type == "interaction" && !enabledByRecipient[i] {
+			} else if d.Type == "interaction" && !interactionAllowed(d.TitleKey, prefsByRecipient[i]) {
 				entry.SuppressionReason = n.SuppressionInteractionDisabled
 			} else if d.TitleKey == "notifications.interaction.like" {
 				ins, err := tx.ExecContext(ctx, `INSERT INTO notifications.like_subjects(owner,source,subject) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, recipient, d.Source, d.Subject)
@@ -517,38 +531,66 @@ func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filt
 	return safe(tx.Commit())
 }
 func (r *Repository) Preferences(ctx context.Context, owner string, value *bool) (n.Preferences, error) {
+	if value != nil {
+		return r.UpdatePreferences(ctx, owner, n.PreferencesUpdate{InteractionEnabled: value})
+	}
+	db, err := r.db()
+	if err != nil {
+		return n.Preferences{}, err
+	}
+	var closed bool
+	var prefs n.Preferences
+	err = db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notifications.closed_owners WHERE owner=$1),
+ COALESCE(p.interaction_enabled,true),COALESCE(p.reply_enabled,true),COALESCE(p.like_enabled,true)
+ FROM (VALUES(1)) AS v(n) LEFT JOIN notifications.preferences p ON p.owner=$1`, owner).Scan(&closed, &prefs.InteractionEnabled, &prefs.ReplyEnabled, &prefs.LikeEnabled)
+	if err != nil {
+		return n.Preferences{}, safe(err)
+	}
+	if closed {
+		return n.Preferences{}, n.ErrForbidden
+	}
+	return prefs, nil
+}
+func (r *Repository) UpdatePreferences(ctx context.Context, owner string, patch n.PreferencesUpdate) (n.Preferences, error) {
+	if patch.InteractionEnabled == nil && patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
+		return n.Preferences{}, n.ErrInput
+	}
 	db, e := r.db()
 	if e != nil {
 		return n.Preferences{}, e
-	}
-	if value == nil {
-		var closed, enabled bool
-		e := db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notifications.closed_owners WHERE owner=$1), COALESCE((SELECT interaction_enabled FROM notifications.preferences WHERE owner=$1), true)`, owner).Scan(&closed, &enabled)
-		if e != nil {
-			return n.Preferences{}, safe(e)
-		}
-		if closed {
-			return n.Preferences{}, n.ErrForbidden
-		}
-		return n.Preferences{InteractionEnabled: enabled}, nil
 	}
 	tx, e := db.BeginTx(ctx, nil)
 	if e != nil {
 		return n.Preferences{}, safe(e)
 	}
 	defer tx.Rollback()
-	closed, _, e := lockOwner(ctx, tx, owner)
-	if e != nil {
-		return n.Preferences{}, safe(e)
-	}
+	closed, prefs, e := lockOwner(ctx, tx, owner)
 	if closed {
 		return n.Preferences{}, n.ErrForbidden
 	}
-	enabled := *value
-	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.preferences(owner,interaction_enabled) VALUES($1,$2) ON CONFLICT(owner) DO UPDATE SET interaction_enabled=EXCLUDED.interaction_enabled`, owner, enabled); e != nil {
+	if e != nil {
 		return n.Preferences{}, safe(e)
 	}
-	return n.Preferences{InteractionEnabled: enabled}, safe(tx.Commit())
+	if patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
+		v := *patch.InteractionEnabled
+		prefs = n.Preferences{InteractionEnabled: v, ReplyEnabled: v, LikeEnabled: v}
+	} else {
+		if patch.ReplyEnabled != nil {
+			prefs.ReplyEnabled = *patch.ReplyEnabled
+		}
+		if patch.LikeEnabled != nil {
+			prefs.LikeEnabled = *patch.LikeEnabled
+		}
+		derived := prefs.ReplyEnabled || prefs.LikeEnabled
+		if patch.InteractionEnabled != nil && *patch.InteractionEnabled != derived {
+			return n.Preferences{}, n.ErrInput
+		}
+		prefs.InteractionEnabled = derived
+	}
+	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.preferences(owner,interaction_enabled,reply_enabled,like_enabled) VALUES($1,$2,$3,$4) ON CONFLICT(owner) DO UPDATE SET interaction_enabled=EXCLUDED.interaction_enabled,reply_enabled=EXCLUDED.reply_enabled,like_enabled=EXCLUDED.like_enabled`, owner, prefs.InteractionEnabled, prefs.ReplyEnabled, prefs.LikeEnabled); e != nil {
+		return n.Preferences{}, safe(e)
+	}
+	return prefs, safe(tx.Commit())
 }
 func (r *Repository) CloseAccount(ctx context.Context, owner, closureID string, now time.Time) error {
 	db, e := r.db()
