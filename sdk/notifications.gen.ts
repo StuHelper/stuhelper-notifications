@@ -96,6 +96,7 @@ export interface components {
             id: string;
         };
         Notification: {
+            /** Format: uuid */
             id: string;
             /** @enum {string} */
             type: "interaction" | "business" | "security" | "account";
@@ -112,6 +113,7 @@ export interface components {
             read_at: string | null;
             /** @enum {string} */
             target_status: "accessible" | "inaccessible" | "unavailable";
+            /** Format: int64 */
             count: number;
         } & (components["schemas"]["InteractionReplyTitlePayload"] | components["schemas"]["InteractionLikeTitlePayload"] | components["schemas"]["ContentApprovedTitlePayload"] | components["schemas"]["ContentRejectedTitlePayload"] | components["schemas"]["ContentRemovedTitlePayload"] | components["schemas"]["ResourceRemovalApprovedTitlePayload"] | components["schemas"]["ResourceRemovalRejectedTitlePayload"] | components["schemas"]["ReportApprovedTitlePayload"] | components["schemas"]["ReportRejectedTitlePayload"] | components["schemas"]["StudentVerificationApprovedTitlePayload"] | components["schemas"]["StudentVerificationRejectedTitlePayload"] | components["schemas"]["IdentityVerificationApprovedTitlePayload"] | components["schemas"]["IdentityVerificationRejectedTitlePayload"] | components["schemas"]["VerificationRevocationApprovedTitlePayload"] | components["schemas"]["VerificationRevocationRejectedTitlePayload"] | components["schemas"]["VerificationDeletionApprovedTitlePayload"] | components["schemas"]["VerificationDeletionRejectedTitlePayload"] | components["schemas"]["TeacherVerificationApprovedTitlePayload"] | components["schemas"]["TeacherVerificationRejectedTitlePayload"] | components["schemas"]["StudentVerificationRevokedTitlePayload"] | components["schemas"]["SystemNoticeTitlePayload"] | components["schemas"]["SystemSecurityTitlePayload"] | components["schemas"]["SystemAccountTitlePayload"]);
         Page: {
@@ -608,7 +610,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 请求人账号已注销 */
+            /** @description 无权访问或请求人账号已注销 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -673,7 +675,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 请求人账号已注销 */
+            /** @description 无权访问或请求人账号已注销 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -738,7 +740,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 请求人账号已注销 */
+            /** @description 无权访问或请求人账号已注销 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -801,7 +803,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 请求人账号已注销 */
+            /** @description 无权访问或请求人账号已注销 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -866,7 +868,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 请求人账号已注销 */
+            /** @description 无权访问或请求人账号已注销 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -935,7 +937,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 请求人账号已注销 */
+            /** @description 无权访问或请求人账号已注销 */
             403: {
                 headers: {
                     [name: string]: unknown;

@@ -6,7 +6,7 @@ updated: 2026-11-19
 
 # 通知模块实现说明
 
-本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 只允许当前登录用户读取和修改本人通知。profiles 为可选依赖，缺失时不影响站内通知。reviews、resources、verification、moderation 是目标解析的可选依赖，缺失时仅对应目标返回 unavailable。
+本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 仅允许登录用户访问本人通知。notifications.inbox 能力依赖可选模块 identity，profiles 缺失不影响站内通知；reviews、resources、verification、moderation 缺失时仅对应目标返回 unavailable。
 
 六个用户 HTTP 操作在请求人的账号已注销时统一返回 403 和错误码 `forbidden`。OpenAPI 和生成的客户端均声明该响应。
 
@@ -19,6 +19,8 @@ updated: 2026-11-19
 单条已读与全部已读仅更新 read_at IS NULL 的未读行，保持首次已读时间且不重写已读元组。其他用户的通知返回 404。只读查询通知偏好不开启写事务或写入默认行。接口不接受用户 ID，身份由宿主认证回调提供。
 
 通知 ID 与游标中的 ID 均使用标准带连字符的 UUID。格式无效时返回 400 invalid_input。
+
+路径必须匹配已声明的路由。非单段 {id}/read 子路径返回 404，未知或重复查询参数返回 400，宿主权限拒绝返回 403。204 响应省略 Content-Type。
 
 互动通知默认开启，用户可关闭。业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，因此偏好关闭后开始的投递不会写入互动通知。
 
