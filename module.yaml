@@ -31,6 +31,7 @@ scenario_tests:
   NT-04:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
     - runtime_diagnostics_test.go#TestURIDSNSetupAndDesensitizedDiagnostics
+    - target_titles_test.go#TestParentContextCancellationAbortsTargetResolutionWithoutFake200
   NT-05:
     - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
     - validation_test.go#TestStrictUTF8ControlAndWhitespaceValidation
