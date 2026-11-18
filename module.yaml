@@ -29,6 +29,7 @@ scenario_tests:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
+    - target_titles_test.go#TestParentContextCancellationAbortsTargetResolutionWithoutFake200
   NT-05:
     - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
   NT-06:

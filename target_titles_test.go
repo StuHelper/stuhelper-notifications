@@ -6,7 +6,10 @@ import (
 	"errors"
 	"fmt"
 	n "github.com/StuHelper/stuhelper-notifications"
+	"github.com/StuHelper/stuhelper-notifications/httpapi"
 	"github.com/StuHelper/stuhelper-notifications/postgres"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -106,5 +109,133 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 	}
 	if _, err = f.s.ListWithContentNames(ctx, "", "", 100); !errors.Is(err, n.ErrUnauthenticated) || batch.calls != before {
 		t.Fatal("unauthenticated lookup", err)
+	}
+}
+
+type cancelOnStepResolver struct {
+	calls     int
+	cancelAt  int
+	cancelFn  context.CancelFunc
+	waitChild bool
+}
+
+func (r *cancelOnStepResolver) Resolve(ctx context.Context, owner, module string, target n.Target) (string, error) {
+	r.calls++
+	if r.cancelAt > 0 && r.calls == r.cancelAt && r.cancelFn != nil {
+		r.cancelFn()
+	}
+	if r.waitChild {
+		<-ctx.Done()
+		return "", ctx.Err()
+	}
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+	return "accessible", nil
+}
+
+type blockingBatchResolver struct {
+	cancelParent context.CancelFunc
+}
+
+func (b *blockingBatchResolver) Resolve(context.Context, string, string, n.Target) (string, error) {
+	return "", errors.New("unexpected legacy call")
+}
+
+func (b *blockingBatchResolver) ResolveBatch(ctx context.Context, owner string, refs []n.TargetRef) (map[n.TargetRef]n.TargetResolution, error) {
+	if b.cancelParent != nil {
+		b.cancelParent()
+	}
+	<-ctx.Done()
+	return nil, ctx.Err()
+}
+
+func TestParentContextCancellationAbortsTargetResolutionWithoutFake200(t *testing.T) {
+	f := setup(t)
+	bg := context.Background()
+	for i := range 20 {
+		d := delivery(fmt.Sprintf("cancel-%d", i), "business")
+		d.Target.ID = fmt.Sprintf("review-%d", i)
+		deliver(t, f, d)
+	}
+
+	// 1. Single-target Resolver: parent cancellation on step 3 must stop the loop immediately and return context.Canceled.
+	parentCtx, cancelParent := context.WithCancel(bg)
+	defer cancelParent()
+	stepResolver := &cancelOnStepResolver{cancelAt: 3, cancelFn: cancelParent}
+	svc, err := n.New(&postgres.Repository{DB: f.db}, stepResolver, n.Config{
+		Retention:         24 * time.Hour,
+		AggregationWindow: time.Hour,
+		CleanupBatch:      2,
+		ResolveTimeout:    time.Second,
+	}, func() time.Time { return f.now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = svc.List(parentCtx, "alice", "", 20); !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+	if stepResolver.calls != 3 {
+		t.Fatalf("expected loop to stop at call 3 after parent cancellation, got %d calls", stepResolver.calls)
+	}
+
+	// HTTP handler must return 503 (never 200 OK) when parent request context is canceled during target resolution.
+	reqCtx, cancelReq := context.WithCancel(bg)
+	defer cancelReq()
+	httpResolver := &cancelOnStepResolver{cancelAt: 1, cancelFn: cancelReq}
+	httpSvc, err := n.New(&postgres.Repository{DB: f.db}, httpResolver, n.Config{
+		Retention:         24 * time.Hour,
+		AggregationWindow: time.Hour,
+		CleanupBatch:      2,
+		ResolveTimeout:    time.Second,
+	}, func() time.Time { return f.now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := httpapi.Handler{
+		Service:      httpSvc,
+		Authenticate: func(*http.Request) (string, error) { return "alice", nil },
+	}
+	req := httptest.NewRequest("GET", "/api/v1/notifications?limit=20", nil).WithContext(reqCtx)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected HTTP 503 on canceled request context, got %d %s", rec.Code, rec.Body.String())
+	}
+
+	// 2. BatchResolver: parent cancellation/deadline must propagate error instead of returning 200 unavailable.
+	batchParent, cancelBatchParent := context.WithCancel(bg)
+	defer cancelBatchParent()
+	batchSvc, err := n.New(&postgres.Repository{DB: f.db}, &blockingBatchResolver{cancelParent: cancelBatchParent}, n.Config{
+		Retention:         24 * time.Hour,
+		AggregationWindow: time.Hour,
+		CleanupBatch:      2,
+		ResolveTimeout:    time.Second,
+	}, func() time.Time { return f.now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = batchSvc.ListWithContentNames(batchParent, "alice", "", 20); !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context.Canceled from BatchResolver, got %v", err)
+	}
+
+	// 3. Contrast: when parent ctx remains valid and ONLY child ResolveTimeout expires, List degrades to unavailable (200 OK).
+	childTimeoutSvc, err := n.New(&postgres.Repository{DB: f.db}, &blockingBatchResolver{}, n.Config{
+		Retention:         24 * time.Hour,
+		AggregationWindow: time.Hour,
+		CleanupBatch:      2,
+		ResolveTimeout:    15 * time.Millisecond,
+	}, func() time.Time { return f.now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := childTimeoutSvc.ListWithContentNames(bg, "alice", "", 20)
+	if err != nil || len(page.Items) != 20 {
+		t.Fatalf("child ResolveTimeout should degrade gracefully, got err=%v items=%d", err, len(page.Items))
+	}
+	for _, item := range page.Items {
+		if item.TargetStatus != "unavailable" || item.TitleParams["content_name_state"] != "unavailable" {
+			t.Fatalf("unexpected degraded item: %+v", item)
+		}
 	}
 }

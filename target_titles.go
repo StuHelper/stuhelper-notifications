@@ -9,9 +9,12 @@ import (
 	"unicode/utf8"
 )
 
-func (s *Service) resolvePage(ctx context.Context, owner string, items []Notification, includeNames bool) {
+func (s *Service) resolvePage(ctx context.Context, owner string, items []Notification, includeNames bool) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	if len(items) == 0 {
-		return
+		return nil
 	}
 	refs := []TargetRef{}
 	seen := map[TargetRef]bool{}
@@ -27,14 +30,23 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		call, cancel := context.WithTimeout(ctx, s.config.ResolveTimeout)
 		values, err := batch.ResolveBatch(call, owner, refs)
 		cancel()
+		if pErr := ctx.Err(); pErr != nil {
+			return pErr
+		}
 		if err == nil {
 			results = values
 		}
 	} else {
 		for _, ref := range refs {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
 			call, cancel := context.WithTimeout(ctx, s.config.ResolveTimeout)
 			state, err := s.resolver.Resolve(call, owner, ref.Source, ref.Target)
 			cancel()
+			if pErr := ctx.Err(); pErr != nil {
+				return pErr
+			}
 			if err == nil {
 				results[ref] = TargetResolution{Status: state}
 			}
@@ -74,4 +86,5 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		item.TitleParams["content_name"] = name
 		item.TitleParams["content_name_state"] = nameState
 	}
+	return nil
 }
