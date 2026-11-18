@@ -2,12 +2,27 @@ package notifications
 
 import (
 	"context"
+	"errors"
 	"maps"
 	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
+
+func (s *Service) reportResolve(err error) {
+	if s.config.Diagnostics == nil || err == nil {
+		return
+	}
+	switch {
+	case errors.Is(err, context.DeadlineExceeded):
+		s.config.Diagnostics("target_resolve", ReasonResolveTimeout)
+	case errors.Is(err, context.Canceled):
+		s.config.Diagnostics("target_resolve", ReasonResolveCanceled)
+	default:
+		s.config.Diagnostics("target_resolve", ReasonResolveError)
+	}
+}
 
 func (s *Service) resolvePage(ctx context.Context, owner string, items []Notification, includeNames bool) {
 	if len(items) == 0 {
@@ -29,6 +44,8 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		cancel()
 		if err == nil {
 			results = values
+		} else {
+			s.reportResolve(err)
 		}
 	} else {
 		for _, ref := range refs {
@@ -37,14 +54,20 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 			cancel()
 			if err == nil {
 				results[ref] = TargetResolution{Status: state}
+			} else {
+				s.reportResolve(err)
 			}
 		}
 	}
 	for i := range items {
 		item := &items[i]
-		resolved := results[TargetRef{item.SourceModule, item.Target}]
+		ref := TargetRef{item.SourceModule, item.Target}
+		resolved, hasResolved := results[ref]
 		state := resolved.Status
 		if state != "accessible" && state != "inaccessible" {
+			if hasResolved && state != "" && state != "unavailable" && s.config.Diagnostics != nil {
+				s.config.Diagnostics("target_resolve", ReasonResolveInvalidStatus)
+			}
 			state = "unavailable"
 		}
 		item.TargetStatus = state
@@ -62,6 +85,9 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 			if name != "" && utf8.ValidString(name) && utf8.RuneCountInString(name) <= 256 && !strings.ContainsFunc(name, unicode.IsControl) {
 				nameState = "available"
 			} else {
+				if s.config.Diagnostics != nil {
+					s.config.Diagnostics("target_resolve", ReasonResolveInvalidName)
+				}
 				nameState = "unavailable"
 			}
 		}
