@@ -44,11 +44,13 @@ inbox 去重键和修订记录不随通知条目清理。inbox 保存来源、�
 
 已注销账号的列表、未读数、已读和偏好接口均返回 403 forbidden。上游延迟事件投递遇到已注销收件人时记录 account_closed 抑制原因，不写入 items 或重建 preferences 行。
 
+MaintenanceStats 查询过期未删通知数、最早过期时间及 inbox 与 revisions 估算行数，不含个人信息。Config.Observer 可选记录消费分布、目标解析降级与清理批次指标。
+
 当前只实现站内渠道。邮件、QQ、客户端推送、免打扰及提醒提前量未接入，不对外声明可用。
 
 ## 标题键目录
 
-OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，Notification 的条件 schema 校验每种组合。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
+OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，scripts/generate.mjs 据此自动生成各 TitlePayload 子模式并校验一致性。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
 
 下表必填参数只允许 1 至 64 位 ASCII 字母、数字及点、下划线、冒号、短横线，首位为字母或数字。参数是显示用业务编号，不能填姓名、学号、证件号、联系方式或正文。驳回、下架、撤销与补件键可附带封闭枚举参数 reason_code（见 OpenAPI ReasonCode），禁止传入自由文本或审核员备注。
 
@@ -165,7 +167,7 @@ Consume 返回 nil error 后，relay 才可 ConfirmOutbox。确认丢失时重�
 
 relay 对提供方频道 LISTEN，通知到达后读取最多 100 条未发送事件。重连后立即补读，并每 60 秒兜底读取。失败从 5 秒指数退避，单次最长 1 小时，累计 24 小时后进入待处理队列。
 
-inbox 的 result JSON 保存整批消费结果，不随通知清理。业务运行身份仅持有 schema USAGE、items/preferences 的读写删、revisions 的读写改及 inbox 的 SELECT、INSERT，不得拥有对象或持有 TRUNCATE 权限。CheckRuntime 验证最小权限，错误包装固定脱敏原因码。
+inbox 的 result JSON 保存整批消费结果，由独立维护身份按 90 天期限清理。运行身份可读写 items、preferences，可查询、插入和更新 revisions，对 inbox、closed_owners、like_subjects 仅有 SELECT、INSERT。CheckRuntime 核验所需权限和禁止的修改权限。
 
 空的单收件人候选 inbox 可原位迁移，保留运行权限和已有通知。有记录的候选 inbox 会拒绝自动升级并保留数据，因为部分记录缺少收件人。负责人须依据原始事件恢复收件人与规范化摘要后再升级，不能直接清空去重历史。
 

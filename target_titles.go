@@ -6,6 +6,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
@@ -31,6 +32,7 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 	if len(items) == 0 {
 		return nil
 	}
+	started := time.Now()
 	refs := []TargetRef{}
 	seen := map[TargetRef]bool{}
 	for _, item := range items {
@@ -41,7 +43,8 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		}
 	}
 	results := map[TargetRef]TargetResolution{}
-	if batch, ok := s.resolver.(BatchResolver); ok {
+	batch, isBatch := s.resolver.(BatchResolver)
+	if isBatch {
 		call, cancel := context.WithTimeout(ctx, s.config.ResolveTimeout)
 		values, err := batch.ResolveBatch(call, owner, refs)
 		cancel()
@@ -69,6 +72,17 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 			} else {
 				s.reportResolve(err)
 			}
+		}
+	}
+	var accessible, inaccessible, unavailable int
+	for _, ref := range refs {
+		switch results[ref].Status {
+		case "accessible":
+			accessible++
+		case "inaccessible":
+			inaccessible++
+		default:
+			unavailable++
 		}
 	}
 	for i := range items {
@@ -117,6 +131,16 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 				item.TitleParams["context_id"] = contextID
 			}
 		}
+	}
+	if s.config.Observer != nil {
+		s.config.Observer.ObserveResolve(ResolveObservation{
+			Batch:        isBatch,
+			Targets:      len(refs),
+			Accessible:   accessible,
+			Inaccessible: inaccessible,
+			Unavailable:  unavailable,
+			Duration:     time.Since(started),
+		})
 	}
 	return nil
 }
