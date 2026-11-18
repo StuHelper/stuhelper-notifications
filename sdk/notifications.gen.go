@@ -4345,6 +4345,9 @@ type ClientInterface interface {
 	// GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 	GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteNotification performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+	DeleteNotification(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MarkRead performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
 	MarkRead(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
@@ -4419,6 +4422,19 @@ func (c *Client) MarkAllRead(ctx context.Context, params *MarkAllReadParams, req
 // GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 func (c *Client) GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUnreadCountRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteNotification performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+func (c *Client) DeleteNotification(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteNotificationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -4716,6 +4732,40 @@ func NewGetUnreadCountRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewDeleteNotificationRequest constructs an http.Request for the DeleteNotification method
+func NewDeleteNotificationRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/notifications/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewMarkReadRequest constructs an http.Request for the MarkRead method
 func NewMarkReadRequest(server string, id openapi_types.UUID) (*http.Request, error) {
 	var err error
@@ -4823,6 +4873,11 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns a wrapper object for the known response body format(s).
 	GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error)
+
+	// DeleteNotificationWithResponse performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	DeleteNotificationWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteNotificationResponse, error)
 
 	// MarkReadWithResponse performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
 	//
@@ -5203,6 +5258,75 @@ func (r GetUnreadCountResponse) ContentType() string {
 	return ""
 }
 
+type DeleteNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *Error
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteNotificationResponse) GetJSON400() *Error {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteNotificationResponse) GetJSON401() *Error {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteNotificationResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteNotificationResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r DeleteNotificationResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteNotificationResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteNotificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteNotificationResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type MarkReadResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5336,6 +5460,17 @@ func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseGetUnreadCountResponse(rsp)
+}
+
+// DeleteNotificationWithResponse performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DeleteNotificationWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteNotificationResponse, error) {
+	rsp, err := c.DeleteNotification(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteNotificationResponse(rsp)
 }
 
 // MarkReadWithResponse performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
@@ -5609,6 +5744,63 @@ func ParseGetUnreadCountResponse(rsp *http.Response) (*GetUnreadCountResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteNotificationResponse parses an HTTP response from a DeleteNotificationWithResponse call
+func ParseDeleteNotificationResponse(rsp *http.Response) (*DeleteNotificationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest Error

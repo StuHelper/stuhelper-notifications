@@ -171,6 +171,13 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		e = h.Service.MarkRead(ctx, owner, readID)
+	case r.Method == http.MethodDelete && singleItemPath(path):
+		if !emptyQuery(r.URL.RawQuery) {
+			failure(w, n.ErrInput)
+			return
+		}
+		e = h.Service.Delete(ctx, owner, strings.TrimPrefix(path, "/"))
+
 	default:
 		e = n.ErrNotFound
 	}
@@ -272,4 +279,17 @@ func (b strictBool) ptr() *bool {
 	}
 	v := b.value
 	return &v
+}
+
+func singleItemPath(path string) bool {
+	id, ok := strings.CutPrefix(path, "/")
+	if !ok || id == "" || strings.Contains(id, "/") {
+		return false
+	}
+	switch id {
+	case "preferences", "unread-count", "read-all":
+		return false
+	default:
+		return true
+	}
 }

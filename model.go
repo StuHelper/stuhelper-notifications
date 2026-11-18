@@ -199,6 +199,7 @@ type Repository interface {
 	MarkRead(context.Context, string, string, time.Time) error
 	MarkAllRead(context.Context, string, time.Time) error
 	MarkAllReadFiltered(context.Context, string, ReadFilter, time.Time) error
+	Delete(context.Context, string, string) error
 	Preferences(context.Context, string, *bool) (Preferences, error)
 	UpdatePreferences(context.Context, string, PreferencesUpdate) (Preferences, error)
 	Cleanup(context.Context, time.Time, int) (int64, error)

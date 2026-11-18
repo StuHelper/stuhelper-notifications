@@ -227,6 +227,16 @@ func (s *Service) MarkAllReadFiltered(ctx context.Context, owner string, filter 
 	}
 	return s.repo.MarkAllReadFiltered(ctx, owner, filter, s.now().UTC())
 }
+func (s *Service) Delete(ctx context.Context, owner, id string) error {
+	if e := ownerOK(owner); e != nil {
+		return e
+	}
+	normalized, err := parseUUID(id)
+	if err != nil {
+		return ErrInput
+	}
+	return s.repo.Delete(ctx, owner, normalized)
+}
 func (s *Service) Preferences(ctx context.Context, owner string, enabled *bool) (Preferences, error) {
 	if e := ownerOK(owner); e != nil {
 		return Preferences{}, e
