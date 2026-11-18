@@ -44,18 +44,22 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		}
 	}
 	var accessible, inaccessible, unavailable int
-	for i := range items {
-		item := &items[i]
-		resolved := results[TargetRef{item.SourceModule, item.Target}]
-		state := resolved.Status
-		switch state {
+	for _, ref := range refs {
+		switch results[ref].Status {
 		case "accessible":
 			accessible++
 		case "inaccessible":
 			inaccessible++
 		default:
-			state = "unavailable"
 			unavailable++
+		}
+	}
+	for i := range items {
+		item := &items[i]
+		resolved := results[TargetRef{item.SourceModule, item.Target}]
+		state := resolved.Status
+		if state != "accessible" && state != "inaccessible" {
+			state = "unavailable"
 		}
 		item.TargetStatus = state
 		// Clone to avoid retaining a name in a repository implementation's object.

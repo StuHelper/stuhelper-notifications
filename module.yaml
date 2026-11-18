@@ -35,6 +35,7 @@ scenario_tests:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
     - b06_observability_test.go#TestMaintenanceStatsAndOperationalObserver
+    - b06_observability_test.go#TestResolveObserverCountsEachDistinctTargetOnce
   NT-07:
     - http_compatibility_test.go#TestLegacyHTTPParametersAndExplicitNameExpansion
     - target_titles_test.go#TestNotificationNamesAreCurrentBoundedAndNeverPersisted

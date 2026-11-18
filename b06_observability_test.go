@@ -2,36 +2,15 @@ package notifications_test
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	n "github.com/StuHelper/stuhelper-notifications"
 	"github.com/StuHelper/stuhelper-notifications/postgres"
-	"os"
 	"os/exec"
 	"sync"
 	"testing"
 	"time"
 )
-
-func mustTestDSN(t *testing.T) string {
-	t.Helper()
-	dsn := os.Getenv("STUHELPER_NOTIFICATIONS_TEST_DSN")
-	if dsn == "" {
-		t.Fatal("isolated PostgreSQL required")
-	}
-	return dsn
-}
-
-func openSQL(t *testing.T, dsn string) *sql.DB {
-	t.Helper()
-	db, err := sql.Open("pgx", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-	return db
-}
 
 type recordingObserver struct {
 	mu       sync.Mutex
@@ -63,24 +42,6 @@ func TestMaintenanceStatsAndOperationalObserver(t *testing.T) {
 	ctx := context.Background()
 
 	obs := &recordingObserver{}
-	runtimeRepo := &postgres.Repository{DB: f.db}
-	// Construct with the isolated runtime role via setup's service database, swapping in Observer.
-	// Use a dedicated runtime connection from setup by re-Checking runtime privileges.
-	rows, err := f.db.Query(`SELECT current_database(), rolname FROM pg_roles WHERE rolname LIKE 'notifications_%_runtime'`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var dbName, roleName string
-	for rows.Next() {
-		if err = rows.Scan(&dbName, &roleName); err != nil {
-			t.Fatal(err)
-		}
-	}
-	rows.Close()
-	_ = runtimeRepo
-
-	// Wire Observer directly onto a new Service backed by f.s's isolated runtime DB via setup helper pattern:
-	// first verify MaintenanceStats on the default setup service (runtime role!).
 	emptyStats, err := f.s.MaintenanceStats(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -90,10 +51,8 @@ func TestMaintenanceStatsAndOperationalObserver(t *testing.T) {
 	}
 
 	// Now create an observed service using the isolated runtime role.
-	dsn := fmt.Sprintf("%s dbname=%s user=%s", mustTestDSN(t), dbName, roleName)
-	rtDB := openSQL(t, dsn)
 	svc, err := n.New(
-		&postgres.Repository{DB: rtDB},
+		&postgres.Repository{DB: f.runtime},
 		f.src,
 		n.Config{
 			Retention:         24 * time.Hour,
@@ -226,6 +185,28 @@ func TestMaintenanceStatsAndOperationalObserver(t *testing.T) {
 	}
 	if len(obs.cleanups) != 3 || !obs.cleanups[0].FullBatch || obs.cleanups[0].Deleted != 2 || !obs.cleanups[1].FullBatch || obs.cleanups[1].Deleted != 2 || obs.cleanups[2].FullBatch || obs.cleanups[2].Deleted != 1 {
 		t.Fatalf("unexpected cleanup observations: %+v", obs.cleanups)
+	}
+}
+
+func TestResolveObserverCountsEachDistinctTargetOnce(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+	if _, err := f.db.Exec(`INSERT INTO notifications.items(id,owner,type,source_module,target_kind,target_id,title_key,title_params,created_at)
+ SELECT gen_random_uuid(),'duplicate-owner','business','reviews','review','same-id','notifications.content.approved','{}',now() FROM generate_series(1,2)`); err != nil {
+		t.Fatal(err)
+	}
+	obs := &recordingObserver{}
+	svc, err := n.New(&postgres.Repository{DB: f.runtime}, f.src, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second, Observer: obs}, func() time.Time { return f.now })
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := svc.List(ctx, "duplicate-owner", "", 10)
+	if err != nil || len(page.Items) != 2 || len(obs.resolves) != 1 {
+		t.Fatalf("list: %+v %v, observations %+v", page, err, obs.resolves)
+	}
+	counts := obs.resolves[0]
+	if counts.Targets != 1 || counts.Accessible != 1 || counts.Inaccessible+counts.Unavailable != 0 {
+		t.Fatalf("duplicate resolution outcomes: %+v", counts)
 	}
 }
 

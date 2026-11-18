@@ -31,10 +31,11 @@ func (r *resolver) Resolve(ctx context.Context, owner, module string, target n.T
 }
 
 type fixture struct {
-	s   *n.Service
-	db  *sql.DB
-	src *resolver
-	now time.Time
+	runtime *sql.DB
+	s       *n.Service
+	db      *sql.DB
+	src     *resolver
+	now     time.Time
 }
 
 func setup(t *testing.T) *fixture {
@@ -88,7 +89,7 @@ func setup(t *testing.T) *fixture {
 			t.Fatalf("runtime allowed %s", query)
 		}
 	}
-	f := &fixture{db: owner, src: &resolver{state: "accessible"}, now: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)}
+	f := &fixture{db: owner, runtime: runtime, src: &resolver{state: "accessible"}, now: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)}
 	f.s, e = n.New(repo, f.src, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
 	if e != nil {
 		t.Fatal(e)
