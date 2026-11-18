@@ -61,12 +61,19 @@ func (s *Service) Consume(ctx context.Context, d Event) (Result, error) {
 	if err := validateTitle(d); err != nil {
 		return Result{}, err
 	}
+	if d.TitleKey == "notifications.interaction.like" && (d.Subject == d.Target.ID || d.Subject == d.Target.Kind+"/"+d.Target.ID) {
+		return Result{}, ErrInput
+	}
 	raw, err := json.Marshal(d)
 	if err != nil {
 		return Result{}, ErrInput
 	}
 	hash := sha256.Sum256(raw)
-	return s.repo.Consume(ctx, d, hex.EncodeToString(hash[:]), s.now().UTC(), s.config.AggregationWindow)
+	digest := hex.EncodeToString(hash[:])
+	if clocked, ok := s.repo.(ClockedConsumerRepository); ok {
+		return clocked.ConsumeWithClock(ctx, d, digest, func() time.Time { return s.now().UTC() }, s.config.AggregationWindow)
+	}
+	return s.repo.Consume(ctx, d, digest, s.now().UTC(), s.config.AggregationWindow)
 }
 func (s *Service) List(ctx context.Context, owner, after string, limit int) (Page, error) {
 	return s.list(ctx, owner, after, limit, false)

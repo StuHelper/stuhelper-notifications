@@ -19,7 +19,7 @@ bash scripts/check-with-postgres.sh
 
 1. 仓库为 StuHelper/stuhelper-notifications，默认分支 develop。候选在 feat/backend-decisions 分支和 PR #1 维护，集成时登记候选提交与依赖组合。
 2. backend 引入模块，迁移身份调用 postgres.Migrate(ctx, db)。该迁移创建 notifications schema，已有通知不会被删除。
-3. 单独创建运行身份，授予 schema USAGE、items/preferences 的 SELECT、INSERT、UPDATE、DELETE，revisions 的 SELECT、INSERT、UPDATE，以及 inbox 的 SELECT、INSERT。运行身份不得拥有 schema 或提权能力，也不得更新删除 inbox 或删除 revisions。
+3. 单独创建运行身份，授予 schema USAGE、items/preferences 的 SELECT、INSERT、UPDATE、DELETE，revisions 的 SELECT、INSERT、UPDATE，以及 inbox、like_subjects 的 SELECT、INSERT。运行身份不得拥有 schema 或提权能力，也不得更新删除 inbox 或删除 revisions。
 4. 使用运行连接构造 postgres.Repository，并调用 CheckRuntime。backend 管理连接池、请求超时、健康检查和连接关闭。迁移身份不进入业务进程。
 5. 调用 notifications.New(repo, resolver, config, clock)。Resolver 根据来源模块和目标引用调用所属模块公开接口，按接收人当前权限返回状态。依赖错误返回 error，禁止默认判定可访问。
 6. 将 httpapi.Handler 挂载至 /api/v1/notifications 及其子路径，Authenticate 回调复用平台认证，返回稳定用户标识。Cookie 认证由宿主同时执行 CSRF 防护。

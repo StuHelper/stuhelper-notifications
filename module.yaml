@@ -23,6 +23,7 @@ capabilities:
 scenario_tests:
   NT-01:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+    - interaction_consistency_test.go#TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
   NT-03:
@@ -45,6 +46,7 @@ scenario_tests:
     - consume_test.go#TestConsumeSuppressionAdvancesRevisionAndValidation
     - consume_test.go#TestConsumeConcurrentSameRevision
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+    - interaction_consistency_test.go#TestInteractionSubjectIsolationAndLikeToggleDeduplication
   NT-09:
     - recipients_test.go#TestConsumeRecipientsDeduplicationPreferencesAndReplay
     - recipients_test.go#TestConsumeRecipientsBoundsAndAllDelivered

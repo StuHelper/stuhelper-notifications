@@ -67,7 +67,7 @@ func setup(t *testing.T) *fixture {
 			t.Fatal(e)
 		}
 	}
-	_, e = owner.Exec("CREATE ROLE " + role + " LOGIN; REVOKE ALL ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA notifications TO " + role + "; GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO " + role + "; GRANT SELECT,INSERT,UPDATE ON notifications.revisions TO " + role + "; GRANT SELECT,INSERT ON notifications.inbox TO " + role + "; CREATE SCHEMA foreign_data; CREATE TABLE foreign_data.secret(value text)")
+	_, e = owner.Exec("CREATE ROLE " + role + " LOGIN; REVOKE ALL ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA notifications TO " + role + "; GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO " + role + "; GRANT SELECT,INSERT,UPDATE ON notifications.revisions TO " + role + "; GRANT SELECT,INSERT ON notifications.inbox,notifications.like_subjects TO " + role + "; CREATE SCHEMA foreign_data; CREATE TABLE foreign_data.secret(value text)")
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -83,7 +83,7 @@ func setup(t *testing.T) *fixture {
 	if e = (&postgres.Repository{DB: owner}).CheckRuntime(context.Background()); e == nil {
 		t.Fatal("migration identity accepted")
 	}
-	for _, query := range []string{"SELECT * FROM foreign_data.secret", "CREATE TABLE notifications.bad(id int)", "DELETE FROM notifications.inbox", "DELETE FROM notifications.revisions", "UPDATE notifications.inbox SET fingerprint='bad'"} {
+	for _, query := range []string{"SELECT * FROM foreign_data.secret", "CREATE TABLE notifications.bad(id int)", "DELETE FROM notifications.inbox", "DELETE FROM notifications.revisions", "DELETE FROM notifications.like_subjects", "UPDATE notifications.inbox SET fingerprint='bad'"} {
 		if _, e = runtime.Exec(query); e == nil {
 			t.Fatalf("runtime allowed %s", query)
 		}

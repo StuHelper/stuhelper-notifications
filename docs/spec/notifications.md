@@ -1,7 +1,7 @@
 ---
 type: spec
 status: Accepted
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # 通知模块实现说明
@@ -18,7 +18,7 @@ updated: 2026-11-17
 
 互动通知默认开启，用户可关闭。业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，因此偏好关闭后开始的投递不会写入互动通知。
 
-互动聚合要求接收人、来源模块、目标、标题键和参数一致，并且原通知未读、处于配置窗口内。窗口从原通知创建时起计算，边界不聚合。聚合增加 count，保留原创建时间；已读后新事件产生新通知。
+互动聚合要求接收人、来源模块、目标、标题键和参数一致，并且原通知未读、处于配置窗口内。消费在获取收件人锁后采样当前时间，窗口下界按原通知创建时起计算，容忍并发交错与多实例时钟微偏。聚合增加 count，保留原创建时间；已读后新事件产生新通知。
 
 事件按 (source, id) 唯一。重复输入返回原结果，同一身份对应不同映射返回 idempotency_conflict。被偏好拒收的事件也保存结果，开启偏好后重投仍不入站。
 
@@ -100,7 +100,7 @@ func (s *Service) Consume(ctx context.Context, event Event) (Result, error)
 | Source | 原 CloudEvents source，模块标识，最长 80 字节 |
 | ID | 原事件 id，最长 256 字节，重试保持不变 |
 | EventType | 原事件 type，如 moderation.result.v1，最长 128 字节 |
-| Subject | 原 subject，最长 512 字节，不按接收人或通知目标重写 |
+| Subject | 原 subject，最长 512 字节；互动事件须使用独立互动实体标识（如评论 ID 或目标加点赞者关系键），禁止多条评论或点赞共用根内容 subject |
 | Revision | 原 data.revision，正 int64 |
 | Recipients | 1–20 个稳定用户标识，每项最长 256 字节；提交列表为空或超过 20 项时拒绝 |
 | Type | 通知类别，必须与标题目录相符 |
@@ -111,7 +111,9 @@ func (s *Service) Consume(ctx context.Context, event Event) (Result, error)
 
 每个源事件一次提交全部收件人，共享通知类别、目标和标题参数。模块先检查提交列表长度，再去重并按用户标识排序。全部收件人的通知、聚合结果、偏好拒收结果、修订和 inbox 在同一事务提交。
 
-消费按 (source, subject) 记录最大已处理修订。新 ID 的 revision 小于或等于该值时写入 Ignored 结果，不写通知、不推进修订。完整结果允许跨修订跳跃；本接口不接受需要逐条应用的增量事件。
+消费按 (source, subject) 记录最大已处理修订，互动事件同时绑定对应标题键，跨互动类型复用同一 subject 或点赞直接使用目标 ID 作为 subject 返回 invalid_input。新 ID 的 revision 小于或等于已处理修订时返回 Ignored，不写通知、不推进修订。
+
+点赞事件按 (owner, source, subject) 去重。同一用户在点赞、取消后再次点赞递增修订时，返回 duplicate_interaction 抑制原因，不重复累加聚合数量，也不在原通知已读后重复生成新通知。
 
 重复 ID 优先返回已保存的 Result。收件人顺序改变或重复条目增减不改变请求摘要，实际收件人集合改变则返回冲突。事件锁、修订行锁和按用户标识排序的偏好锁依次获取，避免重叠收件人集合反向加锁。
 

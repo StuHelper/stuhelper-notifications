@@ -47,7 +47,15 @@ CREATE TABLE IF NOT EXISTS notifications.revisions (
  source text NOT NULL,
  subject text NOT NULL,
  revision bigint NOT NULL CHECK (revision>=0),
+ interaction_title_key text NOT NULL DEFAULT '',
  PRIMARY KEY(source,subject)
+);
+ALTER TABLE notifications.revisions ADD COLUMN IF NOT EXISTS interaction_title_key text NOT NULL DEFAULT '';
+CREATE TABLE IF NOT EXISTS notifications.like_subjects (
+ owner text NOT NULL,
+ source text NOT NULL,
+ subject text NOT NULL,
+ PRIMARY KEY(owner,source,subject)
 );
 REVOKE ALL ON SCHEMA notifications FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA notifications FROM PUBLIC;
