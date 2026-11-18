@@ -121,7 +121,9 @@ func (s *Service) list(ctx context.Context, owner, after string, limit int, incl
 		b, _ := json.Marshal(Cursor{last.CreatedAt, last.ID})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
-	s.resolvePage(ctx, owner, out.Items, includeNames)
+	if e = s.resolvePage(ctx, owner, out.Items, includeNames); e != nil {
+		return Page{}, e
+	}
 	return out, nil
 }
 func (s *Service) Unread(ctx context.Context, owner string) (int64, error) {
