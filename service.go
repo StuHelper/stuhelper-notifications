@@ -96,72 +96,99 @@ func (s *Service) Consume(ctx context.Context, d Event) (Result, error) {
 	return s.repo.Consume(ctx, d, digest, s.now().UTC(), s.config.AggregationWindow)
 }
 func (s *Service) List(ctx context.Context, owner, after string, limit int) (Page, error) {
-	return s.list(ctx, owner, after, limit, false)
+	return s.ListFiltered(ctx, owner, ListQuery{Cursor: after, Limit: limit})
 }
 
 // ListWithContentNames opts into the expanded title parameter contract.
 func (s *Service) ListWithContentNames(ctx context.Context, owner, after string, limit int) (Page, error) {
-	return s.list(ctx, owner, after, limit, true)
+	return s.ListFiltered(ctx, owner, ListQuery{Cursor: after, Limit: limit, IncludeContentNames: true})
 }
-func (s *Service) list(ctx context.Context, owner, after string, limit int, includeNames bool) (Page, error) {
+func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (Page, error) {
 	if e := ownerOK(owner); e != nil {
 		return Page{}, e
 	}
-	if limit < 1 || limit > 100 || len(after) > 1024 {
+	if q.Limit < 1 || q.Limit > 100 || len(q.Cursor) > 1024 {
+		return Page{}, ErrInput
+	}
+	if q.Box != "" && !validBox(q.Box) {
+		return Page{}, ErrInput
+	}
+	if q.Type != "" && !validNotificationType(q.Type) {
 		return Page{}, ErrInput
 	}
 	var cursor Cursor
-	if after != "" {
-		b, e := base64.RawURLEncoding.DecodeString(after)
+	if q.Cursor != "" {
+		b, e := base64.RawURLEncoding.DecodeString(q.Cursor)
 		if e != nil {
 			return Page{}, ErrInput
 		}
-		if json.Unmarshal(b, &cursor) != nil || cursor.CreatedAt.IsZero() {
+		dec := json.NewDecoder(strings.NewReader(string(b)))
+		dec.DisallowUnknownFields()
+		if dec.Decode(&cursor) != nil || cursor.CreatedAt.IsZero() {
 			return Page{}, ErrInput
 		}
-		normalizedID, e := parseUUID(cursor.ID)
+		id, e := parseUUID(cursor.ID)
 		if e != nil {
 			return Page{}, ErrInput
 		}
-		cursor.ID = normalizedID
+		cursor.ID = id
+		if cursor.Box != q.Box || cursor.Type != q.Type || cursor.UnreadOnly != q.UnreadOnly {
+			return Page{}, ErrInput
+		}
 	}
-	rows, e := s.repo.List(ctx, owner, cursor, limit+1)
+	rows, e := s.repo.ListFiltered(ctx, owner, q, cursor, q.Limit+1)
 	if e != nil {
 		return Page{}, e
 	}
 	out := Page{Items: rows}
-	if len(rows) > limit {
-		out.Items = rows[:limit]
-		last := out.Items[limit-1]
-		b, _ := json.Marshal(Cursor{last.CreatedAt, last.ID})
+	if len(rows) > q.Limit {
+		out.Items = rows[:q.Limit]
+		last := out.Items[q.Limit-1]
+		b, _ := json.Marshal(Cursor{CreatedAt: last.CreatedAt, ID: last.ID, Box: q.Box, Type: q.Type, UnreadOnly: q.UnreadOnly})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
-	if e = s.resolvePage(ctx, owner, out.Items, includeNames); e != nil {
+	if e = s.resolvePage(ctx, owner, out.Items, q.IncludeContentNames); e != nil {
 		return Page{}, e
 	}
 	return out, nil
 }
 func (s *Service) Unread(ctx context.Context, owner string) (int64, error) {
-	if e := ownerOK(owner); e != nil {
-		return 0, e
+	summary, err := s.UnreadSummary(ctx, owner)
+	if err != nil {
+		return 0, err
 	}
-	return s.repo.Unread(ctx, owner)
+	return summary.Count, nil
+}
+func (s *Service) UnreadSummary(ctx context.Context, owner string) (UnreadSummary, error) {
+	if e := ownerOK(owner); e != nil {
+		return UnreadSummary{}, e
+	}
+	return s.repo.UnreadSummary(ctx, owner)
 }
 func (s *Service) MarkRead(ctx context.Context, owner, id string) error {
 	if e := ownerOK(owner); e != nil {
 		return e
 	}
-	normalizedID, e := parseUUID(id)
+	normalized, e := parseUUID(id)
 	if e != nil {
 		return ErrInput
 	}
-	return s.repo.MarkRead(ctx, owner, normalizedID, s.now().UTC())
+	return s.repo.MarkRead(ctx, owner, normalized, s.now().UTC())
 }
 func (s *Service) MarkAllRead(ctx context.Context, owner string) error {
+	return s.MarkAllReadFiltered(ctx, owner, ReadFilter{})
+}
+func (s *Service) MarkAllReadFiltered(ctx context.Context, owner string, filter ReadFilter) error {
 	if e := ownerOK(owner); e != nil {
 		return e
 	}
-	return s.repo.MarkAllRead(ctx, owner, s.now().UTC())
+	if filter.Box != "" && !validBox(filter.Box) {
+		return ErrInput
+	}
+	if filter.Type != "" && !validNotificationType(filter.Type) {
+		return ErrInput
+	}
+	return s.repo.MarkAllReadFiltered(ctx, owner, filter, s.now().UTC())
 }
 func (s *Service) Preferences(ctx context.Context, owner string, enabled *bool) (Preferences, error) {
 	if e := ownerOK(owner); e != nil {

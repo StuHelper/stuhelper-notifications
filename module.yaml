@@ -29,12 +29,15 @@ capability_requires:
 scenario_tests:
   NT-01:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+    - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
     - interaction_consistency_test.go#TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
     - validation_test.go#TestStrictUUIDValidationRejectsNonCanonicalFormatsWith400
     - query_efficiency_test.go#TestReadOnlyPreferencesAndUnreadOnlyMarkUpdates
     - query_efficiency_test.go#TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds
+    - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
+    - b01_filter_test.go#TestBoxColumnMigrationBackfillsExistingItems
   NT-03:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:

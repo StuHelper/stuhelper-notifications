@@ -105,6 +105,40 @@
               "default": false
             },
             "description": "启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。"
+          },
+          {
+            "name": "box",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Box"
+            },
+            "description": "按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interaction",
+                "business",
+                "security",
+                "account"
+              ]
+            },
+            "description": "按通知底层类别过滤。"
+          },
+          {
+            "name": "unread_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "仅返回未读通知（read_at 为 null）。"
           }
         ]
       }
@@ -304,7 +338,33 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "box",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Box"
+            },
+            "description": "可选按分箱批量标为已读；省略时标记本人全部未读通知。"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interaction",
+                "business",
+                "security",
+                "account"
+              ]
+            },
+            "description": "可选按通知类别批量标为已读。"
+          }
+        ]
       }
     },
     "/api/v1/notifications/preferences": {
@@ -641,16 +701,98 @@
           }
         }
       },
+      "Box": {
+        "type": "string",
+        "enum": [
+          "interaction",
+          "review",
+          "verification",
+          "system"
+        ],
+        "description": "通知中心分箱标识。"
+      },
+      "UnreadByBox": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "interaction",
+          "review",
+          "verification",
+          "system"
+        ],
+        "properties": {
+          "interaction": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "review": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "verification": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "system": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "UnreadByType": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "interaction",
+          "business",
+          "security",
+          "account"
+        ],
+        "properties": {
+          "interaction": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "business": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "security": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "account": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
       "Unread": {
         "type": "object",
         "required": [
-          "count"
+          "count",
+          "by_box",
+          "by_type"
         ],
         "properties": {
           "count": {
             "type": "integer",
             "format": "int64",
             "minimum": 0
+          },
+          "by_box": {
+            "$ref": "#/components/schemas/UnreadByBox"
+          },
+          "by_type": {
+            "$ref": "#/components/schemas/UnreadByType"
           }
         }
       },

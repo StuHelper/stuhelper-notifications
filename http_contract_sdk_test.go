@@ -125,7 +125,7 @@ func TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes(t *testing.T) {
 		t.Fatalf("SDK SetPreferences failed: %+v err=%v", setResp.JSON200, err)
 	}
 
-	allReadResp, err := authedClient.MarkAllReadWithResponse(ctx)
+	allReadResp, err := authedClient.MarkAllReadWithResponse(ctx, nil)
 	if err != nil || allReadResp.StatusCode() != http.StatusNoContent || allReadResp.HTTPResponse.Header.Get("Content-Type") != "" {
 		t.Fatalf("SDK MarkAllRead failed: status=%d ct=%q err=%v", allReadResp.StatusCode(), allReadResp.HTTPResponse.Header.Get("Content-Type"), err)
 	}
