@@ -1,12 +1,14 @@
 ---
 type: spec
 status: Accepted
-updated: 2026-11-17
+updated: 2026-11-19
 ---
 
 # 通知模块实现说明
 
 本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 只允许当前登录用户读取和修改本人通知。profiles 为可选依赖，缺失时不影响站内通知。reviews、resources、verification、moderation 是目标解析的可选依赖，缺失时仅对应目标返回 unavailable。
+
+六个用户 HTTP 操作在请求人的账号已注销时统一返回 403 和错误码 `forbidden`。OpenAPI 和生成的客户端均声明该响应。
 
 通知包含类型、来源模块、目标引用、标题翻译键与字符串参数、创建时间、已读时间和聚合数量。调用方只提交目录规定的业务编号，不能放入正文或个人敏感信息。客户端负责八语言翻译。
 
@@ -24,7 +26,11 @@ updated: 2026-11-17
 
 通知、inbox 和已处理修订在同一数据库事务写入。清理按创建时间删除超过保留期限的通知，每次最多 CleanupBatch 条。并发清理跳过已锁定行。未到保留期限边界的通知继续保留。
 
-inbox 和修订记录不随通知清理。inbox 保存来源、事件 ID、subject、revision、映射摘要及原结果，不保存标题参数。记录长期增长，回收需要明确上游最大重投期限，否则旧事件可能重新入站。
+inbox 去重键和修订记录不随通知条目清理。inbox 保存来源、事件 ID、subject、revision、映射摘要、消费时间及投递详情，不保存标题参数。独立维护连接按 90 天保留期限调用 CleanupInboxDetails 有界清空过期 result 详情并保留去重键，过期重放返回 Ignored 且不重新入站。
+
+业务账号注销调用 CloseAccount(ctx, owner, closureID)，在同一事务中写入 closed_owners 栅栏并删除该账号的 items 与 preferences。相同 closureID 重复调用幂等成功，不同 closureID 返回 idempotency_conflict。
+
+已注销账号的列表、未读数、已读和偏好接口均返回 403 forbidden。上游延迟事件投递遇到已注销收件人时记录 account_closed 抑制原因，不写入 items 或重建 preferences 行。
 
 当前只实现站内渠道。邮件、QQ、客户端推送、免打扰及提醒提前量未接入，不对外声明可用。
 
@@ -115,9 +121,9 @@ func (s *Service) Consume(ctx context.Context, event Event) (Result, error)
 
 重复 ID 优先返回已保存的 Result。收件人顺序改变或重复条目增减不改变请求摘要，实际收件人集合改变则返回冲突。事件锁、修订行锁和按用户标识排序的偏好锁依次获取，避免重叠收件人集合反向加锁。
 
-Result.Recipients 按用户标识排序，每项包含 Recipient、ID 和 SuppressionReason。成功入站时 ID 非空且原因为空；偏好拒收时 ID 为空，原因是 interaction_disabled；旧修订原因是 stale_revision，并设置 Result.Ignored。
+Result.Recipients 按用户标识排序，每项包含 Recipient、ID 和 SuppressionReason。成功入站时 ID 非空且原因为空；偏好拒收原因是 interaction_disabled；账号已注销原因是 account_closed；旧修订原因是 stale_revision 并设置 Result.Ignored。
 
-偏好拒收和旧修订忽略均为成功消费。偏好拒收也推进修订，其他收件人照常入站。任何收件人写入或 inbox 写入失败时，整批通知、聚合数量、偏好行和修订都回滚。
+偏好拒收、已注销抑制和旧修订忽略均为成功消费。偏好拒收与已注销抑制仍推进修订，同批其他收件人照常入站。任何收件人写入或 inbox 写入失败时，整批通知、聚合数量、偏好行和修订都回滚。
 
 Consume 返回 nil error 后，relay 才可 ConfirmOutbox。确认丢失时重新读取并消费同一事件，返回原结果。取消或超时先按原事件重试，不根据错误猜测事务是否已提交。
 
@@ -153,7 +159,8 @@ type Result struct {
 | NT-09 | 多收件人去重、部分拒收、整批回滚、并发重投、重叠收件人锁顺序、迁移保护 |
 | NT-08 | 乱序、旧修订、跨接收人重复冲突、原结果回放、事务回滚与锁等待取消 |
 | NT-07 | 全部目录键投递、非法组合拒绝且不写入、回复和点赞聚合数量 |
-| NT-06 | 投递失败回滚、保留期限边界、不同目标与接收人不聚合 |
+| NT-06 | 投递失败回滚、保留期限边界、不同目标与接收人不聚合、inbox 投递详情到期回收 |
+| PC-07 | 业务账号注销原子清理个人通知与偏好、关闭栅栏拦截延迟投递与读取 |
 
 实际测试函数在 module.yaml 的 scenario_tests 登记。隔离数据库测试还验证游标分页、清理上限、迁移重复执行与运行身份权限。
 

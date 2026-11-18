@@ -1,4 +1,9 @@
 CREATE SCHEMA IF NOT EXISTS notifications;
+CREATE TABLE IF NOT EXISTS notifications.closed_owners (
+ owner text PRIMARY KEY,
+ closure_id text NOT NULL,
+ closed_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE TABLE IF NOT EXISTS notifications.preferences (
  owner text PRIMARY KEY,
  interaction_enabled boolean NOT NULL DEFAULT true
@@ -33,16 +38,24 @@ BEGIN
    CHECK (jsonb_typeof(result->'recipients')='array' AND jsonb_array_length(result->'recipients') BETWEEN 1 AND 20);
  END IF;
 END $$;
--- Retain inbox results independently of notification retention.
+-- Retain inbox deduplication keys independently of notification retention;
+-- recipient delivery details in result may be pruned after the retention window.
 CREATE TABLE IF NOT EXISTS notifications.inbox (
  source text NOT NULL,
  event_id text NOT NULL,
  subject text NOT NULL,
  revision bigint NOT NULL CHECK (revision>0),
  fingerprint text NOT NULL,
- result jsonb NOT NULL CHECK (jsonb_typeof(result->'recipients')='array' AND jsonb_array_length(result->'recipients') BETWEEN 1 AND 20),
+ result jsonb,
+ consumed_at timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY(source,event_id)
 );
+ALTER TABLE notifications.inbox ADD COLUMN IF NOT EXISTS consumed_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE notifications.inbox ALTER COLUMN result DROP NOT NULL;
+ALTER TABLE notifications.inbox DROP CONSTRAINT IF EXISTS inbox_result_check;
+ALTER TABLE notifications.inbox ADD CONSTRAINT inbox_result_check
+ CHECK (result IS NULL OR (jsonb_typeof(result)='object' AND (result ? 'recipients') AND jsonb_typeof(result->'recipients')='array' AND jsonb_array_length(result->'recipients') BETWEEN 1 AND 20));
+CREATE INDEX IF NOT EXISTS inbox_expiry ON notifications.inbox(consumed_at,source,event_id) WHERE result IS NOT NULL;
 CREATE TABLE IF NOT EXISTS notifications.revisions (
  source text NOT NULL,
  subject text NOT NULL,
