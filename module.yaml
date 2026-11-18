@@ -24,6 +24,7 @@ scenario_tests:
   NT-01:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
     - b05_updated_at_test.go#TestAggregationUpdatedAtFloatingOrderAndMigration
+    - b05_updated_at_test.go#TestUpdatedAtMigrationAcceptsPreviousWriter
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
   NT-03:

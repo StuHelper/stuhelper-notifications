@@ -165,3 +165,15 @@ func TestAggregationUpdatedAtFloatingOrderAndMigration(t *testing.T) {
 		t.Fatalf("migration backfill failed: %+v, err=%v", migrated, err)
 	}
 }
+
+func TestUpdatedAtMigrationAcceptsPreviousWriter(t *testing.T) {
+	f := setup(t)
+	at := time.Date(2024, 5, 1, 10, 11, 12, 345000000, time.UTC)
+	var updated time.Time
+	err := f.db.QueryRow(`INSERT INTO notifications.items(id,owner,type,source_module,target_kind,target_id,title_key,title_params,created_at)
+ VALUES(gen_random_uuid(),'compat-owner','interaction','reviews','review','compat-review','notifications.interaction.like','{}',$1)
+ RETURNING updated_at`, at).Scan(&updated)
+	if err != nil || !updated.Equal(at) {
+		t.Fatalf("previous writer: updated %v want %v: %v", updated, at, err)
+	}
+}

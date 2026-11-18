@@ -20,6 +20,15 @@ CREATE TABLE IF NOT EXISTS notifications.items (
 );
 ALTER TABLE notifications.items ADD COLUMN IF NOT EXISTS updated_at timestamptz;
 UPDATE notifications.items SET updated_at = created_at WHERE updated_at IS NULL;
+-- Previous writers specify only created_at. Preserve their event timestamp on insert.
+CREATE OR REPLACE FUNCTION notifications.set_initial_updated_at() RETURNS trigger
+LANGUAGE plpgsql SET search_path=pg_catalog AS $$
+BEGIN
+ NEW.updated_at:=NEW.created_at;
+ RETURN NEW;
+END $$;
+CREATE OR REPLACE TRIGGER set_initial_updated_at BEFORE INSERT ON notifications.items
+FOR EACH ROW WHEN (NEW.updated_at IS NULL) EXECUTE FUNCTION notifications.set_initial_updated_at();
 ALTER TABLE notifications.items ALTER COLUMN updated_at SET NOT NULL;
 DO $$
 BEGIN
