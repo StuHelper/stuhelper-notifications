@@ -25,6 +25,8 @@ scenario_tests:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
+    - query_efficiency_test.go#TestReadOnlyPreferencesAndUnreadOnlyMarkUpdates
+    - query_efficiency_test.go#TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds
   NT-03:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:

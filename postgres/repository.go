@@ -15,6 +15,11 @@ import (
 //go:embed schema.sql
 var Schema string
 
+const (
+	ListFirstPageQuery = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 ORDER BY created_at DESC,id DESC LIMIT $2`
+	ListCursorQuery    = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND (created_at,id)<($2,$3::uuid) ORDER BY created_at DESC,id DESC LIMIT $4`
+)
+
 type Repository struct{ DB *sql.DB }
 
 func safe(e error) error {
@@ -179,7 +184,16 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 	return result, nil
 }
 func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit int) ([]n.Notification, error) {
-	rows, e := r.DB.QueryContext(ctx, `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,read_at,count FROM notifications.items WHERE owner=$1 AND ($2 OR (created_at,id)<($3,$4::uuid)) ORDER BY created_at DESC,id DESC LIMIT $5`, owner, c.ID == "", c.CreatedAt, emptyUUID(c.ID), limit)
+	if limit < 1 || limit > 101 || (c.ID == "") != c.CreatedAt.IsZero() {
+		return nil, n.ErrInput
+	}
+	var rows *sql.Rows
+	var e error
+	if c.ID == "" {
+		rows, e = r.DB.QueryContext(ctx, ListFirstPageQuery, owner, limit)
+	} else {
+		rows, e = r.DB.QueryContext(ctx, ListCursorQuery, owner, c.CreatedAt, c.ID, limit)
+	}
 	if e != nil {
 		return nil, safe(e)
 	}
@@ -198,46 +212,38 @@ func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit i
 	}
 	return out, safe(rows.Err())
 }
-func emptyUUID(s string) string {
-	if s == "" {
-		return uuid.Nil.String()
-	}
-	return s
-}
 func (r *Repository) Unread(ctx context.Context, owner string) (int64, error) {
 	var count int64
 	e := r.DB.QueryRowContext(ctx, `SELECT count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL`, owner).Scan(&count)
 	return count, safe(e)
 }
-func (r *Repository) mark(ctx context.Context, owner, id string, now time.Time) error {
-	tx, e := r.DB.BeginTx(ctx, nil)
+func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Time) error {
+	var exists bool
+	e := r.DB.QueryRowContext(ctx, `WITH target AS (SELECT 1 FROM notifications.items WHERE owner=$1 AND id=$2::uuid), updated AS (UPDATE notifications.items SET read_at=$3 WHERE owner=$1 AND id=$2::uuid AND read_at IS NULL) SELECT EXISTS(SELECT 1 FROM target)`, owner, id, now).Scan(&exists)
 	if e != nil {
 		return safe(e)
 	}
-	defer tx.Rollback()
-	if _, e = lock(ctx, tx, owner); e != nil {
-		return safe(e)
-	}
-	result, e := tx.ExecContext(ctx, `UPDATE notifications.items SET read_at=COALESCE(read_at,$3) WHERE owner=$1 AND ($2='' OR id=$4::uuid)`, owner, id, now, emptyUUID(id))
-	if e != nil {
-		return safe(e)
-	}
-	affected, e := result.RowsAffected()
-	if e != nil {
-		return safe(e)
-	}
-	if id != "" && affected == 0 {
+	if !exists {
 		return n.ErrNotFound
 	}
-	return safe(tx.Commit())
-}
-func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Time) error {
-	return r.mark(ctx, owner, id, now)
+	return nil
 }
 func (r *Repository) MarkAllRead(ctx context.Context, owner string, now time.Time) error {
-	return r.mark(ctx, owner, "", now)
+	_, e := r.DB.ExecContext(ctx, `UPDATE notifications.items SET read_at=$2 WHERE owner=$1 AND read_at IS NULL`, owner, now)
+	return safe(e)
 }
 func (r *Repository) Preferences(ctx context.Context, owner string, value *bool) (n.Preferences, error) {
+	if value == nil {
+		var enabled bool
+		e := r.DB.QueryRowContext(ctx, `SELECT interaction_enabled FROM notifications.preferences WHERE owner=$1`, owner).Scan(&enabled)
+		if errors.Is(e, sql.ErrNoRows) {
+			return n.Preferences{InteractionEnabled: true}, nil
+		}
+		if e != nil {
+			return n.Preferences{}, safe(e)
+		}
+		return n.Preferences{InteractionEnabled: enabled}, nil
+	}
 	tx, e := r.DB.BeginTx(ctx, nil)
 	if e != nil {
 		return n.Preferences{}, safe(e)
@@ -247,11 +253,9 @@ func (r *Repository) Preferences(ctx context.Context, owner string, value *bool)
 	if e != nil {
 		return n.Preferences{}, safe(e)
 	}
-	if value != nil {
-		enabled = *value
-		if _, e = tx.ExecContext(ctx, `UPDATE notifications.preferences SET interaction_enabled=$2 WHERE owner=$1`, owner, enabled); e != nil {
-			return n.Preferences{}, safe(e)
-		}
+	enabled = *value
+	if _, e = tx.ExecContext(ctx, `UPDATE notifications.preferences SET interaction_enabled=$2 WHERE owner=$1`, owner, enabled); e != nil {
+		return n.Preferences{}, safe(e)
 	}
 	return n.Preferences{InteractionEnabled: enabled}, safe(tx.Commit())
 }
