@@ -7,6 +7,8 @@ requires:
   - id: platform
     api: 1
 optional:
+  - id: identity
+    api: 1
   - id: reviews
     api: 1
   - id: resources
@@ -20,6 +22,10 @@ optional:
 capabilities:
   - notifications.inbox
   - notifications.consume
+capability_requires:
+  notifications.inbox:
+    - id: identity
+      api: 1
 scenario_tests:
   NT-01:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
@@ -31,6 +37,7 @@ scenario_tests:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
   NT-05:
     - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
+    - http_contract_sdk_test.go#TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients

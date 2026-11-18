@@ -1,12 +1,12 @@
 ---
 type: spec
 status: Accepted
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # 通知模块实现说明
 
-本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 只允许当前登录用户读取和修改本人通知。profiles 为可选依赖，缺失时不影响站内通知。reviews、resources、verification、moderation 是目标解析的可选依赖，缺失时仅对应目标返回 unavailable。
+本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 仅允许登录用户访问本人通知。notifications.inbox 能力依赖可选模块 identity，profiles 缺失不影响站内通知；reviews、resources、verification、moderation 缺失时仅对应目标返回 unavailable。
 
 通知包含类型、来源模块、目标引用、标题翻译键与字符串参数、创建时间、已读时间和聚合数量。调用方只提交目录规定的业务编号，不能放入正文或个人敏感信息。客户端负责八语言翻译。
 
@@ -14,7 +14,7 @@ updated: 2026-11-17
 
 列表通过 Resolver 查询目标当前权限。accessible 表示可访问，inaccessible 表示目标删除、下架或权限不足，unavailable 表示查询失败或依赖不可用。目标页仍须执行自己的授权。
 
-单条已读保持第一次已读时间。全部已读更新事务执行时属于本人的通知。其他用户的通知返回 404。接口不接受用户 ID，身份由宿主认证回调提供。
+单条已读保持第一次已读时间。全部已读更新事务执行时属于本人的通知。其他用户的通知及非单段 {id}/read 未知子路径返回 404，未知或重复查询参数返回 400，宿主权限拒绝返回 403，204 响应不附带 Content-Type。接口不接受用户 ID，身份由宿主认证回调提供。
 
 互动通知默认开启，用户可关闭。业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，因此偏好关闭后开始的投递不会写入互动通知。
 

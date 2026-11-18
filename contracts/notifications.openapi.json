@@ -3,7 +3,7 @@
   "info": {
     "title": "StuHelper Notifications",
     "version": "0.3.1",
-    "description": "仅访问本人通知；业务、安全、账号通知始终开启。时间使用 UTC RFC3339。"
+    "description": "仅访问本人通知；业务、安全、账号通知始终开启。支持 Bearer 令牌或宿主会话 Cookie（Cookie 写请求由宿主同时执行 CSRF 防护）。时间使用 UTC RFC3339。"
   },
   "security": [
     {
@@ -45,6 +45,16 @@
               }
             }
           },
+          "403": {
+            "description": "无权访问或账号不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -71,7 +81,8 @@
             "name": "cursor",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 1024
             },
             "description": "不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。"
           },
@@ -132,6 +143,16 @@
               }
             }
           },
+          "403": {
+            "description": "无权访问或账号不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -174,6 +195,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或账号不可用",
             "content": {
               "application/json": {
                 "schema": {
@@ -243,6 +274,16 @@
               }
             }
           },
+          "403": {
+            "description": "无权访问或账号不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -300,6 +341,16 @@
               }
             }
           },
+          "403": {
+            "description": "无权访问或账号不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "不存在或不属于本人",
             "content": {
@@ -347,6 +398,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或账号不可用",
             "content": {
               "application/json": {
                 "schema": {
@@ -435,7 +496,8 @@
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "type": {
             "type": "string",
@@ -481,6 +543,7 @@
           },
           "count": {
             "type": "integer",
+            "format": "int64",
             "minimum": 1
           }
         },
@@ -2215,7 +2278,8 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "description": "Bearer 令牌认证；浏览器端亦可由宿主通过会话 Cookie 认证并执行 CSRF 防护。"
       }
     }
   },

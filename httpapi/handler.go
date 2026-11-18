@@ -6,6 +6,7 @@ import (
 	n "github.com/StuHelper/stuhelper-notifications"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -16,7 +17,6 @@ type Handler struct {
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	if h.Service == nil || h.Authenticate == nil {
 		failure(w, n.ErrUnavailable)
@@ -38,39 +38,68 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	path := strings.TrimPrefix(r.URL.Path, prefix)
 	ctx := r.Context()
+	readID, isSingleRead := singleSegmentReadID(path)
+
 	var out any
 	switch {
 	case r.Method == http.MethodGet && path == "":
+		query, qErr := url.ParseQuery(r.URL.RawQuery)
+		if qErr != nil {
+			failure(w, n.ErrInput)
+			return
+		}
+		for key, values := range query {
+			if len(values) != 1 || (key != "limit" && key != "cursor" && key != "include_content_names") {
+				failure(w, n.ErrInput)
+				return
+			}
+		}
 		limit := 30
-		if r.URL.Query().Has("limit") {
-			limit, e = strconv.Atoi(r.URL.Query().Get("limit"))
+		if values, ok := query["limit"]; ok {
+			limit, e = strconv.Atoi(values[0])
 			if e != nil {
 				failure(w, n.ErrInput)
 				return
 			}
 		}
 		includeNames := false
-		if values, ok := r.URL.Query()["include_content_names"]; ok {
-			if len(values) != 1 || values[0] != "true" && values[0] != "false" {
+		if values, ok := query["include_content_names"]; ok {
+			if values[0] != "true" && values[0] != "false" {
 				failure(w, n.ErrInput)
 				return
 			}
 			includeNames = values[0] == "true"
 		}
+		cursor := ""
+		if values, ok := query["cursor"]; ok {
+			cursor = values[0]
+		}
 		if includeNames {
-			out, e = h.Service.ListWithContentNames(ctx, owner, r.URL.Query().Get("cursor"), limit)
+			out, e = h.Service.ListWithContentNames(ctx, owner, cursor, limit)
 		} else {
-			out, e = h.Service.List(ctx, owner, r.URL.Query().Get("cursor"), limit)
+			out, e = h.Service.List(ctx, owner, cursor, limit)
 		}
 	case r.Method == http.MethodGet && path == "/unread-count":
+		if !emptyQuery(r.URL.RawQuery) {
+			failure(w, n.ErrInput)
+			return
+		}
 		var count int64
 		count, e = h.Service.Unread(ctx, owner)
 		out = struct {
 			Count int64 `json:"count"`
 		}{count}
 	case r.Method == http.MethodGet && path == "/preferences":
+		if !emptyQuery(r.URL.RawQuery) {
+			failure(w, n.ErrInput)
+			return
+		}
 		out, e = h.Service.Preferences(ctx, owner, nil)
 	case r.Method == http.MethodPut && path == "/preferences":
+		if !emptyQuery(r.URL.RawQuery) {
+			failure(w, n.ErrInput)
+			return
+		}
 		var in struct {
 			Enabled *bool `json:"interaction_enabled"`
 		}
@@ -87,10 +116,17 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		out, e = h.Service.Preferences(ctx, owner, in.Enabled)
 	case r.Method == http.MethodPost && path == "/read-all":
+		if !emptyQuery(r.URL.RawQuery) {
+			failure(w, n.ErrInput)
+			return
+		}
 		e = h.Service.MarkAllRead(ctx, owner)
-	case r.Method == http.MethodPost && strings.HasSuffix(path, "/read"):
-		id := strings.TrimSuffix(strings.TrimPrefix(path, "/"), "/read")
-		e = h.Service.MarkRead(ctx, owner, id)
+	case r.Method == http.MethodPost && isSingleRead:
+		if !emptyQuery(r.URL.RawQuery) {
+			failure(w, n.ErrInput)
+			return
+		}
+		e = h.Service.MarkRead(ctx, owner, readID)
 	default:
 		e = n.ErrNotFound
 	}
@@ -102,21 +138,44 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(out)
 }
+
+func singleSegmentReadID(path string) (string, bool) {
+	rest, ok := strings.CutPrefix(path, "/")
+	if !ok {
+		return "", false
+	}
+	id, ok := strings.CutSuffix(rest, "/read")
+	if !ok || id == "" || strings.Contains(id, "/") {
+		return "", false
+	}
+	return id, true
+}
+
+func emptyQuery(raw string) bool {
+	if raw == "" {
+		return true
+	}
+	q, err := url.ParseQuery(raw)
+	return err == nil && len(q) == 0
+}
+
 func failure(w http.ResponseWriter, e error) {
 	code := "unavailable"
 	status := http.StatusServiceUnavailable
 	for _, entry := range []struct {
 		err    error
 		status int
-	}{{n.ErrInput, 400}, {n.ErrUnauthenticated, 401}, {n.ErrNotFound, 404}} {
+	}{{n.ErrInput, 400}, {n.ErrUnauthenticated, 401}, {n.ErrForbidden, 403}, {n.ErrNotFound, 404}} {
 		if errors.Is(e, entry.err) {
 			status = entry.status
 			code = entry.err.Error()
 			break
 		}
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(struct {
 		Code string `json:"code"`

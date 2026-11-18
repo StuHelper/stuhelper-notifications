@@ -9,6 +9,7 @@ import (
 var (
 	ErrInput           = errors.New("invalid_input")
 	ErrUnauthenticated = errors.New("unauthenticated")
+	ErrForbidden       = errors.New("forbidden")
 	ErrNotFound        = errors.New("not_found")
 	ErrConflict        = errors.New("idempotency_conflict")
 	ErrUnavailable     = errors.New("unavailable")
