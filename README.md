@@ -27,7 +27,7 @@ bash scripts/check-with-postgres.sh
 6. 将 httpapi.Handler 挂载至 /api/v1/notifications 及其子路径，Authenticate 回调复用平台认证，返回稳定用户标识。Cookie 认证由宿主同时执行 CSRF 防护。
 7. 标题键、参数和目标类型必须符合 [标题目录](docs/spec/notifications.md#标题键目录)。向 backend relay 注入 notifications.Consumer。relay 保留生产者的 source、id、type、subject、revision，将全部收件人放入 Event.Recipients 后调用 Consume。Consume 成功后才能调用提供方 ConfirmOutbox；超时重试沿用原事件和映射。
 8. 宿主按配置周期调用 Service.Cleanup(ctx)，每次一个有上限的批次；业务账号注销通过 Service.CloseAccount(ctx, owner, closureID) 原子删除本人通知与偏好并写入关闭栅栏。关闭服务时取消任务并等待退出。宿主配置任务超时，保留可再次执行的进度。
-9. 负责人同步 stuhelper-next 规格的实现状态、模块登记和候选锁文件，并更新 Web 的 SDK 快照及实际通知页面。合并前验证真实候选组合。
+9. 负责人同步 stuhelper 规格的实现状态、模块登记和候选锁文件，并更新 Web 的 SDK 快照及实际通知页面。合并前验证真实候选组合。
 
 ## 配置
 
