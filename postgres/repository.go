@@ -154,9 +154,9 @@ func lockOwner(ctx context.Context, tx *sql.Tx, owner string) (bool, n.Preferenc
 		return true, n.Preferences{}, nil
 	}
 	var prefs n.Preferences
-	err := tx.QueryRowContext(ctx, `SELECT interaction_enabled,reply_enabled,like_enabled FROM notifications.preferences WHERE owner=$1 FOR UPDATE`, owner).Scan(&prefs.InteractionEnabled, &prefs.ReplyEnabled, &prefs.LikeEnabled)
+	err := tx.QueryRowContext(ctx, `SELECT reply_enabled,like_enabled FROM notifications.preferences WHERE owner=$1 FOR UPDATE`, owner).Scan(&prefs.ReplyEnabled, &prefs.LikeEnabled)
 	if errors.Is(err, sql.ErrNoRows) {
-		return false, n.Preferences{InteractionEnabled: true, ReplyEnabled: true, LikeEnabled: true}, nil
+		return false, n.Preferences{ReplyEnabled: true, LikeEnabled: true}, nil
 	}
 	return false, prefs, err
 }
@@ -164,11 +164,11 @@ func lockOwner(ctx context.Context, tx *sql.Tx, owner string) (bool, n.Preferenc
 func interactionAllowed(titleKey string, prefs n.Preferences) bool {
 	switch titleKey {
 	case "notifications.interaction.reply":
-		return prefs.InteractionEnabled && prefs.ReplyEnabled
+		return prefs.ReplyEnabled
 	case "notifications.interaction.like":
-		return prefs.InteractionEnabled && prefs.LikeEnabled
+		return prefs.LikeEnabled
 	default:
-		return prefs.InteractionEnabled
+		return false
 	}
 }
 
@@ -373,18 +373,11 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 	if e = r.ensureOpenOwner(ctx, owner); e != nil {
 		return nil, e
 	}
-	cursorAt := c.UpdatedAt
-	if cursorAt.IsZero() {
-		cursorAt = c.CreatedAt
-	}
-	if limit < 1 || limit > 101 || (c.ID == "") != cursorAt.IsZero() {
+	if limit < 1 || limit > 101 || (c.ID == "") != c.UpdatedAt.IsZero() {
 		return nil, n.ErrInput
 	}
 	clauses := []string{"owner=$1"}
 	args := []any{owner}
-	if q.LegacyOnly {
-		clauses, args = legacyFilter(clauses, args)
-	}
 	if q.Box != "" {
 		args = append(args, q.Box)
 		clauses = append(clauses, fmt.Sprintf("box=$%d", len(args)))
@@ -397,7 +390,7 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 		clauses = append(clauses, "read_at IS NULL")
 	}
 	if c.ID != "" {
-		args = append(args, cursorAt, c.ID)
+		args = append(args, c.UpdatedAt, c.ID)
 		clauses = append(clauses, fmt.Sprintf("(updated_at,id)<($%d,$%d::uuid)", len(args)-1, len(args)))
 	}
 	if q.UnreadOnly {
@@ -409,7 +402,7 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 	}
 	args = append(args, limit)
 	query := fmt.Sprintf("SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE %s ORDER BY updated_at DESC,id DESC LIMIT $%d", strings.Join(clauses, " AND "), len(args))
-	if q.Box == "" && q.Type == "" && !q.UnreadOnly && !q.LegacyOnly {
+	if q.Box == "" && q.Type == "" && !q.UnreadOnly {
 		if c.ID == "" {
 			query = ListFirstPageQuery
 		} else {
@@ -440,16 +433,7 @@ func (r *Repository) Unread(ctx context.Context, owner string, unreadCutoff time
 	return summary.Count, e
 }
 
-func legacyFilter(clauses []string, args []any) ([]string, []any) {
-	args = append(args, n.LegacyTitleKeys(), n.LegacyTargetKinds())
-	return append(clauses, fmt.Sprintf("title_key=ANY($%d::text[]) AND target_kind=ANY($%d::text[])", len(args)-1, len(args))), args
-}
-
 func (r *Repository) UnreadSummary(ctx context.Context, owner string, unreadCutoff time.Time) (n.UnreadSummary, error) {
-	return r.UnreadSummaryFiltered(ctx, owner, unreadCutoff, false)
-}
-
-func (r *Repository) UnreadSummaryFiltered(ctx context.Context, owner string, unreadCutoff time.Time, legacyOnly bool) (n.UnreadSummary, error) {
 	db, e := r.db()
 	if e != nil {
 		return n.UnreadSummary{}, e
@@ -457,11 +441,7 @@ func (r *Repository) UnreadSummaryFiltered(ctx context.Context, owner string, un
 	if e = r.ensureOpenOwner(ctx, owner); e != nil {
 		return n.UnreadSummary{}, e
 	}
-	clauses, args := []string{"owner=$1", "read_at IS NULL", "created_at > $2"}, []any{owner, unreadCutoff}
-	if legacyOnly {
-		clauses, args = legacyFilter(clauses, args)
-	}
-	rows, e := db.QueryContext(ctx, `SELECT box,type,count(*) FROM notifications.items WHERE `+strings.Join(clauses, " AND ")+` GROUP BY box,type`, args...)
+	rows, e := db.QueryContext(ctx, `SELECT box,type,count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL AND created_at > $2 GROUP BY box,type`, owner, unreadCutoff)
 	if e != nil {
 		return n.UnreadSummary{}, safe(e)
 	}
@@ -554,9 +534,6 @@ func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filt
 	}
 	clauses := []string{"owner=$1", "read_at IS NULL", "created_at > $3"}
 	args := []any{owner, now, unreadCutoff}
-	if filter.LegacyOnly {
-		clauses, args = legacyFilter(clauses, args)
-	}
 	if filter.Box != "" {
 		args = append(args, filter.Box)
 		clauses = append(clauses, fmt.Sprintf("box=$%d", len(args)))
@@ -601,10 +578,7 @@ func (r *Repository) Delete(ctx context.Context, owner, id string) error {
 	}
 	return safe(tx.Commit())
 }
-func (r *Repository) Preferences(ctx context.Context, owner string, value *bool) (n.Preferences, error) {
-	if value != nil {
-		return r.UpdatePreferences(ctx, owner, n.PreferencesUpdate{InteractionEnabled: value})
-	}
+func (r *Repository) Preferences(ctx context.Context, owner string) (n.Preferences, error) {
 	db, err := r.db()
 	if err != nil {
 		return n.Preferences{}, err
@@ -612,8 +586,8 @@ func (r *Repository) Preferences(ctx context.Context, owner string, value *bool)
 	var closed bool
 	var prefs n.Preferences
 	err = db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM notifications.closed_owners WHERE owner=$1),
- COALESCE(p.interaction_enabled,true),COALESCE(p.reply_enabled,true),COALESCE(p.like_enabled,true)
- FROM (VALUES(1)) AS v(n) LEFT JOIN notifications.preferences p ON p.owner=$1`, owner).Scan(&closed, &prefs.InteractionEnabled, &prefs.ReplyEnabled, &prefs.LikeEnabled)
+ COALESCE(p.reply_enabled,true),COALESCE(p.like_enabled,true)
+ FROM (VALUES(1)) AS v(n) LEFT JOIN notifications.preferences p ON p.owner=$1`, owner).Scan(&closed, &prefs.ReplyEnabled, &prefs.LikeEnabled)
 	if err != nil {
 		return n.Preferences{}, safe(err)
 	}
@@ -623,7 +597,7 @@ func (r *Repository) Preferences(ctx context.Context, owner string, value *bool)
 	return prefs, nil
 }
 func (r *Repository) UpdatePreferences(ctx context.Context, owner string, patch n.PreferencesUpdate) (n.Preferences, error) {
-	if patch.InteractionEnabled == nil && patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
+	if patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
 		return n.Preferences{}, n.ErrInput
 	}
 	db, e := r.db()
@@ -642,23 +616,13 @@ func (r *Repository) UpdatePreferences(ctx context.Context, owner string, patch 
 	if e != nil {
 		return n.Preferences{}, safe(e)
 	}
-	if patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
-		v := *patch.InteractionEnabled
-		prefs = n.Preferences{InteractionEnabled: v, ReplyEnabled: v, LikeEnabled: v}
-	} else {
-		if patch.ReplyEnabled != nil {
-			prefs.ReplyEnabled = *patch.ReplyEnabled
-		}
-		if patch.LikeEnabled != nil {
-			prefs.LikeEnabled = *patch.LikeEnabled
-		}
-		derived := prefs.ReplyEnabled || prefs.LikeEnabled
-		if patch.InteractionEnabled != nil && *patch.InteractionEnabled != derived {
-			return n.Preferences{}, n.ErrInput
-		}
-		prefs.InteractionEnabled = derived
+	if patch.ReplyEnabled != nil {
+		prefs.ReplyEnabled = *patch.ReplyEnabled
 	}
-	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.preferences(owner,interaction_enabled,reply_enabled,like_enabled) VALUES($1,$2,$3,$4) ON CONFLICT(owner) DO UPDATE SET interaction_enabled=EXCLUDED.interaction_enabled,reply_enabled=EXCLUDED.reply_enabled,like_enabled=EXCLUDED.like_enabled`, owner, prefs.InteractionEnabled, prefs.ReplyEnabled, prefs.LikeEnabled); e != nil {
+	if patch.LikeEnabled != nil {
+		prefs.LikeEnabled = *patch.LikeEnabled
+	}
+	if _, e = tx.ExecContext(ctx, `INSERT INTO notifications.preferences(owner,reply_enabled,like_enabled) VALUES($1,$2,$3) ON CONFLICT(owner) DO UPDATE SET reply_enabled=EXCLUDED.reply_enabled,like_enabled=EXCLUDED.like_enabled`, owner, prefs.ReplyEnabled, prefs.LikeEnabled); e != nil {
 		return n.Preferences{}, safe(e)
 	}
 	return prefs, safe(tx.Commit())

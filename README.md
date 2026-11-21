@@ -46,7 +46,7 @@ bash scripts/check-with-postgres.sh
 
 ### 配置
 
-Backend 使用 `read_retention_seconds` 和 `unread_retention_seconds` 配置各自期限。某项未配置时沿用 `retention_seconds`（默认 90 日），超出该项上限时取上限。下表列出模块的 Go `Config` 字段。
+Backend 使用 `read_retention_seconds` 和 `unread_retention_seconds` 配置各自期限。下表列出模块的 Go `Config` 字段。
 
 | 字段 | 条件与用途 |
 | --- | --- |
@@ -62,11 +62,11 @@ Backend 使用 `read_retention_seconds` 和 `unread_retention_seconds` 配置各
 
 ### 当前生产组合
 
-StuHelper v0.1.31 已启用站内通知。Backend v0.1.46 固定本模块的 Go 发布标签 v0.1.2。该组合提供通知列表、未读统计、已读与互动总开关，目标由装配了对应适配器的模块按当前权限解析。见 [StuHelper v0.1.31 组件清单](https://github.com/StuHelper/stuhelper/releases/download/v0.1.31/COMPONENTS.json)。
+StuHelper v0.1.31 已启用站内通知。该组合的 Backend v0.1.46 使用 Notifications v0.1.2。见 [StuHelper v0.1.31 组件清单](https://github.com/StuHelper/stuhelper/releases/download/v0.1.31/COMPONENTS.json)。
 
 ### 源码与持续集成
 
-develop 的 OpenAPI 0.4.0 通过扩展模式提供教师主页申请结果、分箱统计及回复和点赞的独立偏好。默认读取保持与 v0.1.2 的兼容。消费方按锁定源码生成 SDK。
+develop 的 OpenAPI 0.5.0 默认提供教师主页申请结果、分箱与类型未读统计、当前权限下的内容名称与评论上下文，以及独立的回复和点赞偏好。消费方按锁定源码生成 SDK。
 
 通知条目按已读与未读分别到期。PostgreSQL 场景覆盖 v0.1.2 旧表迁移、期限边界、主动删除、并发清理和失败重试。
 

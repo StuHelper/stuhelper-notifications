@@ -59,15 +59,14 @@ func TestAggregationUpdatedAtFloatingOrderAndMigration(t *testing.T) {
 		t.Fatalf("unexpected second page: %+v, err=%v", page2, err)
 	}
 
-	// Legacy cursor encoded with CreatedAt (prior to rolling upgrade) remains accepted.
+	// A cursor with a creation time instead of an update time is invalid.
 	legacyRaw, _ := json.Marshal(struct {
 		CreatedAt time.Time `json:"CreatedAt"`
 		ID        string    `json:"ID"`
 	}{CreatedAt: t0.Add(20 * time.Minute), ID: interactionID})
 	legacyCursor := base64.RawURLEncoding.EncodeToString(legacyRaw)
-	legacyPage, err := f.s.List(ctx, "alice", legacyCursor, 10)
-	if err != nil || len(legacyPage.Items) != 1 || legacyPage.Items[0].ID != businessID {
-		t.Fatalf("legacy cursor failed: %+v, err=%v", legacyPage, err)
+	if _, err = f.s.List(ctx, "alice", legacyCursor, 10); !errors.Is(err, n.ErrInput) {
+		t.Fatalf("creation-time cursor: expected invalid input, got %v", err)
 	}
 
 	// Rollback on failed inbox write restores both count and updated_at.

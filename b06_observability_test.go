@@ -80,7 +80,7 @@ func TestMaintenanceStatsAndOperationalObserver(t *testing.T) {
 
 	// Preference suppression and stale revision observations (adds 1 item for alice at t0+3m, total 5 expired items).
 	off := false
-	if _, err = svc.Preferences(ctx, "bob", &off); err != nil {
+	if _, err = svc.UpdatePreferences(ctx, "bob", n.PreferencesUpdate{ReplyEnabled: &off, LikeEnabled: &off}); err != nil {
 		t.Fatal(err)
 	}
 	batchEv := delivery("mixed-recipients", "interaction")
@@ -244,6 +244,14 @@ assert(out.components.schemas.Target.properties.kind.enum.includes('synthetic_ta
 assert.deepEqual(
   Object.keys(out.components.schemas.SyntheticDemoCompletedTitlePayload.properties.title_params.properties),
   ['demo_id', 'content_name', 'content_name_state']
+);
+assert.deepEqual(
+  out.components.schemas.InteractionReplyTitlePayload.properties.title_params.required,
+  ['content_id', 'content_name', 'content_name_state']
+);
+assert.deepEqual(
+  out.components.schemas.SystemNoticeTitlePayload.properties.title_params.required,
+  ['reference_id']
 );
 `,
 	)

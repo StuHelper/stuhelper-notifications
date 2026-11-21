@@ -260,7 +260,7 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 		t.Fatal(aggregate, e)
 	}
 	disabled := false
-	if _, e := f.s.Preferences(ctx, "alice", &disabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &disabled, LikeEnabled: &disabled}); e != nil {
 		t.Fatal(e)
 	}
 	blocked := delivery("off", "interaction")
@@ -275,7 +275,7 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 		}
 	}
 	enabled := true
-	if _, e := f.s.Preferences(ctx, "alice", &enabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &enabled, LikeEnabled: &enabled}); e != nil {
 		t.Fatal(e)
 	}
 	if v = deliver(t, f, blocked); v.Recipients[0].SuppressionReason == "" {
@@ -319,7 +319,7 @@ func TestHTTPAuthenticationAndStrictPreferences(t *testing.T) {
 		{"GET", "/api/v1/notifications", "", 401},
 		{"GET", "/api/v1/notifications/unread-count", "", 401},
 		{"GET", "/api/v1/notifications/preferences", "", 401},
-		{"PUT", "/api/v1/notifications/preferences", `{"interaction_enabled":false}`, 401},
+		{"PUT", "/api/v1/notifications/preferences", `{"reply_enabled":false}`, 401},
 		{"POST", "/api/v1/notifications/" + id + "/read", "", 401},
 		{"POST", "/api/v1/notifications/read-all", "", 401},
 	}
@@ -344,12 +344,12 @@ func TestHTTPAuthenticationAndStrictPreferences(t *testing.T) {
 	if w := request("GET", "/api/v1/notifications", "", "bob"); w.Code != 200 || !strings.Contains(w.Body.String(), `"items":[]`) {
 		t.Fatal(w.Code, w.Body.String())
 	}
-	for _, body := range []string{`{}`, `{"interaction_enabled":null}`, `{"interaction_enabled":false,"security_enabled":false}`, `{"interaction_enabled":false} {}`} {
+	for _, body := range []string{`{}`, `{"reply_enabled":null}`, `{"reply_enabled":false,"security_enabled":false}`, `{"reply_enabled":false} {}`} {
 		if w := request("PUT", "/api/v1/notifications/preferences", body, "alice"); w.Code != 400 {
 			t.Fatal(body, w.Code)
 		}
 	}
-	if w := request("PUT", "/api/v1/notifications/preferences", `{"interaction_enabled":false}`, "alice"); w.Code != 200 {
+	if w := request("PUT", "/api/v1/notifications/preferences", `{"reply_enabled":false}`, "alice"); w.Code != 200 {
 		t.Fatal(w.Code)
 	}
 	if v := deliver(t, f, delivery("disabled", "interaction")); v.Recipients[0].SuppressionReason == "" {

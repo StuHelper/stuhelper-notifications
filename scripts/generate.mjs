@@ -46,7 +46,7 @@ function buildParameterProperty(name, contract) {
       maxLength: 256,
       readOnly: true,
       description:
-        'comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。',
+        '可访问评论所属的根评价 ID，用于打开讨论上下文。',
     };
   }
   return {
@@ -54,7 +54,7 @@ function buildParameterProperty(name, contract) {
     minLength: 1,
     maxLength: 64,
     pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$',
-    description: '显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。',
+    description: '事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。',
   };
 }
 
@@ -91,8 +91,12 @@ export function synthesizeContract(sourceText) {
   }
 
   for (const [key, rule] of Object.entries(catalogue)) {
+    const readParameters = rule.read_parameters ?? [];
+    const requiredReadParameters = rule.target_kinds.every(kind => ['review', 'comment', 'resource'].includes(kind))
+      ? readParameters.filter(name => name === 'content_name' || name === 'content_name_state')
+      : [];
     const paramProperties = {};
-    for (const name of [...rule.parameters, ...(rule.optional_parameters ?? []), ...(rule.read_parameters ?? [])]) {
+    for (const name of [...rule.parameters, ...(rule.optional_parameters ?? []), ...readParameters]) {
       paramProperties[name] = buildParameterProperty(name, contract);
     }
     coreSchemas[payloadSchemaName(key)] = {
@@ -126,7 +130,7 @@ export function synthesizeContract(sourceText) {
         },
         title_params: {
           type: 'object',
-          required: rule.parameters,
+          required: [...rule.parameters, ...requiredReadParameters],
           additionalProperties: false,
           properties: paramProperties,
         },

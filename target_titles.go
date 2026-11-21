@@ -25,7 +25,7 @@ func (s *Service) reportResolve(err error) {
 	}
 }
 
-func (s *Service) resolvePage(ctx context.Context, owner string, items []Notification, includeNames bool) error {
+func (s *Service) resolvePage(ctx context.Context, owner string, items []Notification) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (s *Service) resolvePage(ctx context.Context, owner string, items []Notific
 		delete(item.TitleParams, "content_name_state")
 		delete(item.TitleParams, "context_id")
 		rule := titleCatalog[item.TitleKey]
-		if !includeNames || !slices.Contains(rule.ReadParameters, "content_name") || !slices.Contains([]string{"review", "comment", "resource"}, item.Target.Kind) {
+		if !slices.Contains(rule.ReadParameters, "content_name") || !slices.Contains([]string{"review", "comment", "resource"}, item.Target.Kind) {
 			continue
 		}
 		name := strings.TrimSpace(resolved.Name)

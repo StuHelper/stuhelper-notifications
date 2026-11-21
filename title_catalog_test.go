@@ -94,7 +94,7 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 	}
 	// Preference suppression must not hide invalid producer input or record its key.
 	disabled := false
-	if _, e := f.s.Preferences(ctx, "alice", &disabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &disabled, LikeEnabled: &disabled}); e != nil {
 		t.Fatal(e)
 	}
 	d := delivery("off-invalid", "interaction")
@@ -106,7 +106,7 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 		t.Fatal("invalid suppressed inbox")
 	}
 	enabled := true
-	if _, e := f.s.Preferences(ctx, "alice", &enabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &enabled, LikeEnabled: &enabled}); e != nil {
 		t.Fatal(e)
 	}
 	d = delivery("max-reference", "interaction")

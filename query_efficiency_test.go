@@ -15,9 +15,9 @@ func TestReadOnlyPreferencesAndUnreadOnlyMarkUpdates(t *testing.T) {
 	f := setup(t)
 	ctx := context.Background()
 
-	// 1. Read-only Preferences(owner, nil) must not insert rows or acquire FOR UPDATE locks.
-	prefs, err := f.s.Preferences(ctx, "fresh-reader", nil)
-	if err != nil || !prefs.InteractionEnabled {
+	// 1. Reading preferences must not insert rows or acquire FOR UPDATE locks.
+	prefs, err := f.s.Preferences(ctx, "fresh-reader")
+	if err != nil || !prefs.ReplyEnabled || !prefs.LikeEnabled {
 		t.Fatalf("unexpected default preferences: %+v, err=%v", prefs, err)
 	}
 	if got := count(t, f, "preferences"); got != 0 {
@@ -25,7 +25,7 @@ func TestReadOnlyPreferencesAndUnreadOnlyMarkUpdates(t *testing.T) {
 	}
 
 	off := false
-	if _, err = f.s.Preferences(ctx, "alice", &off); err != nil {
+	if _, err = f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &off, LikeEnabled: &off}); err != nil {
 		t.Fatal(err)
 	}
 	holdTx, err := f.db.BeginTx(ctx, nil)
@@ -33,13 +33,13 @@ func TestReadOnlyPreferencesAndUnreadOnlyMarkUpdates(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer holdTx.Rollback()
-	if _, err = holdTx.ExecContext(ctx, `SELECT interaction_enabled FROM notifications.preferences WHERE owner='alice' FOR UPDATE`); err != nil {
+	if _, err = holdTx.ExecContext(ctx, `SELECT reply_enabled FROM notifications.preferences WHERE owner='alice' FOR UPDATE`); err != nil {
 		t.Fatal(err)
 	}
 	fastCtx, cancel := context.WithTimeout(ctx, 80*time.Millisecond)
 	defer cancel()
-	gotPrefs, err := f.s.Preferences(fastCtx, "alice", nil)
-	if err != nil || gotPrefs.InteractionEnabled {
+	gotPrefs, err := f.s.Preferences(fastCtx, "alice")
+	if err != nil || gotPrefs.ReplyEnabled || gotPrefs.LikeEnabled {
 		t.Fatalf("read-only Preferences blocked on FOR UPDATE or returned wrong state: %+v, err=%v", gotPrefs, err)
 	}
 	_ = holdTx.Rollback()
@@ -117,7 +117,7 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 	}
 	for _, badCursor := range []n.Cursor{
 		{ID: "00000000-0000-4000-8000-000000000001"},
-		{CreatedAt: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)},
+		{UpdatedAt: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)},
 	} {
 		if _, err := repo.List(ctx, "alice", badCursor, 10, cutoffs); !errors.Is(err, n.ErrInput) {
 			t.Fatalf("repo.List partial cursor %+v: expected ErrInput, got %v", badCursor, err)

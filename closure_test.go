@@ -21,10 +21,10 @@ func TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP(t *t
 	ctx := context.Background()
 
 	off := false
-	if _, e := f.s.Preferences(ctx, "alice", &off); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &off, LikeEnabled: &off}); e != nil {
 		t.Fatal(e)
 	}
-	if _, e := f.s.Preferences(ctx, "bob", &off); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "bob", n.PreferencesUpdate{ReplyEnabled: &off, LikeEnabled: &off}); e != nil {
 		t.Fatal(e)
 	}
 	preCloseEvent := delivery("pre-close", "business")
@@ -130,9 +130,6 @@ func TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP(t *t
 	if _, e = f.s.List(ctx, "alice", "", 10); !errors.Is(e, n.ErrForbidden) {
 		t.Fatal(e)
 	}
-	if _, e = f.s.ListWithContentNames(ctx, "alice", "", 10); !errors.Is(e, n.ErrForbidden) {
-		t.Fatal(e)
-	}
 	if _, e = f.s.Unread(ctx, "alice"); !errors.Is(e, n.ErrForbidden) {
 		t.Fatal(e)
 	}
@@ -142,10 +139,10 @@ func TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP(t *t
 	if e = f.s.MarkAllRead(ctx, "alice"); !errors.Is(e, n.ErrForbidden) {
 		t.Fatal(e)
 	}
-	if _, e = f.s.Preferences(ctx, "alice", nil); !errors.Is(e, n.ErrForbidden) {
+	if _, e = f.s.Preferences(ctx, "alice"); !errors.Is(e, n.ErrForbidden) {
 		t.Fatal(e)
 	}
-	if _, e = f.s.Preferences(ctx, "alice", &on); !errors.Is(e, n.ErrForbidden) {
+	if _, e = f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &on, LikeEnabled: &on}); !errors.Is(e, n.ErrForbidden) {
 		t.Fatal(e)
 	}
 	h := httpapi.Handler{
@@ -156,7 +153,7 @@ func TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP(t *t
 		{"GET", "/api/v1/notifications", ""},
 		{"GET", "/api/v1/notifications/unread-count", ""},
 		{"GET", "/api/v1/notifications/preferences", ""},
-		{"PUT", "/api/v1/notifications/preferences", `{"interaction_enabled":true}`},
+		{"PUT", "/api/v1/notifications/preferences", `{"reply_enabled":true}`},
 		{"POST", "/api/v1/notifications/" + aliceItemID + "/read", ""},
 		{"POST", "/api/v1/notifications/read-all", ""},
 	} {
@@ -174,7 +171,7 @@ func TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	prefs, err := client.GetPreferencesWithResponse(ctx, nil)
+	prefs, err := client.GetPreferencesWithResponse(ctx)
 	if err != nil || prefs.JSON403 == nil || prefs.JSON403.Code != "forbidden" {
 		t.Fatalf("SDK closed account response: %+v %v", prefs, err)
 	}
