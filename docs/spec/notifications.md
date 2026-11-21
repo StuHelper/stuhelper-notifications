@@ -1,60 +1,63 @@
 ---
 type: spec
 status: Accepted
-updated: 2026-11-19
+updated: 2026-11-21
 ---
 
-# 通知模块实现说明
+# 站内通知
 
-本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 仅允许登录用户访问本人通知。notifications.inbox 能力依赖可选模块 identity，profiles 缺失不影响站内通知；reviews、resources、verification、moderation 缺失时仅对应目标返回 unavailable。
+## 数据归属与依赖
 
-用户 HTTP 操作在请求人的账号已注销时统一返回 403 和错误码 `forbidden`。OpenAPI 和生成的客户端均声明该响应。
+notifications 拥有站内通知、互动偏好、投递回执、修订和账号关闭记录。来源模块通过 Go `Consumer` 投递。目标的内容、当前可见性和读取权限由目标所属模块管理。
 
-通知包含类型、来源模块、目标引用、标题翻译键与字符串参数、创建时间、最近动态时间（updated_at）、已读时间和聚合数量。调用方只提交目录规定的业务编号，不能放入正文或个人敏感信息。客户端负责八语言翻译。
+| 清单声明 | 模块或能力 | 装配影响 |
+| --- | --- | --- |
+| 必需依赖 | platform | 提供宿主运行平台 |
+| 可选依赖 | identity | `notifications.inbox` 的能力依赖，支撑已登录用户的站内访问 |
+| 可选依赖 | reviews、resources、verification、moderation | 支撑相应目标状态与名称查询，是否可用由宿主解析器决定 |
+| 可选依赖 | profiles | 当前站内逻辑无需个人资料 |
+| 对外能力 | `notifications.inbox`、`notifications.consume` | 分别用于用户 HTTP 操作和可信 Go 事件消费 |
 
-列表按最近动态时间（updated_at）和 UUID 倒序，使用不透明游标，每页默认 30 条，上限 100 条。列表支持按分箱（interaction、review、verification、system）、通知类别（type）与仅未读（unread_only）过滤，游标绑定当前筛选条件。未读统计同时返回总未读数、按分箱计数与按类别计数，聚合项算一条。
+清单记录宿主启用模块时的要求。标题目录定义允许投递的目标。各类型目标能否跳转取决于宿主是否装配相应的解析器，以及收件人能否访问当前对象。
 
-聚合更新最近动态时间并保留首次创建时间。旧游标可按原创建时间继续读取。
+## HTTP 操作
 
-删除接口只移除本人的通知，保留 inbox 回执、来源修订和点赞去重记录。旧事件重放不会重建已删除的通知。跨账号和不存在的通知均返回 404。
+接口仅处理登录用户的本人通知，用户标识来自宿主认证。账号已注销时返回 403 `forbidden`。
 
-首页和续页使用独立查询。并发新增记录可在刷新首页后读取。
+| 方法 | 路径 | 行为 |
+| --- | --- | --- |
+| GET | `/api/v1/notifications` | 按条件分页列出通知 |
+| GET | `/api/v1/notifications/unread-count` | 返回总未读数、按分箱及按类型的未读数 |
+| POST | `/api/v1/notifications/{id}/read` | 标记一条通知已读 |
+| POST | `/api/v1/notifications/read-all` | 按可选分箱、通知类型标记已读 |
+| DELETE | `/api/v1/notifications/{id}` | 删除本人一条通知 |
+| GET、PUT | `/api/v1/notifications/preferences` | 读取和更新互动通知偏好 |
 
-列表通过 Resolver 查询目标当前权限。accessible 表示可访问，inaccessible 表示目标删除、下架或权限不足，仅子查询超时或下游依赖失败且父请求上下文仍有效时降级为 unavailable。若父级请求 context 已取消或超时，立即中断剩余目标解析并返回错误（HTTP 503），不伪装为 200 OK。目标页仍须执行自己的授权。
+通知包括类型、来源模块、目标引用、标题翻译键和参数、创建时间、最近动态时间（`updated_at`）、已读时间和聚合数量。客户端按八种语言展示标题。
 
-单条已读与全部已读仅更新 read_at IS NULL 的未读行，保持首次已读时间且不重写已读元组。其他用户的通知返回 404。只读查询通知偏好不开启写事务或写入默认行。接口不接受用户 ID，身份由宿主认证回调提供。
+列表按最近动态时间和 UUID 倒序，默认每页 30 条，上限 100 条。支持按分箱、通知类型和 `unread_only` 过滤。游标绑定筛选条件，旧游标的创建时间作为续页时间界限。并发新投递和前移的聚合项可在刷新首页后读取。
 
-通知 ID 与游标中的 ID 均使用标准带连字符的 UUID。格式无效时返回 400 invalid_input。
+分箱包括互动（`interaction`）、内容审核（`review`）、认证（`verification`）和系统（`system`）。通知类型包括互动、业务、安全和账号。未读统计中的聚合项按一条计数。
 
-路径必须匹配已声明的路由。非单段 {id}/read 子路径返回 404，未知或重复查询参数返回 400，宿主权限拒绝返回 403。204 响应省略 Content-Type。
+已读操作仅更新未读行，保留首次已读时间及最近动态时间。删除成功返回 204，重复删除、目标不存在或目标属于其他用户时返回 404。删除保留消费回执、修订和点赞去重记录，原事件重放不能恢复条目。
 
-批量已读可按分箱与通知类型分别限定范围。升级生成的 Go SDK 后，全量已读调用传入 `nil` 查询参数。现有客户端继续使用无查询参数的 HTTP 请求。
+通知 ID 与游标中的 ID 均使用标准带连字符的 UUID。ID 格式无效、查询参数未知或重复时返回 400。未声明的路径返回 404，204 响应省略 Content-Type。
 
-互动通知默认开启，细分为评论回复（reply_enabled）和点赞（like_enabled）两个独立开关，并保留总状态（interaction_enabled）兼容旧客户端读写。业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，关闭对应开关后开始的投递不会写入该类互动通知。
+## 互动偏好与聚合
 
-互动聚合要求接收人、来源模块、目标、标题键和参数一致，并且原通知未读、处于配置窗口内。消费在获取收件人锁后采样当前时间，窗口下界按原通知创建时起计算，容忍并发交错与多实例时钟微偏。聚合增加 count，保留原创建时间；已读后新事件产生新通知。
+评论回复（`reply_enabled`）与点赞（`like_enabled`）默认开启，可独立更新。只提交 `interaction_enabled` 时同步设置两个开关。更新任一细项时，总开关值为两个细项的逻辑或。混合提交且总值不一致时返回 400。
 
-标记已读保留最近动态时间。清理仍按创建时间判断保留期。
+业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，关闭开关后开始的投递按新偏好处理。读取偏好时直接返回当前值或默认值。
 
-事件按 (source, id) 唯一。重复输入返回原结果，同一身份对应不同映射返回 idempotency_conflict。被偏好拒收的事件也保存结果，开启偏好后重投仍不入站。
-
-通知、inbox 和已处理修订在同一数据库事务写入。清理按创建时间删除超过保留期限的通知，每次最多 CleanupBatch 条。并发清理跳过已锁定行。未到保留期限边界的通知继续保留。
-
-inbox 去重键和修订记录不随通知条目清理。inbox 保存来源、事件 ID、subject、revision、映射摘要、消费时间及投递详情，不保存标题参数。独立维护连接按 90 天保留期限调用 CleanupInboxDetails 有界清空过期 result 详情并保留去重键，过期重放返回 Ignored 且不重新入站。
-
-业务账号注销调用 CloseAccount(ctx, owner, closureID)，在同一事务中写入 closed_owners 栅栏并删除该账号的 items 与 preferences。相同 closureID 重复调用幂等成功，不同 closureID 返回 idempotency_conflict。
-
-已注销账号的列表、未读数、已读和偏好接口均返回 403 forbidden。上游延迟事件投递遇到已注销收件人时记录 account_closed 抑制原因，不写入 items 或重建 preferences 行。
-
-MaintenanceStats 查询过期未删通知数、最早过期时间及 inbox 与 revisions 估算行数，不含个人信息。Config.Observer 可选记录消费分布、目标解析降级与清理批次指标。
-
-当前只实现站内渠道。邮件、QQ、客户端推送、免打扰及提醒提前量未接入，不对外声明可用。
+互动聚合要求接收人、来源模块、目标、标题键和参数相同，且原通知未读、处于配置窗口内。持有收件人锁后采样时间，窗口以首次创建时间为准。聚合保留首次创建时间，增加计数并更新最近动态时间。已读后的新互动产生新条目。
 
 ## 标题键目录
 
 OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，scripts/generate.mjs 据此自动生成各 TitlePayload 子模式并校验一致性。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
 
-下表必填参数只允许 1 至 64 位 ASCII 字母、数字及点、下划线、冒号、短横线，首位为字母或数字。参数是显示用业务编号，不能填姓名、学号、证件号、联系方式或正文。驳回、下架、撤销与补件键可附带封闭枚举参数 reason_code（见 OpenAPI ReasonCode），禁止传入自由文本或审核员备注。
+必填参数使用 1 至 64 位业务编号，首位为 ASCII 字母或数字，后续可包含点、下划线、冒号和短横线。姓名、学号、证件号、联系方式和正文不得用作参数。
+
+允许附带 `reason_code` 的标题及可用原因由 OpenAPI 的标题目录和 `ReasonCode` 声明。审核备注只保留在来源模块。
 
 互动文案使用顶层 count 作为复数参数。Consumer 不传 count，首次为 1，聚合由仓库累加。客户端将 count 与 title_params 组合传给公共国际化接口，按语言选择复数形式。
 
@@ -101,7 +104,7 @@ target.id 是对应模块对象的原始 ID，title_params 是用于显示的业
 | target.kind | 对象与页面 |
 | --- | --- |
 | review | reviews 的评价详情 |
-| comment | reviews 的评论对象；启用名称解析且可访问时附带所属根评价 context_id |
+| comment | reviews 的评论对象，符合名称解析条件时附带根评价 `context_id` |
 | resource | resources 的资料详情 |
 | resource_removal_request | resources 的下架申请或投诉回执，进入本人资料申请结果 |
 | report | moderation 的举报回执，进入本人举报处理结果 |
@@ -115,13 +118,13 @@ target.id 是对应模块对象的原始 ID，title_params 是用于显示的业
 | storage_contribution | storage-contribution 的本人存储贡献记录，进入存储贡献面板 |
 | billing_order | billing 的本人充值或退款订单记录，进入账户明细页面 |
 
-系统通知的三个键均指向目录内已有业务对象，使用 reference_id 展示引用编号。目录不定义任意系统正文、外部链接或尚不存在的公告对象。来源模块与 Resolver 装配须能查询该对象，否则返回 unavailable。
+系统通知的三个键均指向目录内的业务对象，使用 `reference_id` 显示引用编号。目标页打开时独立执行授权。
 
-HTTP 契约版本为 0.3.1，模块版本为 0.5.1。生产者使用目录键，客户端按目录提供八语言文案。
+目标删除、下架、权限不足或未知时，解析器返回 `inaccessible`。依赖未装配、子查询超时或结果缺失时对应目标标记 `unavailable`。父请求取消或超时会中断剩余解析，并返回 HTTP 503。
 
 ## 事件消费
 
-notifications 是事件消费者，不提供 OutboxChannel、PendingOutbox 或 ConfirmOutbox。backend 读取提供方 outbox 后调用公开消费接口：
+backend 从来源模块的 outbox 读取事件，并调用 notifications 的公开消费接口。
 
 ```go
 type Consumer interface {
@@ -136,20 +139,47 @@ func (s *Service) Consume(ctx context.Context, event Event) (Result, error)
 | Source | 原 CloudEvents source，模块标识，最长 80 字节 |
 | ID | 原事件 id，最长 256 字节，重试保持不变 |
 | EventType | 原事件 type，如 moderation.result.v1，最长 128 字节 |
-| Subject | 原 subject，最长 512 字节；互动事件须使用独立互动实体标识（如评论 ID 或目标加点赞者关系键），禁止多条评论或点赞共用根内容 subject |
+| Subject | 原 subject，最长 512 字节；互动事件使用独立实体标识，例如评论 ID 或目标与点赞者的关系键 |
 | Revision | 原 data.revision，正 int64 |
-| Recipients | 1–20 个稳定用户标识，每项最长 256 字节；提交列表为空或超过 20 项时拒绝 |
+| Recipients | 1 至 20 个稳定用户标识，每项最长 256 字节 |
 | Type | 通知类别，必须与标题目录相符 |
 | Target | 通知目标 kind 与 id |
 | TitleKey、TitleParams | 标题目录规定的键和显示用编号 |
 
-这是可信 Go 映射接口，不接收原始封套或任意网络请求。用户标识及 Event 各字符串字段必须为合法 UTF-8，且禁止包含控制字符或首尾空白，违规输入在入库前返回 invalid_input。relay 校验 CloudEvents 1.0、JSON 内容类型、获准来源与事件类型、学校范围和接收人，按业务结果生成完整通知映射。不得把失败中间状态映射为业务成功通知。
+relay 负责校验 CloudEvents 1.0、JSON 内容类型、获准来源、事件类型、学校范围和收件人。Consumer 接收已转换的可信 Go 事件，校验用户标识及字符串字段为合法 UTF-8，且无控制字符和首尾空白。非法输入返回 `invalid_input`。
 
 每个源事件一次提交全部收件人，共享通知类别、目标和标题参数。模块先检查提交列表长度，再去重并按用户标识排序。全部收件人的通知、聚合结果、偏好拒收结果、修订和 inbox 在同一事务提交。
 
-消费按 (source, subject) 记录最大已处理修订，互动事件同时绑定对应标题键，跨互动类型复用同一 subject 或点赞直接使用目标 ID 作为 subject 返回 invalid_input。新 ID 的 revision 小于或等于已处理修订时返回 Ignored，不写通知、不推进修订。
+消费按 `(source, subject)` 记录最大修订。互动实体的 subject 绑定一种互动标题键，具有冲突标题键的交付返回 `invalid_input`。点赞新交付须使用独立关系键。新 ID 的修订若不大于已处理修订，记录 `Ignored` 回执，保留既有通知和修订。
 
 点赞事件按 (owner, source, subject) 去重。同一用户在点赞、取消后再次点赞递增修订时，返回 duplicate_interaction 抑制原因，不重复累加聚合数量，也不在原通知已读后重复生成新通知。
+
+以 `(source, id)` 去重。回执详情仍在时，重复投递返回原结果。收件人重排或重复条目增减不会改变摘要，映射改变时返回 `idempotency_conflict`。事务依次锁定事件、修订行及按用户标识排序的收件人。
+
+`Result.Recipients` 按用户标识排序，每项包含 `Recipient`、`ID` 和 `SuppressionReason`。成功入站时返回通知 ID，抑制时返回以下原因。
+
+| 原因 | 条件 |
+| --- | --- |
+| `interaction_disabled` | 接收人关闭了该类互动通知 |
+| `account_closed` | 接收人已注销 |
+| `stale_revision` | 事件修订已过时，消费结果同时置 `Ignored` |
+| `duplicate_interaction` | 此收件人已收到同一点赞关系的通知 |
+
+抑制和旧修订忽略均为成功消费。有效新修订即使被偏好、账号注销或点赞去重抑制，仍推进修订并保存本次结果。收件人写入或回执写入失败时，整批通知、聚合、偏好行和修订都回滚。
+
+`Consume` 成功后，relay 才能在来源模块执行 `ConfirmOutbox`。确认丢失、取消或超时时使用同一事件重试，由消费回执判断此前的结果。
+
+## 回执保留与迁移
+
+条目按创建时间计算保留期。每批最多清理 `CleanupBatch` 条严格早于截止时间的通知，跳过其他清理任务锁定的行。回执键和修订记录独立保留。
+
+回执保存来源、事件 ID、subject、revision、映射摘要、消费时间和逐人投递结果。独立维护身份按已确认的 90 天保留期计算截止时间，再调用 `CleanupInboxDetails` 分批清空 `result`。回执键和摘要继续抑制重复投递。详情过期后，重放返回 `Ignored`。
+
+业务账号注销在同一事务删除本人的通知、偏好及点赞去重数据，并写入 `closed_owners` 阻止重新投递和读取。相同 `closureID` 重试幂等成功，不同 `closureID` 返回 `idempotency_conflict`。
+
+`MaintenanceStats` 返回过期条目数量、最早过期条目的创建时间及回执、修订表的估算行数。见 [数据库授权](https://github.com/StuHelper/stuhelper-notifications/blob/develop/README.md#数据库授权)。
+
+空的旧单收件人 inbox 可以原位升级。含历史记录时迁移会拒绝并保留数据，需依据来源事件重建收件人集合与规范化摘要后再升级。
 
 升级时，迁移按旧 inbox 回执关联收件人和通知条目，补录已投递的点赞并绑定互动类型。同键重放先校验原摘要，再返回已有结果。已清空详情的旧回执仍可抑制重复投递。
 
@@ -157,65 +187,37 @@ func (s *Service) Consume(ctx context.Context, event Event) (Result, error)
 
 需要重建时，维护方先核对来源投递记录，在同一迁移事务内准备完整的 `like_subjects(owner, source, subject)` 和 `revisions.interaction_title_key`。表定义及联合主键见本仓 schema.sql。运行身份对去重表只需 SELECT、INSERT。
 
-随后再执行 Migrate 安装注销清理触发器。已过期的 inbox.result 保持为空。独立 PostgreSQL 用例验证了缺少证据时回滚，以及从来源事实重建后的重放和再次点赞。
-
-重复 ID 优先返回已保存的 Result。收件人顺序改变或重复条目增减不改变请求摘要，实际收件人集合改变则返回冲突。事件锁、修订行锁和按用户标识排序的偏好锁依次获取，避免重叠收件人集合反向加锁。
-
-Result.Recipients 按用户标识排序，每项包含 Recipient、ID 和 SuppressionReason。成功入站时 ID 非空且原因为空；偏好拒收原因是 interaction_disabled；账号已注销原因是 account_closed；旧修订原因是 stale_revision 并设置 Result.Ignored。
-
-偏好拒收、已注销抑制和旧修订忽略均为成功消费。偏好拒收与已注销抑制仍推进修订，同批其他收件人照常入站。任何收件人写入或 inbox 写入失败时，整批通知、聚合数量、偏好行和修订都回滚。
-
-Consume 返回 nil error 后，relay 才可 ConfirmOutbox。确认丢失时重新读取并消费同一事件，返回原结果。取消或超时先按原事件重试，不根据错误猜测事务是否已提交。
-
-relay 对提供方频道 LISTEN，通知到达后读取最多 100 条未发送事件。重连后立即补读，并每 60 秒兜底读取。失败从 5 秒指数退避，单次最长 1 小时，累计 24 小时后进入待处理队列。
-
-inbox 的 result JSON 保存整批消费结果，由独立维护身份按 90 天期限清理。运行身份可读写 items、preferences，可查询、插入和更新 revisions，对 inbox、closed_owners、like_subjects 仅有 SELECT、INSERT。CheckRuntime 核验所需权限和禁止的修改权限。
-
-空的单收件人候选 inbox 可原位迁移，保留运行权限和已有通知。有记录的候选 inbox 会拒绝自动升级并保留数据，因为部分记录缺少收件人。负责人须依据原始事件恢复收件人与规范化摘要后再升级，不能直接清空去重历史。
-
-结果类型如下：
-
-```go
-type RecipientResult struct {
-    Recipient         string
-    ID                string
-    SuppressionReason string
-}
-type Result struct {
-    Recipients []RecipientResult
-    Ignored    bool
-}
-```
-
-## 验收覆盖
-
-| 场景 | 实现与测试 |
-| --- | --- |
-| NT-01 | 互动投递、聚合、偏好拒收、并发重投 |
-| NT-02 | 单条与全部已读、重复操作、未读数 |
-| NT-03 | 业务处理、安全及账号通知不受互动偏好影响 |
-| NT-04 | 目标不可访问及依赖超时状态 |
-| NT-05 | HTTP 未登录拒绝、他人通知隔离、严格偏好输入 |
-| NT-09 | 多收件人去重、部分拒收、整批回滚、并发重投、重叠收件人锁顺序、迁移保护 |
-| NT-08 | 乱序、旧修订、跨接收人重复冲突、原结果回放、事务回滚与锁等待取消 |
-| NT-07 | 全部目录键投递、非法组合拒绝且不写入、回复和点赞聚合数量 |
-| NT-06 | 投递失败回滚、保留期限边界、不同目标与接收人不聚合、inbox 投递详情到期回收 |
-| PC-07 | 业务账号注销原子清理个人通知与偏好、关闭栅栏拦截延迟投递与读取 |
-
-实际测试函数在 module.yaml 的 scenario_tests 登记。隔离数据库测试还验证游标分页、清理上限、迁移重复执行与运行身份权限。
+随后执行 `Migrate` 安装注销清理触发器。已过期的 `inbox.result` 保持为空。
 
 ## 读取时补充内容名称
 
-原 TitleKey 和编号参数保持不变。请求 include_content_names=true 时，review、comment、resource 目标在 title_params 中增加 content_name 与 content_name_state。名称来自所属模块的当前公开接口，不接受事件生产者提交，也不写入通知表或聚合指纹。
+请求 `include_content_names=true` 且标题目录允许时，review、comment、resource 目标在 `title_params` 中增加 `content_name` 与 `content_name_state`。所属模块的公开接口在读取时返回名称。通知条目和聚合指纹只保存投递参数。
 
 content_name_state 为 available 时，content_name 为当前评价标题或资料标题。回复采用根评价标题，空标题采用所属课程或教师目录名称。名称最多 256 个 Unicode 字符，不含控制字符。
 
 对象删除、下架或失去阅读权限时，状态为 inaccessible，名称为空。依赖失败或名称无效时为 unavailable，名称为空。前端分别使用本地化的“内容不可用”和“名称暂不可用”，避免重用缓存名称。
 
-宿主实现 BatchResolver，一次处理本页去重后的目标，并按所属模块使用批量接口。旧 Resolver 继续兼容；未提供名称解析的旧宿主返回名称暂不可用。通知分页、计数、消费幂等与原编号字段保持原行为。
+宿主使用 `BatchResolver` 一次处理本页去重后的目标，并按所属模块调用批量接口。仅实现 `Resolver` 的宿主仍返回目标状态，可访问目标的名称状态为 `unavailable`。
 
 读取参数由 x-title-catalog 的 read_parameters 声明，生产者参数仍由 parameters 与 optional_parameters 封闭校验。旧客户端继续使用编号参数，新客户端按名称状态选择可读标题或占位文案。
 
-comment 目标在 target_status 为 accessible 时一并解析所属根评价 ID 作为 context_id，不可访问或标识异常时不返回，供新客户端构造一步直达路由。
+可访问的 comment 目标在标题目录允许时附带有效的根评价 ID `context_id`，供客户端构造直达路由。
 
-旧 HTTP 请求和 Go List 保留原封闭参数结构。新客户端通过 include_content_names=true 或 Go ListWithContentNames 启用名称。参数只接受单个 true 或 false，未指定时为 false。
+HTTP 的 `include_content_names` 只接受单个 `true` 或 `false`，默认 `false`。Go 调用方使用 `ListWithContentNames` 启用标题扩展。
+
+## 验收场景
+
+| 场景 | 预期结果 |
+| --- | --- |
+| NT-01 | 投递互动通知，按偏好与聚合窗口处理，并发更新保留首次创建时间 |
+| NT-02 | 按条件分页、统计未读及标记已读，单条删除只影响本人通知 |
+| NT-03 | 关闭互动开关后仍接收业务处理、安全与账号通知 |
+| NT-04 | 目标不可访问与依赖失败各有稳定状态，父请求取消则停止解析 |
+| NT-05 | HTTP 拒绝未登录、越权或无效请求，保留原偏好或通知 |
+| NT-06 | 投递失败回滚，通知和回执详情分别按保留规则清理 |
+| NT-07 | 投递匹配封闭标题目录，读取可按权限补充当前标题 |
+| NT-08 | 同一事件重放返回原结果，忽略旧修订，重复点赞不会重复通知 |
+| NT-09 | 同一事件的收件人去重，逐人应用偏好，整批原子写入 |
+| PC-07 | 账号注销清理个人通知与偏好，并阻止延迟投递 |
+
+实际测试函数在 [module.yaml](https://github.com/StuHelper/stuhelper-notifications/blob/develop/module.yaml) 的 `scenario_tests` 登记。生产与独立 CI 情况见 [实施与验证](https://github.com/StuHelper/stuhelper-notifications/blob/develop/README.md#实施与验证)。
