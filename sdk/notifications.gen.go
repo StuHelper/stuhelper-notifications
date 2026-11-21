@@ -3206,7 +3206,7 @@ type ListNotificationsParams struct {
 	// Type 按通知底层类别过滤。
 	Type *ListNotificationsParamsType `form:"type,omitempty" json:"type,omitempty"`
 
-	// UnreadOnly 仅返回未读通知（read_at 为 null）。
+	// UnreadOnly 仅返回未到保留期限的未读通知（read_at 为 null）。
 	UnreadOnly *bool `form:"unread_only,omitempty" json:"unread_only,omitempty"`
 }
 
@@ -3215,7 +3215,7 @@ type ListNotificationsParamsType string
 
 // MarkAllReadParams defines parameters for MarkAllRead.
 type MarkAllReadParams struct {
-	// Box 可选按分箱批量标为已读；省略时标记本人全部未读通知。
+	// Box 可选按分箱批量标为已读。省略时包含所有分箱。
 	Box *Box `form:"box,omitempty" json:"box,omitempty"`
 
 	// Type 可选按通知类别批量标为已读。
@@ -4326,6 +4326,8 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 type ClientInterface interface {
 
 	// ListNotifications performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
+	//
+	// 分页返回本人未到保留期限的通知。.
 	ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetPreferences performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
@@ -4340,19 +4342,27 @@ type ClientInterface interface {
 	SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
+	//
+	// 按筛选条件标记本人未到保留期限的未读通知。.
 	MarkAllRead(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+	//
+	// 统计本人未到保留期限的未读通知。.
 	GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNotification performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
 	DeleteNotification(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MarkRead performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+	//
+	// 记录本人未到保留期限的通知的首次已读时间。.
 	MarkRead(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 // ListNotifications performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
+//
+// 分页返回本人未到保留期限的通知。.
 func (c *Client) ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListNotificationsRequest(c.Server, params)
 	if err != nil {
@@ -4407,6 +4417,8 @@ func (c *Client) SetPreferences(ctx context.Context, body SetPreferencesJSONRequ
 }
 
 // MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
+//
+// 按筛选条件标记本人未到保留期限的未读通知。.
 func (c *Client) MarkAllRead(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMarkAllReadRequest(c.Server, params)
 	if err != nil {
@@ -4420,6 +4432,8 @@ func (c *Client) MarkAllRead(ctx context.Context, params *MarkAllReadParams, req
 }
 
 // GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+//
+// 统计本人未到保留期限的未读通知。.
 func (c *Client) GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUnreadCountRequest(c.Server)
 	if err != nil {
@@ -4446,6 +4460,8 @@ func (c *Client) DeleteNotification(ctx context.Context, id openapi_types.UUID, 
 }
 
 // MarkRead performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+//
+// 记录本人未到保留期限的通知的首次已读时间。.
 func (c *Client) MarkRead(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMarkReadRequest(c.Server, id)
 	if err != nil {
@@ -4846,6 +4862,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListNotificationsWithResponse performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 	//
+	// 分页返回本人未到保留期限的通知。.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	ListNotificationsWithResponse(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error)
 
@@ -4866,10 +4884,14 @@ type ClientWithResponsesInterface interface {
 
 	// MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 	//
+	// 按筛选条件标记本人未到保留期限的未读通知。.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	MarkAllReadWithResponse(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error)
 
 	// GetUnreadCountWithResponse performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+	//
+	// 统计本人未到保留期限的未读通知。.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error)
@@ -4880,6 +4902,8 @@ type ClientWithResponsesInterface interface {
 	DeleteNotificationWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteNotificationResponse, error)
 
 	// MarkReadWithResponse performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+	//
+	// 记录本人未到保留期限的通知的首次已读时间。.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	MarkReadWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*MarkReadResponse, error)
@@ -5398,6 +5422,8 @@ func (r MarkReadResponse) ContentType() string {
 
 // ListNotificationsWithResponse performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 //
+// 分页返回本人未到保留期限的通知。.
+//
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error) {
 	rsp, err := c.ListNotifications(ctx, params, reqEditors...)
@@ -5442,6 +5468,8 @@ func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, bo
 
 // MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 //
+// 按筛选条件标记本人未到保留期限的未读通知。.
+//
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error) {
 	rsp, err := c.MarkAllRead(ctx, params, reqEditors...)
@@ -5452,6 +5480,8 @@ func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, param
 }
 
 // GetUnreadCountWithResponse performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+//
+// 统计本人未到保留期限的未读通知。.
 //
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error) {
@@ -5474,6 +5504,8 @@ func (c *ClientWithResponses) DeleteNotificationWithResponse(ctx context.Context
 }
 
 // MarkReadWithResponse performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+//
+// 记录本人未到保留期限的通知的首次已读时间。.
 //
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) MarkReadWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*MarkReadResponse, error) {

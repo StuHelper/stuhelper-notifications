@@ -45,7 +45,7 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 	ctx := context.Background()
 	batch := &titleBatch{state: "accessible", name: "合成课程评价标题"}
 	var err error
-	f.s, err = n.New(&postgres.Repository{DB: f.db}, batch, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
+	f.s, err = n.New(&postgres.Repository{DB: f.db}, batch, n.Config{ReadRetention: 24 * time.Hour, UnreadRetention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,8 @@ func TestParentContextCancellationAbortsTargetResolutionWithoutFake200(t *testin
 	defer cancelParent()
 	stepResolver := &cancelOnStepResolver{cancelAt: 3, cancelFn: cancelParent}
 	svc, err := n.New(&postgres.Repository{DB: f.db}, stepResolver, n.Config{
-		Retention:         24 * time.Hour,
+		ReadRetention:     24 * time.Hour,
+		UnreadRetention:   24 * time.Hour,
 		AggregationWindow: time.Hour,
 		CleanupBatch:      2,
 		ResolveTimeout:    time.Second,
@@ -184,7 +185,8 @@ func TestParentContextCancellationAbortsTargetResolutionWithoutFake200(t *testin
 	defer cancelReq()
 	httpResolver := &cancelOnStepResolver{cancelAt: 1, cancelFn: cancelReq}
 	httpSvc, err := n.New(&postgres.Repository{DB: f.db}, httpResolver, n.Config{
-		Retention:         24 * time.Hour,
+		ReadRetention:     24 * time.Hour,
+		UnreadRetention:   24 * time.Hour,
 		AggregationWindow: time.Hour,
 		CleanupBatch:      2,
 		ResolveTimeout:    time.Second,
@@ -207,7 +209,8 @@ func TestParentContextCancellationAbortsTargetResolutionWithoutFake200(t *testin
 	batchParent, cancelBatchParent := context.WithCancel(bg)
 	defer cancelBatchParent()
 	batchSvc, err := n.New(&postgres.Repository{DB: f.db}, &blockingBatchResolver{cancelParent: cancelBatchParent}, n.Config{
-		Retention:         24 * time.Hour,
+		ReadRetention:     24 * time.Hour,
+		UnreadRetention:   24 * time.Hour,
 		AggregationWindow: time.Hour,
 		CleanupBatch:      2,
 		ResolveTimeout:    time.Second,
@@ -221,7 +224,8 @@ func TestParentContextCancellationAbortsTargetResolutionWithoutFake200(t *testin
 
 	// 3. Contrast: when parent ctx remains valid and ONLY child ResolveTimeout expires, List degrades to unavailable (200 OK).
 	childTimeoutSvc, err := n.New(&postgres.Repository{DB: f.db}, &blockingBatchResolver{}, n.Config{
-		Retention:         24 * time.Hour,
+		ReadRetention:     24 * time.Hour,
+		UnreadRetention:   24 * time.Hour,
 		AggregationWindow: time.Hour,
 		CleanupBatch:      2,
 		ResolveTimeout:    15 * time.Millisecond,
@@ -245,7 +249,7 @@ func TestCommentContextIDAndReasonCodeReadBehavior(t *testing.T) {
 	ctx := context.Background()
 	batch := &titleBatch{state: "accessible", name: "数据结构课程评价", contextID: "review-root-42"}
 	var err error
-	f.s, err = n.New(&postgres.Repository{DB: f.db}, batch, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
+	f.s, err = n.New(&postgres.Repository{DB: f.db}, batch, n.Config{ReadRetention: 24 * time.Hour, UnreadRetention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
 	if err != nil {
 		t.Fatal(err)
 	}

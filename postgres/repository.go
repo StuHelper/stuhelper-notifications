@@ -19,8 +19,8 @@ import (
 var Schema string
 
 const (
-	ListFirstPageQuery = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 ORDER BY updated_at DESC,id DESC LIMIT $2`
-	ListCursorQuery    = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 AND (updated_at,id)<($2,$3::uuid) ORDER BY updated_at DESC,id DESC LIMIT $4`
+	ListFirstPageQuery = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 AND (read_at > $2 OR (read_at IS NULL AND created_at > $3)) ORDER BY updated_at DESC,id DESC LIMIT $4`
+	ListCursorQuery    = `SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE owner=$1 AND (updated_at,id)<($2,$3::uuid) AND (read_at > $4 OR (read_at IS NULL AND created_at > $5)) ORDER BY updated_at DESC,id DESC LIMIT $6`
 )
 
 type Repository struct{ DB *sql.DB }
@@ -362,10 +362,10 @@ func writeNotification(ctx context.Context, tx *sql.Tx, d n.Event, result n.Reci
 	}
 	return result, nil
 }
-func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit int) ([]n.Notification, error) {
-	return r.ListFiltered(ctx, owner, n.ListQuery{}, c, limit)
+func (r *Repository) List(ctx context.Context, owner string, c n.Cursor, limit int, cutoffs n.RetentionCutoffs) ([]n.Notification, error) {
+	return r.ListFiltered(ctx, owner, n.ListQuery{}, c, limit, cutoffs)
 }
-func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQuery, c n.Cursor, limit int) ([]n.Notification, error) {
+func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQuery, c n.Cursor, limit int, cutoffs n.RetentionCutoffs) ([]n.Notification, error) {
 	db, e := r.db()
 	if e != nil {
 		return nil, e
@@ -397,6 +397,13 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 		args = append(args, cursorAt, c.ID)
 		clauses = append(clauses, fmt.Sprintf("(updated_at,id)<($%d,$%d::uuid)", len(args)-1, len(args)))
 	}
+	if q.UnreadOnly {
+		args = append(args, cutoffs.Unread)
+		clauses = append(clauses, fmt.Sprintf("created_at > $%d", len(args)))
+	} else {
+		args = append(args, cutoffs.Read, cutoffs.Unread)
+		clauses = append(clauses, fmt.Sprintf("(read_at > $%d OR (read_at IS NULL AND created_at > $%d))", len(args)-1, len(args)))
+	}
 	args = append(args, limit)
 	query := fmt.Sprintf("SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE %s ORDER BY updated_at DESC,id DESC LIMIT $%d", strings.Join(clauses, " AND "), len(args))
 	if q.Box == "" && q.Type == "" && !q.UnreadOnly {
@@ -425,11 +432,11 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 	}
 	return out, safe(rows.Err())
 }
-func (r *Repository) Unread(ctx context.Context, owner string) (int64, error) {
-	summary, e := r.UnreadSummary(ctx, owner)
+func (r *Repository) Unread(ctx context.Context, owner string, unreadCutoff time.Time) (int64, error) {
+	summary, e := r.UnreadSummary(ctx, owner, unreadCutoff)
 	return summary.Count, e
 }
-func (r *Repository) UnreadSummary(ctx context.Context, owner string) (n.UnreadSummary, error) {
+func (r *Repository) UnreadSummary(ctx context.Context, owner string, unreadCutoff time.Time) (n.UnreadSummary, error) {
 	db, e := r.db()
 	if e != nil {
 		return n.UnreadSummary{}, e
@@ -437,7 +444,7 @@ func (r *Repository) UnreadSummary(ctx context.Context, owner string) (n.UnreadS
 	if e = r.ensureOpenOwner(ctx, owner); e != nil {
 		return n.UnreadSummary{}, e
 	}
-	rows, e := db.QueryContext(ctx, `SELECT box,type,count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL GROUP BY box,type`, owner)
+	rows, e := db.QueryContext(ctx, `SELECT box,type,count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL AND created_at > $2 GROUP BY box,type`, owner, unreadCutoff)
 	if e != nil {
 		return n.UnreadSummary{}, safe(e)
 	}
@@ -473,7 +480,7 @@ func (r *Repository) UnreadSummary(ctx context.Context, owner string) (n.UnreadS
 	}
 	return out, safe(rows.Err())
 }
-func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Time) error {
+func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Time, cutoffs n.RetentionCutoffs) error {
 	db, e := r.db()
 	if e != nil {
 		return e
@@ -491,8 +498,14 @@ func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Ti
 		return n.ErrForbidden
 	}
 	var exists bool
-	e = tx.QueryRowContext(ctx, `WITH updated AS (UPDATE notifications.items SET read_at=$3 WHERE owner=$1 AND id=$2::uuid AND read_at IS NULL)
- SELECT EXISTS(SELECT 1 FROM notifications.items WHERE owner=$1 AND id=$2::uuid)`, owner, id, now).Scan(&exists)
+	e = tx.QueryRowContext(ctx, `WITH updated AS (
+  UPDATE notifications.items SET read_at=$3
+  WHERE owner=$1 AND id=$2::uuid AND read_at IS NULL AND created_at > $4
+  RETURNING id
+ )
+ SELECT EXISTS(SELECT 1 FROM updated)
+     OR EXISTS(SELECT 1 FROM notifications.items WHERE owner=$1 AND id=$2::uuid AND read_at > $5)`,
+		owner, id, now, cutoffs.Unread, cutoffs.Read).Scan(&exists)
 	if e == nil && !exists {
 		return n.ErrNotFound
 	}
@@ -502,10 +515,10 @@ func (r *Repository) MarkRead(ctx context.Context, owner, id string, now time.Ti
 	}
 	return safe(tx.Commit())
 }
-func (r *Repository) MarkAllRead(ctx context.Context, owner string, now time.Time) error {
-	return r.MarkAllReadFiltered(ctx, owner, n.ReadFilter{}, now)
+func (r *Repository) MarkAllRead(ctx context.Context, owner string, now, unreadCutoff time.Time) error {
+	return r.MarkAllReadFiltered(ctx, owner, n.ReadFilter{}, now, unreadCutoff)
 }
-func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filter n.ReadFilter, now time.Time) error {
+func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filter n.ReadFilter, now, unreadCutoff time.Time) error {
 	db, e := r.db()
 	if e != nil {
 		return e
@@ -522,8 +535,8 @@ func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filt
 	if e != nil {
 		return safe(e)
 	}
-	clauses := []string{"owner=$1", "read_at IS NULL"}
-	args := []any{owner, now}
+	clauses := []string{"owner=$1", "read_at IS NULL", "created_at > $3"}
+	args := []any{owner, now, unreadCutoff}
 	if filter.Box != "" {
 		args = append(args, filter.Box)
 		clauses = append(clauses, fmt.Sprintf("box=$%d", len(args)))
@@ -665,7 +678,7 @@ func (r *Repository) CloseAccount(ctx context.Context, owner, closureID string, 
 	}
 	return safe(tx.Commit())
 }
-func (r *Repository) Cleanup(ctx context.Context, before time.Time, limit int) (int64, error) {
+func (r *Repository) Cleanup(ctx context.Context, cutoffs n.RetentionCutoffs, limit int) (int64, error) {
 	if limit < 1 || limit > 10000 {
 		return 0, n.ErrInput
 	}
@@ -673,7 +686,19 @@ func (r *Repository) Cleanup(ctx context.Context, before time.Time, limit int) (
 	if e != nil {
 		return 0, e
 	}
-	result, e := db.ExecContext(ctx, `WITH expired AS (SELECT id FROM notifications.items WHERE created_at<$1 ORDER BY created_at,id LIMIT $2 FOR UPDATE SKIP LOCKED) DELETE FROM notifications.items WHERE id IN (SELECT id FROM expired)`, before, limit)
+	// Take bounded candidates from each expiry index, then delete no more than
+	// limit in deadline order. Time minus cutoff compares how overdue each item is.
+	result, e := db.ExecContext(ctx, `WITH expired_read AS (
+  SELECT id, read_at - $1::timestamptz AS overdue_order FROM notifications.items
+  WHERE read_at <= $1 ORDER BY read_at,id LIMIT $3 FOR UPDATE SKIP LOCKED
+ ), expired_unread AS (
+  SELECT id, created_at - $2::timestamptz AS overdue_order FROM notifications.items
+  WHERE read_at IS NULL AND created_at <= $2 ORDER BY created_at,id LIMIT $3 FOR UPDATE SKIP LOCKED
+ ), expired AS (
+  SELECT id FROM (SELECT * FROM expired_read UNION ALL SELECT * FROM expired_unread) candidates
+  ORDER BY overdue_order,id LIMIT $3
+ )
+ DELETE FROM notifications.items USING expired WHERE items.id=expired.id`, cutoffs.Read, cutoffs.Unread, limit)
 	if e != nil {
 		return 0, safe(e)
 	}
@@ -699,14 +724,15 @@ func CleanupInboxDetails(ctx context.Context, db *sql.DB, before time.Time, limi
 	return count, safe(e)
 }
 
-func (r *Repository) MaintenanceStats(ctx context.Context, before time.Time) (n.MaintenanceStats, error) {
+func (r *Repository) MaintenanceStats(ctx context.Context, cutoffs n.RetentionCutoffs) (n.MaintenanceStats, error) {
 	var stats n.MaintenanceStats
 	var oldest sql.NullTime
 	db, e := r.db()
 	if e != nil {
 		return n.MaintenanceStats{}, e
 	}
-	e = db.QueryRowContext(ctx, `SELECT count(*),min(created_at) FROM notifications.items WHERE created_at<$1`, before).Scan(&stats.ExpiredItems, &oldest)
+	e = db.QueryRowContext(ctx, `SELECT count(*),min(created_at) FROM notifications.items
+ WHERE read_at <= $1 OR (read_at IS NULL AND created_at <= $2)`, cutoffs.Read, cutoffs.Unread).Scan(&stats.ExpiredItems, &oldest)
 	if e != nil {
 		return n.MaintenanceStats{}, safe(e)
 	}

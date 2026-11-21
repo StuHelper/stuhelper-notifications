@@ -55,7 +55,8 @@ func TestMaintenanceStatsAndOperationalObserver(t *testing.T) {
 		&postgres.Repository{DB: f.runtime},
 		f.src,
 		n.Config{
-			Retention:         24 * time.Hour,
+			ReadRetention:     24 * time.Hour,
+			UnreadRetention:   24 * time.Hour,
 			AggregationWindow: time.Hour,
 			CleanupBatch:      2,
 			ResolveTimeout:    time.Second,
@@ -196,7 +197,7 @@ func TestResolveObserverCountsEachDistinctTargetOnce(t *testing.T) {
 		t.Fatal(err)
 	}
 	obs := &recordingObserver{}
-	svc, err := n.New(&postgres.Repository{DB: f.runtime}, f.src, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second, Observer: obs}, func() time.Time { return f.now })
+	svc, err := n.New(&postgres.Repository{DB: f.runtime}, f.src, n.Config{ReadRetention: 24 * time.Hour, UnreadRetention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second, Observer: obs}, func() time.Time { return f.now })
 	if err != nil {
 		t.Fatal(err)
 	}

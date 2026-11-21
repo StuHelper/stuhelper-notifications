@@ -57,6 +57,8 @@ scenario_tests:
     - b07_delete_test.go#TestDeleteNotificationOwnershipIdempotencyAndNoResurrection
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
+    - retention_test.go#TestRetentionBoundariesAfterPublishedSchemaMigration
+    - retention_test.go#TestRetentionCleanupConcurrentAndRetries
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
     - b06_observability_test.go#TestMaintenanceStatsAndOperationalObserver
     - b06_observability_test.go#TestResolveObserverCountsEachDistinctTargetOnce
