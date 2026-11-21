@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	n "github.com/StuHelper/stuhelper-notifications"
+	"maps"
 	"strings"
 	"testing"
+
+	n "github.com/StuHelper/stuhelper-notifications"
 )
 
 func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
@@ -162,9 +164,14 @@ func TestInteractionTitleUsesServerAggregateCount(t *testing.T) {
 	if e != nil || len(page.Items) != 2 {
 		t.Fatal(page, e)
 	}
+	wantParams := map[string]string{
+		"content_id":         "example-1",
+		"content_name":       "",
+		"content_name_state": "unavailable",
+	}
 	for _, item := range page.Items {
-		if item.Count != 2 || len(item.TitleParams) != 1 || item.TitleParams["content_id"] != "example-1" {
-			t.Fatal(item)
+		if item.Count != 2 || !maps.Equal(item.TitleParams, wantParams) {
+			t.Fatalf("%s: aggregate count=%d and title params=%v, want count=2 and params=%v", item.TitleKey, item.Count, item.TitleParams, wantParams)
 		}
 	}
 }
