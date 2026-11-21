@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description 分页返回本人未到保留期限的通知。 */
+        /** @description 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。 */
         get: operations["listNotifications"];
         put?: never;
         post?: never;
@@ -28,7 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description 统计本人未到保留期限的未读通知。 */
+        /** @description 返回本人未到保留期限的未读总数及分箱、通知类型统计。 */
         get: operations["getUnreadCount"];
         put?: never;
         post?: never;
@@ -99,9 +99,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。 */
+        /** @description 读取回复与点赞的当前通知偏好。 */
         get: operations["getPreferences"];
-        /** @description 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。 */
+        /** @description 更新提交的回复或点赞偏好，返回两项当前值。 */
         put: operations["setPreferences"];
         post?: never;
         delete?: never;
@@ -127,7 +127,7 @@ export interface components {
             source_module: string;
             target: components["schemas"]["Target"];
             title_key: components["schemas"]["TitleKey"];
-            /** @description 业务编号由标题键决定。include_content_names=true 时可返回当前权限下的 content_name 和 content_name_state。reason_code 和 comment 目标的 context_id 仅在 include_extended=true 时可返回，context_id 还要求 include_content_names=true。各字段见 x-title-catalog。 */
+            /** @description 标题参数见 x-title-catalog。允许的标题按当前权限返回内容名称和名称状态，可访问的评论可附带所属根评价 ID。适用的通知可附带 reason_code。 */
             title_params: {
                 [key: string]: string;
             };
@@ -174,24 +174,20 @@ export interface components {
             /** Format: int64 */
             account: number;
         };
-        /** @description 默认只有未读总数。传 include_extended=true 时同时返回按通知盒和类型统计的数量。 */
+        /** @description 未读总数、分箱统计和按通知类型统计。 */
         Unread: {
             /** Format: int64 */
             count: number;
-            by_box?: components["schemas"]["UnreadByBox"];
-            by_type?: components["schemas"]["UnreadByType"];
+            by_box: components["schemas"]["UnreadByBox"];
+            by_type: components["schemas"]["UnreadByType"];
         };
         Preferences: {
-            /** @description 互动通知总状态；当 reply_enabled 或 like_enabled 任一为 true 时为 true。 */
-            interaction_enabled: boolean;
-            /** @description 评论回复通知独立开关，默认 true。include_extended=true 时返回。 */
-            reply_enabled?: boolean;
-            /** @description 点赞通知独立开关，默认 true。include_extended=true 时返回。 */
-            like_enabled?: boolean;
+            /** @description 评论回复通知独立开关，默认 true。 */
+            reply_enabled: boolean;
+            /** @description 点赞通知独立开关，默认 true。 */
+            like_enabled: boolean;
         };
         PreferencesUpdate: {
-            /** @description 兼容旧客户端的总开关；仅传该字段时同步设置 reply_enabled 与 like_enabled。 */
-            interaction_enabled?: boolean;
             /** @description 评论回复通知独立开关。 */
             reply_enabled?: boolean;
             /** @description 点赞通知独立开关。 */
@@ -222,16 +218,16 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
@@ -247,16 +243,16 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
@@ -272,16 +268,16 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
@@ -297,17 +293,17 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
@@ -323,17 +319,17 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
@@ -349,7 +345,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -365,7 +361,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -382,7 +378,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 report_id: string;
             };
         };
@@ -398,7 +394,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 report_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -415,7 +411,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
             };
         };
@@ -431,7 +427,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -448,7 +444,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 operation_id: string;
             };
         };
@@ -464,7 +460,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 operation_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -481,7 +477,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -497,7 +493,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -514,7 +510,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -530,7 +526,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -547,7 +543,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
             };
         };
@@ -563,7 +559,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -580,7 +576,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 credential_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -597,15 +593,15 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
             };
         };
         /** @description 学生认证需补充材料 */
@@ -620,7 +616,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -637,7 +633,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -654,7 +650,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 appeal_id: string;
             };
         };
@@ -670,7 +666,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 appeal_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -687,7 +683,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 group_id: string;
             };
         };
@@ -703,7 +699,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 contribution_id: string;
             };
         };
@@ -719,7 +715,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 order_id: string;
             };
         };
@@ -735,7 +731,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 order_id: string;
             };
         };
@@ -751,7 +747,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 order_id: string;
                 reason_code?: components["schemas"]["ReasonCode"];
             };
@@ -768,7 +764,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -784,7 +780,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -800,7 +796,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 reference_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
@@ -809,7 +805,7 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
@@ -825,7 +821,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 reference_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
@@ -834,7 +830,7 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
@@ -850,7 +846,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 reference_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
@@ -859,16 +855,13 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
-                /** @description comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。 */
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
                 readonly context_id?: string;
             };
         };
     };
     responses: never;
-    parameters: {
-        /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
-        IncludeExtended: boolean;
-    };
+    parameters: never;
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -881,10 +874,6 @@ export interface operations {
                 /** @description 不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。 */
                 cursor?: string;
                 limit?: number;
-                /** @description 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。 */
-                include_content_names?: boolean;
-                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
-                include_extended?: components["parameters"]["IncludeExtended"];
                 /** @description 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。 */
                 box?: components["schemas"]["Box"];
                 /** @description 按通知底层类别过滤。 */
@@ -956,10 +945,7 @@ export interface operations {
     };
     getUnreadCount: {
         parameters: {
-            query?: {
-                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
-                include_extended?: components["parameters"]["IncludeExtended"];
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -1155,9 +1141,7 @@ export interface operations {
     markAllRead: {
         parameters: {
             query?: {
-                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
-                include_extended?: components["parameters"]["IncludeExtended"];
-                /** @description 可选按分箱批量标为已读。省略时处理当前客户端范围内的全部分箱。 */
+                /** @description 可选按分箱批量标为已读。省略时处理全部分箱。 */
                 box?: components["schemas"]["Box"];
                 /** @description 可选按通知类别批量标为已读。 */
                 type?: "interaction" | "business" | "security" | "account";
@@ -1224,10 +1208,7 @@ export interface operations {
     };
     getPreferences: {
         parameters: {
-            query?: {
-                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
-                include_extended?: components["parameters"]["IncludeExtended"];
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -1292,10 +1273,7 @@ export interface operations {
     };
     setPreferences: {
         parameters: {
-            query?: {
-                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
-                include_extended?: components["parameters"]["IncludeExtended"];
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;

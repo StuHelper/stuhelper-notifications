@@ -54,7 +54,7 @@ func TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate(t *t
 		t.Fatal(err)
 	}
 	enabled := true
-	if _, err = syncedSvc.Preferences(ctx, "alice", &enabled); err != nil {
+	if _, err = syncedSvc.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &enabled, LikeEnabled: &enabled}); err != nil {
 		t.Fatal(err)
 	}
 	holdTx, err := f2.db.BeginTx(ctx, nil)
@@ -62,7 +62,7 @@ func TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate(t *t
 		t.Fatal(err)
 	}
 	defer holdTx.Rollback()
-	if _, err = holdTx.ExecContext(ctx, `SELECT interaction_enabled FROM notifications.preferences WHERE owner='alice' FOR UPDATE`); err != nil {
+	if _, err = holdTx.ExecContext(ctx, `SELECT reply_enabled FROM notifications.preferences WHERE owner='alice' FOR UPDATE`); err != nil {
 		t.Fatal(err)
 	}
 

@@ -6,15 +6,25 @@ CREATE TABLE IF NOT EXISTS notifications.closed_owners (
 );
 CREATE TABLE IF NOT EXISTS notifications.preferences (
  owner text PRIMARY KEY,
- interaction_enabled boolean NOT NULL DEFAULT true,
  reply_enabled boolean NOT NULL DEFAULT true,
  like_enabled boolean NOT NULL DEFAULT true
 );
 ALTER TABLE notifications.preferences ADD COLUMN IF NOT EXISTS reply_enabled boolean;
-UPDATE notifications.preferences SET reply_enabled = interaction_enabled WHERE reply_enabled IS NULL;
-ALTER TABLE notifications.preferences ALTER COLUMN reply_enabled SET DEFAULT true, ALTER COLUMN reply_enabled SET NOT NULL;
 ALTER TABLE notifications.preferences ADD COLUMN IF NOT EXISTS like_enabled boolean;
-UPDATE notifications.preferences SET like_enabled = interaction_enabled WHERE like_enabled IS NULL;
+DO $$
+BEGIN
+ IF EXISTS (
+  SELECT 1 FROM pg_attribute
+  WHERE attrelid = 'notifications.preferences'::regclass AND attname = 'interaction_enabled' AND NOT attisdropped
+ ) THEN
+  UPDATE notifications.preferences
+  SET reply_enabled = interaction_enabled AND COALESCE(reply_enabled, true),
+      like_enabled = interaction_enabled AND COALESCE(like_enabled, true)
+  WHERE NOT interaction_enabled OR reply_enabled IS NULL OR like_enabled IS NULL;
+  ALTER TABLE notifications.preferences DROP COLUMN interaction_enabled;
+ END IF;
+END $$;
+ALTER TABLE notifications.preferences ALTER COLUMN reply_enabled SET DEFAULT true, ALTER COLUMN reply_enabled SET NOT NULL;
 ALTER TABLE notifications.preferences ALTER COLUMN like_enabled SET DEFAULT true, ALTER COLUMN like_enabled SET NOT NULL;
 CREATE TABLE IF NOT EXISTS notifications.items (
  id uuid PRIMARY KEY,

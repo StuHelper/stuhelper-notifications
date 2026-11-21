@@ -127,10 +127,6 @@ func (s *Service) List(ctx context.Context, owner, after string, limit int) (Pag
 	return s.ListFiltered(ctx, owner, ListQuery{Cursor: after, Limit: limit})
 }
 
-// ListWithContentNames opts into the expanded title parameter contract.
-func (s *Service) ListWithContentNames(ctx context.Context, owner, after string, limit int) (Page, error) {
-	return s.ListFiltered(ctx, owner, ListQuery{Cursor: after, Limit: limit, IncludeContentNames: true})
-}
 func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (Page, error) {
 	if e := ownerOK(owner); e != nil {
 		return Page{}, e
@@ -145,7 +141,6 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 		return Page{}, ErrInput
 	}
 	var cursor Cursor
-	extended := !q.LegacyOnly
 	if q.Cursor != "" {
 		b, e := base64.RawURLEncoding.DecodeString(q.Cursor)
 		if e != nil {
@@ -157,9 +152,6 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 			return Page{}, ErrInput
 		}
 		if cursor.UpdatedAt.IsZero() {
-			cursor.UpdatedAt = cursor.CreatedAt
-		}
-		if cursor.UpdatedAt.IsZero() {
 			return Page{}, ErrInput
 		}
 		id, e := parseUUID(cursor.ID)
@@ -167,15 +159,9 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 			return Page{}, ErrInput
 		}
 		cursor.ID = id
-		if cursor.Box != q.Box || cursor.Type != q.Type || cursor.UnreadOnly != q.UnreadOnly ||
-			cursor.Extended != nil && *cursor.Extended != extended {
+		if cursor.Box != q.Box || cursor.Type != q.Type || cursor.UnreadOnly != q.UnreadOnly {
 			return Page{}, ErrInput
 		}
-		u, e := uuid.Parse(cursor.ID)
-		if e != nil {
-			return Page{}, ErrInput
-		}
-		cursor.ID = u.String()
 	}
 	rows, e := s.repo.ListFiltered(ctx, owner, q, cursor, q.Limit+1, s.retentionCutoffs(s.now().UTC()))
 	if e != nil {
@@ -187,11 +173,11 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 		last := out.Items[q.Limit-1]
 		b, _ := json.Marshal(Cursor{
 			UpdatedAt: last.UpdatedAt, ID: last.ID, Box: q.Box, Type: q.Type,
-			UnreadOnly: q.UnreadOnly, Extended: &extended,
+			UnreadOnly: q.UnreadOnly,
 		})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
-	if e = s.resolvePage(ctx, owner, out.Items, q.IncludeContentNames); e != nil {
+	if e = s.resolvePage(ctx, owner, out.Items); e != nil {
 		return Page{}, e
 	}
 	return out, nil
@@ -204,14 +190,10 @@ func (s *Service) Unread(ctx context.Context, owner string) (int64, error) {
 	return summary.Count, nil
 }
 func (s *Service) UnreadSummary(ctx context.Context, owner string) (UnreadSummary, error) {
-	return s.UnreadSummaryFiltered(ctx, owner, false)
-}
-
-func (s *Service) UnreadSummaryFiltered(ctx context.Context, owner string, legacyOnly bool) (UnreadSummary, error) {
 	if e := ownerOK(owner); e != nil {
 		return UnreadSummary{}, e
 	}
-	return s.repo.UnreadSummaryFiltered(ctx, owner, s.now().UTC().Add(-s.config.UnreadRetention), legacyOnly)
+	return s.repo.UnreadSummary(ctx, owner, s.now().UTC().Add(-s.config.UnreadRetention))
 }
 func (s *Service) MarkRead(ctx context.Context, owner, id string) error {
 	if e := ownerOK(owner); e != nil {
@@ -250,21 +232,18 @@ func (s *Service) Delete(ctx context.Context, owner, id string) error {
 	}
 	return s.repo.Delete(ctx, owner, normalized)
 }
-func (s *Service) Preferences(ctx context.Context, owner string, enabled *bool) (Preferences, error) {
+func (s *Service) Preferences(ctx context.Context, owner string) (Preferences, error) {
 	if e := ownerOK(owner); e != nil {
 		return Preferences{}, e
 	}
-	if enabled == nil {
-		return s.repo.Preferences(ctx, owner, nil)
-	}
-	return s.UpdatePreferences(ctx, owner, PreferencesUpdate{InteractionEnabled: enabled})
+	return s.repo.Preferences(ctx, owner)
 }
 
 func (s *Service) UpdatePreferences(ctx context.Context, owner string, patch PreferencesUpdate) (Preferences, error) {
 	if e := ownerOK(owner); e != nil {
 		return Preferences{}, e
 	}
-	if patch.InteractionEnabled == nil && patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
+	if patch.ReplyEnabled == nil && patch.LikeEnabled == nil {
 		return Preferences{}, ErrInput
 	}
 	return s.repo.UpdatePreferences(ctx, owner, patch)

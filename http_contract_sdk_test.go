@@ -57,9 +57,14 @@ func TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes(t *testing.T) {
 		"/api/v1/notifications?cursor=&cursor=",
 		"/api/v1/notifications?after=opaque",
 		"/api/v1/notifications?%zz=1",
+		"/api/v1/notifications?include_content_names=true",
+		"/api/v1/notifications?include_extended=true",
 		"/api/v1/notifications/unread-count?extra=1",
+		"/api/v1/notifications/unread-count?include_extended=true",
 		"/api/v1/notifications/preferences?extra=1",
+		"/api/v1/notifications/preferences?include_extended=true",
 		"/api/v1/notifications/read-all?extra=1",
+		"/api/v1/notifications/read-all?include_extended=true",
 		"/api/v1/notifications/" + itemID + "/read?extra=1",
 	} {
 		method := "GET"
@@ -71,11 +76,13 @@ func TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes(t *testing.T) {
 			t.Fatalf("%s %s: expected 400 invalid_input, got %d %s", method, badQuery, w.Code, w.Body.String())
 		}
 	}
-	if w := req("PUT", "/api/v1/notifications/preferences?extra=1", `{"interaction_enabled":false}`, "alice"); w.Code != http.StatusBadRequest {
-		t.Fatalf("PUT preferences with extra query: expected 400, got %d", w.Code)
+	for _, query := range []string{"extra=1", "include_extended=true"} {
+		if w := req("PUT", "/api/v1/notifications/preferences?"+query, `{"reply_enabled":false}`, "alice"); w.Code != http.StatusBadRequest {
+			t.Fatalf("PUT preferences with query %s: expected 400, got %d", query, w.Code)
+		}
 	}
 
-	// 3. Generated Go SDK end-to-end compatibility: Notification.Id (UUID) passes directly to MarkReadWithResponse,
+	// 3. Generated Go SDK contract: Notification.Id (UUID) passes directly to MarkReadWithResponse,
 	// Notification.Count is int64, 204 omits Content-Type, and 403 maps to JSON403.
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -110,19 +117,19 @@ func TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes(t *testing.T) {
 		t.Fatalf("expected Cache-Control no-store, got %q", cc)
 	}
 
-	unreadResp, err := authedClient.GetUnreadCountWithResponse(ctx, nil)
+	unreadResp, err := authedClient.GetUnreadCountWithResponse(ctx)
 	if err != nil || unreadResp.StatusCode() != http.StatusOK || unreadResp.JSON200 == nil || unreadResp.JSON200.Count != 0 {
 		t.Fatalf("SDK GetUnreadCount failed: %+v err=%v", unreadResp.JSON200, err)
 	}
 
-	prefsResp, err := authedClient.GetPreferencesWithResponse(ctx, nil)
-	if err != nil || prefsResp.StatusCode() != http.StatusOK || prefsResp.JSON200 == nil || !prefsResp.JSON200.InteractionEnabled {
+	prefsResp, err := authedClient.GetPreferencesWithResponse(ctx)
+	if err != nil || prefsResp.StatusCode() != http.StatusOK || prefsResp.JSON200 == nil || !prefsResp.JSON200.ReplyEnabled || !prefsResp.JSON200.LikeEnabled {
 		t.Fatalf("SDK GetPreferences failed: %+v err=%v", prefsResp.JSON200, err)
 	}
 
 	disabled := false
-	setResp, err := authedClient.SetPreferencesWithResponse(ctx, nil, sdk.SetPreferencesJSONRequestBody{InteractionEnabled: &disabled})
-	if err != nil || setResp.StatusCode() != http.StatusOK || setResp.JSON200 == nil || setResp.JSON200.InteractionEnabled {
+	setResp, err := authedClient.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{ReplyEnabled: &disabled})
+	if err != nil || setResp.StatusCode() != http.StatusOK || setResp.JSON200 == nil || setResp.JSON200.ReplyEnabled || !setResp.JSON200.LikeEnabled {
 		t.Fatalf("SDK SetPreferences failed: %+v err=%v", setResp.JSON200, err)
 	}
 

@@ -50,7 +50,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		for k := range query {
 			switch k {
-			case "cursor", "limit", "include_content_names", "include_extended", "box", "type", "unread_only":
+			case "cursor", "limit", "box", "type", "unread_only":
 			default:
 				failure(w, n.ErrInput)
 				return
@@ -86,70 +86,42 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, n.ErrInput)
 			return
 		}
-		includeNames, ok := boolQuery(query, "include_content_names")
-		if !ok {
-			failure(w, n.ErrInput)
-			return
-		}
 		unreadOnly, ok := boolQuery(query, "unread_only")
 		if !ok {
 			failure(w, n.ErrInput)
 			return
 		}
-		includeExtended, ok := boolQuery(query, "include_extended")
-		if !ok {
-			failure(w, n.ErrInput)
-			return
-		}
-		page, err := h.Service.ListFiltered(ctx, owner, n.ListQuery{
-			Cursor:              cursor,
-			Limit:               limit,
-			Box:                 box,
-			Type:                kind,
-			UnreadOnly:          unreadOnly,
-			IncludeContentNames: includeNames,
-			LegacyOnly:          !includeExtended,
+		out, e = h.Service.ListFiltered(ctx, owner, n.ListQuery{
+			Cursor:     cursor,
+			Limit:      limit,
+			Box:        box,
+			Type:       kind,
+			UnreadOnly: unreadOnly,
 		})
-		if !includeExtended {
-			page = legacyNotificationsPage(page)
-		}
-		out, e = page, err
 	case r.Method == http.MethodGet && path == "/unread-count":
-		includeExtended, ok := extendedOnlyQuery(r.URL.RawQuery)
-		if !ok {
+		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)
 			return
 		}
-		summary, err := h.Service.UnreadSummaryFiltered(ctx, owner, !includeExtended)
-		out, e = summary, err
-		if !includeExtended {
-			out = struct {
-				Count int64 `json:"count"`
-			}{Count: summary.Count}
-		}
+		out, e = h.Service.UnreadSummary(ctx, owner)
 	case r.Method == http.MethodGet && path == "/preferences":
-		extended, ok := extendedOnlyQuery(r.URL.RawQuery)
-		if !ok {
+		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)
 			return
 		}
-		var prefs n.Preferences
-		prefs, e = h.Service.Preferences(ctx, owner, nil)
-		out = preferencesView(prefs, extended)
+		out, e = h.Service.Preferences(ctx, owner)
 	case r.Method == http.MethodPut && path == "/preferences":
-		extended, ok := extendedOnlyQuery(r.URL.RawQuery)
-		if !ok {
+		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)
 			return
 		}
 		var in struct {
-			Interaction strictBool `json:"interaction_enabled"`
-			Reply       strictBool `json:"reply_enabled"`
-			Like        strictBool `json:"like_enabled"`
+			Reply strictBool `json:"reply_enabled"`
+			Like  strictBool `json:"like_enabled"`
 		}
 		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096))
 		decoder.DisallowUnknownFields()
-		if decoder.Decode(&in) != nil || (!in.Interaction.set && !in.Reply.set && !in.Like.set) {
+		if decoder.Decode(&in) != nil || (!in.Reply.set && !in.Like.set) {
 			failure(w, n.ErrInput)
 			return
 		}
@@ -158,13 +130,10 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, n.ErrInput)
 			return
 		}
-		var prefs n.Preferences
-		prefs, e = h.Service.UpdatePreferences(ctx, owner, n.PreferencesUpdate{
-			InteractionEnabled: in.Interaction.ptr(),
-			ReplyEnabled:       in.Reply.ptr(),
-			LikeEnabled:        in.Like.ptr(),
+		out, e = h.Service.UpdatePreferences(ctx, owner, n.PreferencesUpdate{
+			ReplyEnabled: in.Reply.ptr(),
+			LikeEnabled:  in.Like.ptr(),
 		})
-		out = preferencesView(prefs, extended)
 	case r.Method == http.MethodPost && path == "/read-all":
 		query, err := url.ParseQuery(r.URL.RawQuery)
 		if err != nil {
@@ -172,7 +141,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		for k := range query {
-			if k != "box" && k != "type" && k != "include_extended" {
+			if k != "box" && k != "type" {
 				failure(w, n.ErrInput)
 				return
 			}
@@ -187,12 +156,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, n.ErrInput)
 			return
 		}
-		includeExtended, ok := boolQuery(query, "include_extended")
-		if !ok {
-			failure(w, n.ErrInput)
-			return
-		}
-		e = h.Service.MarkAllReadFiltered(ctx, owner, n.ReadFilter{Box: box, Type: kind, LegacyOnly: !includeExtended})
+		e = h.Service.MarkAllReadFiltered(ctx, owner, n.ReadFilter{Box: box, Type: kind})
 	case r.Method == http.MethodPost && isSingleRead:
 		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)

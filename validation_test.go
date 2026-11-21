@@ -39,7 +39,7 @@ func TestStrictUUIDValidationRejectsNonCanonicalFormatsWith400(t *testing.T) {
 		}
 
 		rawCursor, _ := json.Marshal(n.Cursor{
-			CreatedAt: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC),
+			UpdatedAt: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC),
 			ID:        badID,
 		})
 		encoded := base64.RawURLEncoding.EncodeToString(rawCursor)
@@ -127,9 +127,6 @@ func TestStrictUTF8ControlAndWhitespaceValidation(t *testing.T) {
 		if _, err := f.s.List(ctx, bv.val, "", 10); !errors.Is(err, n.ErrInput) {
 			t.Fatalf("List owner=%s: expected ErrInput, got %v", bv.name, err)
 		}
-		if _, err := f.s.ListWithContentNames(ctx, bv.val, "", 10); !errors.Is(err, n.ErrInput) {
-			t.Fatalf("ListWithContentNames owner=%s: expected ErrInput, got %v", bv.name, err)
-		}
 		if _, err := f.s.Unread(ctx, bv.val); !errors.Is(err, n.ErrInput) {
 			t.Fatalf("Unread owner=%s: expected ErrInput, got %v", bv.name, err)
 		}
@@ -139,11 +136,11 @@ func TestStrictUTF8ControlAndWhitespaceValidation(t *testing.T) {
 		if err := f.s.MarkAllRead(ctx, bv.val); !errors.Is(err, n.ErrInput) {
 			t.Fatalf("MarkAllRead owner=%s: expected ErrInput, got %v", bv.name, err)
 		}
-		if _, err := f.s.Preferences(ctx, bv.val, nil); !errors.Is(err, n.ErrInput) {
-			t.Fatalf("Preferences(get) owner=%s: expected ErrInput, got %v", bv.name, err)
+		if _, err := f.s.Preferences(ctx, bv.val); !errors.Is(err, n.ErrInput) {
+			t.Fatalf("Preferences owner=%s: expected ErrInput, got %v", bv.name, err)
 		}
-		if _, err := f.s.Preferences(ctx, bv.val, &on); !errors.Is(err, n.ErrInput) {
-			t.Fatalf("Preferences(set) owner=%s: expected ErrInput, got %v", bv.name, err)
+		if _, err := f.s.UpdatePreferences(ctx, bv.val, n.PreferencesUpdate{ReplyEnabled: &on, LikeEnabled: &on}); !errors.Is(err, n.ErrInput) {
+			t.Fatalf("UpdatePreferences owner=%s: expected ErrInput, got %v", bv.name, err)
 		}
 	}
 

@@ -2288,7 +2288,7 @@ type AppealApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    AppealApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// AppealId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// AppealId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		AppealId string `json:"appeal_id"`
 	} `json:"title_params"`
 	Type AppealApprovedTitlePayloadType `json:"type"`
@@ -2311,7 +2311,7 @@ type AppealRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    AppealRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// AppealId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// AppealId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		AppealId string `json:"appeal_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2337,7 +2337,7 @@ type BillingRefundCompletedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    BillingRefundCompletedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// OrderId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// OrderId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		OrderId string `json:"order_id"`
 	} `json:"title_params"`
 	Type BillingRefundCompletedTitlePayloadType `json:"type"`
@@ -2360,7 +2360,7 @@ type BillingRefundRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    BillingRefundRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// OrderId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// OrderId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		OrderId string `json:"order_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2386,7 +2386,7 @@ type BillingTopupReviewRequiredTitlePayload struct {
 	} `json:"target"`
 	TitleKey    BillingTopupReviewRequiredTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// OrderId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// OrderId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		OrderId string `json:"order_id"`
 	} `json:"title_params"`
 	Type BillingTopupReviewRequiredTitlePayloadType `json:"type"`
@@ -2412,7 +2412,7 @@ type ContentApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ContentApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -2421,7 +2421,7 @@ type ContentApprovedTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *ContentApprovedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 	} `json:"title_params"`
 	Type ContentApprovedTitlePayloadType `json:"type"`
@@ -2447,7 +2447,7 @@ type ContentDraftExpiringTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ContentDraftExpiringTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -2479,7 +2479,7 @@ type ContentRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ContentRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -2488,7 +2488,7 @@ type ContentRejectedTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *ContentRejectedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2517,7 +2517,7 @@ type ContentRemovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ContentRemovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -2526,7 +2526,7 @@ type ContentRemovedTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *ContentRemovedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2560,7 +2560,7 @@ type GroupMembershipGraceExpiringTitlePayload struct {
 	} `json:"target"`
 	TitleKey    GroupMembershipGraceExpiringTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// GroupId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// GroupId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		GroupId string `json:"group_id"`
 	} `json:"title_params"`
 	Type GroupMembershipGraceExpiringTitlePayloadType `json:"type"`
@@ -2583,7 +2583,7 @@ type IdentityVerificationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    IdentityVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// OperationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// OperationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		OperationId string `json:"operation_id"`
 	} `json:"title_params"`
 	Type IdentityVerificationApprovedTitlePayloadType `json:"type"`
@@ -2606,7 +2606,7 @@ type IdentityVerificationRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    IdentityVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// OperationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// OperationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		OperationId string `json:"operation_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2632,7 +2632,7 @@ type InteractionLikeTitlePayload struct {
 	} `json:"target"`
 	TitleKey    InteractionLikeTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -2641,7 +2641,7 @@ type InteractionLikeTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *InteractionLikeTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 	} `json:"title_params"`
 	Type InteractionLikeTitlePayloadType `json:"type"`
@@ -2667,7 +2667,7 @@ type InteractionReplyTitlePayload struct {
 	} `json:"target"`
 	TitleKey    InteractionReplyTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -2676,7 +2676,7 @@ type InteractionReplyTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *InteractionReplyTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 	} `json:"title_params"`
 	Type InteractionReplyTitlePayloadType `json:"type"`
@@ -2707,7 +2707,7 @@ type Notification struct {
 	// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 	TitleKey TitleKey `json:"title_key"`
 
-	// TitleParams 业务编号由标题键决定。include_content_names=true 时可返回当前权限下的 content_name 和 content_name_state。reason_code 和 comment 目标的 context_id 仅在 include_extended=true 时可返回，context_id 还要求 include_content_names=true。各字段见 x-title-catalog。
+	// TitleParams 标题参数见 x-title-catalog。允许的标题按当前权限返回内容名称和名称状态，可访问的评论可附带所属根评价 ID。适用的通知可附带 reason_code。
 	TitleParams map[string]string `json:"title_params"`
 	Type        NotificationType  `json:"type"`
 
@@ -2730,21 +2730,15 @@ type Page struct {
 
 // Preferences defines model for Preferences.
 type Preferences struct {
-	// InteractionEnabled 互动通知总状态；当 reply_enabled 或 like_enabled 任一为 true 时为 true。
-	InteractionEnabled bool `json:"interaction_enabled"`
+	// LikeEnabled 点赞通知独立开关，默认 true。
+	LikeEnabled bool `json:"like_enabled"`
 
-	// LikeEnabled 点赞通知独立开关，默认 true。include_extended=true 时返回。
-	LikeEnabled *bool `json:"like_enabled,omitempty"`
-
-	// ReplyEnabled 评论回复通知独立开关，默认 true。include_extended=true 时返回。
-	ReplyEnabled *bool `json:"reply_enabled,omitempty"`
+	// ReplyEnabled 评论回复通知独立开关，默认 true。
+	ReplyEnabled bool `json:"reply_enabled"`
 }
 
 // PreferencesUpdate defines model for PreferencesUpdate.
 type PreferencesUpdate struct {
-	// InteractionEnabled 兼容旧客户端的总开关；仅传该字段时同步设置 reply_enabled 与 like_enabled。
-	InteractionEnabled *bool `json:"interaction_enabled,omitempty"`
-
 	// LikeEnabled 点赞通知独立开关。
 	LikeEnabled *bool `json:"like_enabled,omitempty"`
 
@@ -2763,7 +2757,7 @@ type ReportApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ReportApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ReportId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReportId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReportId string `json:"report_id"`
 	} `json:"title_params"`
 	Type ReportApprovedTitlePayloadType `json:"type"`
@@ -2789,7 +2783,7 @@ type ReportRejectedTitlePayload struct {
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
 		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 
-		// ReportId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReportId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReportId string `json:"report_id"`
 	} `json:"title_params"`
 	Type ReportRejectedTitlePayloadType `json:"type"`
@@ -2812,7 +2806,7 @@ type ResourceRemovalApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ResourceRemovalApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type ResourceRemovalApprovedTitlePayloadType `json:"type"`
@@ -2838,7 +2832,7 @@ type ResourceRemovalRejectedTitlePayload struct {
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
 		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type ResourceRemovalRejectedTitlePayloadType `json:"type"`
@@ -2861,7 +2855,7 @@ type StorageContributionExitCompletedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StorageContributionExitCompletedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContributionId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContributionId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContributionId string `json:"contribution_id"`
 	} `json:"title_params"`
 	Type StorageContributionExitCompletedTitlePayloadType `json:"type"`
@@ -2884,7 +2878,7 @@ type StudentVerificationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StudentVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 	} `json:"title_params"`
 	Type StudentVerificationApprovedTitlePayloadType `json:"type"`
@@ -2907,7 +2901,7 @@ type StudentVerificationRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StudentVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2933,7 +2927,7 @@ type StudentVerificationRevokedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StudentVerificationRevokedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// CredentialId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// CredentialId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		CredentialId string `json:"credential_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2959,7 +2953,7 @@ type StudentVerificationSupplementRequiredTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StudentVerificationSupplementRequiredTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -2991,10 +2985,10 @@ type SystemAccountTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *SystemAccountTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 
-		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReferenceId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
 	Type SystemAccountTitlePayloadType `json:"type"`
@@ -3026,10 +3020,10 @@ type SystemNoticeTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *SystemNoticeTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 
-		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReferenceId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
 	Type SystemNoticeTitlePayloadType `json:"type"`
@@ -3061,10 +3055,10 @@ type SystemSecurityTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *SystemSecurityTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ContextId comment 目标所属根评价 ID，仅在 include_content_names=true 且 target_status=accessible 时返回，用于直达讨论上下文。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
 		ContextId *string `json:"context_id,omitempty"`
 
-		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReferenceId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
 	Type SystemSecurityTitlePayloadType `json:"type"`
@@ -3099,7 +3093,7 @@ type TeacherHomepageRequestApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    TeacherHomepageRequestApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type TeacherHomepageRequestApprovedTitlePayloadType `json:"type"`
@@ -3122,7 +3116,7 @@ type TeacherHomepageRequestRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    TeacherHomepageRequestRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type TeacherHomepageRequestRejectedTitlePayloadType `json:"type"`
@@ -3145,7 +3139,7 @@ type TeacherVerificationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    TeacherVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 	} `json:"title_params"`
 	Type TeacherVerificationApprovedTitlePayloadType `json:"type"`
@@ -3168,7 +3162,7 @@ type TeacherVerificationRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    TeacherVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -3194,7 +3188,7 @@ type TeacherVerificationSupplementRequiredTitlePayload struct {
 	} `json:"target"`
 	TitleKey    TeacherVerificationSupplementRequiredTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
@@ -3215,11 +3209,11 @@ type TeacherVerificationSupplementRequiredTitlePayloadType string
 // TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 type TitleKey string
 
-// Unread 默认只有未读总数。传 include_extended=true 时同时返回按通知盒和类型统计的数量。
+// Unread 未读总数、分箱统计和按通知类型统计。
 type Unread struct {
-	ByBox  *UnreadByBox  `json:"by_box,omitempty"`
-	ByType *UnreadByType `json:"by_type,omitempty"`
-	Count  int64         `json:"count"`
+	ByBox  UnreadByBox  `json:"by_box"`
+	ByType UnreadByType `json:"by_type"`
+	Count  int64        `json:"count"`
 }
 
 // UnreadByBox defines model for UnreadByBox.
@@ -3246,7 +3240,7 @@ type VerificationDeletionApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    VerificationDeletionApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationDeletionApprovedTitlePayloadType `json:"type"`
@@ -3272,7 +3266,7 @@ type VerificationDeletionRejectedTitlePayload struct {
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
 		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationDeletionRejectedTitlePayloadType `json:"type"`
@@ -3295,7 +3289,7 @@ type VerificationRevocationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    VerificationRevocationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationRevocationApprovedTitlePayloadType `json:"type"`
@@ -3321,7 +3315,7 @@ type VerificationRevocationRejectedTitlePayload struct {
 		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
 		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationRevocationRejectedTitlePayloadType `json:"type"`
@@ -3336,20 +3330,11 @@ type VerificationRevocationRejectedTitlePayloadTitleKey string
 // VerificationRevocationRejectedTitlePayloadType defines model for VerificationRevocationRejectedTitlePayload.Type.
 type VerificationRevocationRejectedTitlePayloadType string
 
-// IncludeExtended defines model for IncludeExtended.
-type IncludeExtended = bool
-
 // ListNotificationsParams defines parameters for ListNotifications.
 type ListNotificationsParams struct {
 	// Cursor 不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// IncludeContentNames 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。
-	IncludeContentNames *bool `form:"include_content_names,omitempty" json:"include_content_names,omitempty"`
-
-	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
-	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
 
 	// Box 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。
 	Box *Box `form:"box,omitempty" json:"box,omitempty"`
@@ -3364,24 +3349,9 @@ type ListNotificationsParams struct {
 // ListNotificationsParamsType defines parameters for ListNotifications.
 type ListNotificationsParamsType string
 
-// GetPreferencesParams defines parameters for GetPreferences.
-type GetPreferencesParams struct {
-	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
-	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
-}
-
-// SetPreferencesParams defines parameters for SetPreferences.
-type SetPreferencesParams struct {
-	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
-	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
-}
-
 // MarkAllReadParams defines parameters for MarkAllRead.
 type MarkAllReadParams struct {
-	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
-	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
-
-	// Box 可选按分箱批量标为已读。省略时处理当前客户端范围内的全部分箱。
+	// Box 可选按分箱批量标为已读。省略时处理全部分箱。
 	Box *Box `form:"box,omitempty" json:"box,omitempty"`
 
 	// Type 可选按通知类别批量标为已读。
@@ -3390,12 +3360,6 @@ type MarkAllReadParams struct {
 
 // MarkAllReadParamsType defines parameters for MarkAllRead.
 type MarkAllReadParamsType string
-
-// GetUnreadCountParams defines parameters for GetUnreadCount.
-type GetUnreadCountParams struct {
-	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
-	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
-}
 
 // SetPreferencesJSONRequestBody defines body for SetPreferences for application/json ContentType.
 type SetPreferencesJSONRequestBody = PreferencesUpdate
@@ -4552,25 +4516,25 @@ type ClientInterface interface {
 
 	// ListNotifications performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 	//
-	// 分页返回本人未到保留期限的通知。.
+	// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
 	ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetPreferences performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
 	//
-	// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
-	GetPreferences(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// 读取回复与点赞的当前通知偏好。.
+	GetPreferences(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SetPreferencesWithBody performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 	// with any type of body and a specified content type.
 	//
-	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
-	SetPreferencesWithBody(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
+	SetPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SetPreferences performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 	// Takes a body of the `application/json` content type.
 	//
-	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
-	SetPreferences(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
+	SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 	//
@@ -4579,8 +4543,8 @@ type ClientInterface interface {
 
 	// GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 	//
-	// 统计本人未到保留期限的未读通知。.
-	GetUnreadCount(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
+	GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNotification performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
 	DeleteNotification(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4593,7 +4557,7 @@ type ClientInterface interface {
 
 // ListNotifications performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 //
-// 分页返回本人未到保留期限的通知。.
+// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
 func (c *Client) ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListNotificationsRequest(c.Server, params)
 	if err != nil {
@@ -4608,9 +4572,9 @@ func (c *Client) ListNotifications(ctx context.Context, params *ListNotification
 
 // GetPreferences performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
 //
-// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
-func (c *Client) GetPreferences(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPreferencesRequest(c.Server, params)
+// 读取回复与点赞的当前通知偏好。.
+func (c *Client) GetPreferences(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPreferencesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -4624,9 +4588,9 @@ func (c *Client) GetPreferences(ctx context.Context, params *GetPreferencesParam
 // SetPreferencesWithBody performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 // with any type of body and a specified content type.
 //
-// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
-func (c *Client) SetPreferencesWithBody(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSetPreferencesRequestWithBody(c.Server, params, contentType, body)
+// 更新提交的回复或点赞偏好，返回两项当前值。.
+func (c *Client) SetPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetPreferencesRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4640,9 +4604,9 @@ func (c *Client) SetPreferencesWithBody(ctx context.Context, params *SetPreferen
 // SetPreferences performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 // Takes a body of the `application/json` content type.
 //
-// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
-func (c *Client) SetPreferences(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSetPreferencesRequest(c.Server, params, body)
+// 更新提交的回复或点赞偏好，返回两项当前值。.
+func (c *Client) SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetPreferencesRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4670,9 +4634,9 @@ func (c *Client) MarkAllRead(ctx context.Context, params *MarkAllReadParams, req
 
 // GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 //
-// 统计本人未到保留期限的未读通知。.
-func (c *Client) GetUnreadCount(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetUnreadCountRequest(c.Server, params)
+// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
+func (c *Client) GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUnreadCountRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -4763,30 +4727,6 @@ func NewListNotificationsRequest(server string, params *ListNotificationsParams)
 
 		}
 
-		if params.IncludeContentNames != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_content_names", *params.IncludeContentNames, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
-		if params.IncludeExtended != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
 		if params.Box != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -4838,7 +4778,7 @@ func NewListNotificationsRequest(server string, params *ListNotificationsParams)
 }
 
 // NewGetPreferencesRequest constructs an http.Request for the GetPreferences method
-func NewGetPreferencesRequest(server string, params *GetPreferencesParams) (*http.Request, error) {
+func NewGetPreferencesRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4854,33 +4794,6 @@ func NewGetPreferencesRequest(server string, params *GetPreferencesParams) (*htt
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
-	}
-
-	if params != nil {
-		// queryValues collects non-styled parameters (passthrough, JSON)
-		// that are safe to round-trip through url.Values.Encode().
-		queryValues := queryURL.Query()
-		// rawQueryFragments collects pre-encoded query fragments from
-		// styled parameters, preserving literal commas as delimiters
-		// per the OpenAPI spec (e.g. "color=blue,black,brown").
-		var rawQueryFragments []string
-
-		if params.IncludeExtended != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
-		if encoded := queryValues.Encode(); encoded != "" {
-			rawQueryFragments = append(rawQueryFragments, encoded)
-		}
-		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -4892,18 +4805,18 @@ func NewGetPreferencesRequest(server string, params *GetPreferencesParams) (*htt
 }
 
 // NewSetPreferencesRequest calls the generic SetPreferences builder with application/json body
-func NewSetPreferencesRequest(server string, params *SetPreferencesParams, body SetPreferencesJSONRequestBody) (*http.Request, error) {
+func NewSetPreferencesRequest(server string, body SetPreferencesJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewSetPreferencesRequestWithBody(server, params, "application/json", bodyReader)
+	return NewSetPreferencesRequestWithBody(server, "application/json", bodyReader)
 }
 
 // NewSetPreferencesRequestWithBody constructs an http.Request for the SetPreferences method, with any body, and a specified content type
-func NewSetPreferencesRequestWithBody(server string, params *SetPreferencesParams, contentType string, body io.Reader) (*http.Request, error) {
+func NewSetPreferencesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4919,33 +4832,6 @@ func NewSetPreferencesRequestWithBody(server string, params *SetPreferencesParam
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
-	}
-
-	if params != nil {
-		// queryValues collects non-styled parameters (passthrough, JSON)
-		// that are safe to round-trip through url.Values.Encode().
-		queryValues := queryURL.Query()
-		// rawQueryFragments collects pre-encoded query fragments from
-		// styled parameters, preserving literal commas as delimiters
-		// per the OpenAPI spec (e.g. "color=blue,black,brown").
-		var rawQueryFragments []string
-
-		if params.IncludeExtended != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
-		if encoded := queryValues.Encode(); encoded != "" {
-			rawQueryFragments = append(rawQueryFragments, encoded)
-		}
-		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
@@ -4986,18 +4872,6 @@ func NewMarkAllReadRequest(server string, params *MarkAllReadParams) (*http.Requ
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
 
-		if params.IncludeExtended != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
 		if params.Box != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -5037,7 +4911,7 @@ func NewMarkAllReadRequest(server string, params *MarkAllReadParams) (*http.Requ
 }
 
 // NewGetUnreadCountRequest constructs an http.Request for the GetUnreadCount method
-func NewGetUnreadCountRequest(server string, params *GetUnreadCountParams) (*http.Request, error) {
+func NewGetUnreadCountRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -5053,33 +4927,6 @@ func NewGetUnreadCountRequest(server string, params *GetUnreadCountParams) (*htt
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
-	}
-
-	if params != nil {
-		// queryValues collects non-styled parameters (passthrough, JSON)
-		// that are safe to round-trip through url.Values.Encode().
-		queryValues := queryURL.Query()
-		// rawQueryFragments collects pre-encoded query fragments from
-		// styled parameters, preserving literal commas as delimiters
-		// per the OpenAPI spec (e.g. "color=blue,black,brown").
-		var rawQueryFragments []string
-
-		if params.IncludeExtended != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
-		if encoded := queryValues.Encode(); encoded != "" {
-			rawQueryFragments = append(rawQueryFragments, encoded)
-		}
-		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -5204,31 +5051,31 @@ type ClientWithResponsesInterface interface {
 
 	// ListNotificationsWithResponse performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 	//
-	// 分页返回本人未到保留期限的通知。.
+	// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	ListNotificationsWithResponse(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error)
 
 	// GetPreferencesWithResponse performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
 	//
-	// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
+	// 读取回复与点赞的当前通知偏好。.
 	//
 	// Returns a wrapper object for the known response body format(s).
-	GetPreferencesWithResponse(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error)
+	GetPreferencesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error)
 
 	// SetPreferencesWithBodyWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 	// with any type of body and a specified content type.
 	//
-	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
 	//
 	// Returns a wrapper object for the known response body format(s).
-	SetPreferencesWithBodyWithResponse(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
+	SetPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
 
 	// SetPreferencesWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
-	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
-	SetPreferencesWithResponse(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
+	SetPreferencesWithResponse(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
 
 	// MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 	//
@@ -5239,10 +5086,10 @@ type ClientWithResponsesInterface interface {
 
 	// GetUnreadCountWithResponse performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 	//
-	// 统计本人未到保留期限的未读通知。.
+	// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
 	//
 	// Returns a wrapper object for the known response body format(s).
-	GetUnreadCountWithResponse(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error)
+	GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error)
 
 	// DeleteNotificationWithResponse performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
 	//
@@ -5770,7 +5617,7 @@ func (r MarkReadResponse) ContentType() string {
 
 // ListNotificationsWithResponse performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 //
-// 分页返回本人未到保留期限的通知。.
+// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
 //
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error) {
@@ -5783,11 +5630,11 @@ func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context,
 
 // GetPreferencesWithResponse performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
 //
-// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
+// 读取回复与点赞的当前通知偏好。.
 //
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error) {
-	rsp, err := c.GetPreferences(ctx, params, reqEditors...)
+func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error) {
+	rsp, err := c.GetPreferences(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5797,11 +5644,11 @@ func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, pa
 // SetPreferencesWithBodyWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 // with any type of body and a specified content type.
 //
-// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+// 更新提交的回复或点赞偏好，返回两项当前值。.
 //
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
-	rsp, err := c.SetPreferencesWithBody(ctx, params, contentType, body, reqEditors...)
+func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
+	rsp, err := c.SetPreferencesWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5811,9 +5658,9 @@ func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Con
 // SetPreferencesWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
-// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
-func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
-	rsp, err := c.SetPreferences(ctx, params, body, reqEditors...)
+// 更新提交的回复或点赞偏好，返回两项当前值。.
+func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
+	rsp, err := c.SetPreferences(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5835,11 +5682,11 @@ func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, param
 
 // GetUnreadCountWithResponse performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 //
-// 统计本人未到保留期限的未读通知。.
+// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
 //
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error) {
-	rsp, err := c.GetUnreadCount(ctx, params, reqEditors...)
+func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error) {
+	rsp, err := c.GetUnreadCount(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

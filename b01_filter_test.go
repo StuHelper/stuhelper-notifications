@@ -80,13 +80,12 @@ func TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead(t *testing.T) {
 	}
 
 	// Unread endpoint through generated SDK.
-	extended := true
-	unreadResp, err := client.GetUnreadCountWithResponse(ctx, &sdk.GetUnreadCountParams{IncludeExtended: &extended})
+	unreadResp, err := client.GetUnreadCountWithResponse(ctx)
 	if err != nil || unreadResp.StatusCode() != 200 || unreadResp.JSON200 == nil {
 		t.Fatal(err, unreadResp.StatusCode())
 	}
-	if unreadResp.JSON200.Count != 41 || unreadResp.JSON200.ByBox == nil || unreadResp.JSON200.ByType == nil ||
-		unreadResp.JSON200.ByBox.Verification != 2 || unreadResp.JSON200.ByBox.Review != 2 || unreadResp.JSON200.ByType.Security != 1 {
+	if unreadResp.JSON200.Count != 41 || unreadResp.JSON200.ByBox.Verification != 2 ||
+		unreadResp.JSON200.ByBox.Review != 2 || unreadResp.JSON200.ByType.Security != 1 {
 		t.Fatalf("unexpected SDK unread response: %+v", unreadResp.JSON200)
 	}
 
@@ -245,7 +244,7 @@ func TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead(t *testing.T) {
 		}
 	}
 
-	// Legacy Unread JSON compatibility: top-level count remains a non-negative integer.
+	// The wire response includes both groups even when a category has zero unread items.
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL+"/api/v1/notifications/unread-count", nil)
 	req.Header.Set("X-Owner", "alice")
 	res, err := http.DefaultClient.Do(req)
@@ -253,11 +252,14 @@ func TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer res.Body.Close()
-	var legacyUnread struct {
-		Count int64 `json:"count"`
+	var unread struct {
+		Count  int64           `json:"count"`
+		ByBox  *n.UnreadByBox  `json:"by_box"`
+		ByType *n.UnreadByType `json:"by_type"`
 	}
-	if json.NewDecoder(res.Body).Decode(&legacyUnread) != nil || legacyUnread.Count != 5 {
-		t.Fatalf("legacy unread decode failed: %+v", legacyUnread)
+	if res.StatusCode != http.StatusOK || json.NewDecoder(res.Body).Decode(&unread) != nil ||
+		unread.Count != 5 || unread.ByBox == nil || unread.ByType == nil {
+		t.Fatalf("unexpected unread response: status=%d data=%+v", res.StatusCode, unread)
 	}
 
 	// Service-level validation checks.

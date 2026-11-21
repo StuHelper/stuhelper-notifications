@@ -16,7 +16,7 @@ func TestConsumeRecipientsDeduplicationPreferencesAndReplay(t *testing.T) {
 	f := setup(t)
 	ctx := context.Background()
 	off := false
-	if _, err := f.s.Preferences(ctx, "bob", &off); err != nil {
+	if _, err := f.s.UpdatePreferences(ctx, "bob", n.PreferencesUpdate{ReplyEnabled: &off, LikeEnabled: &off}); err != nil {
 		t.Fatal(err)
 	}
 	e := delivery("batch", "interaction")
@@ -32,7 +32,7 @@ func TestConsumeRecipientsDeduplicationPreferencesAndReplay(t *testing.T) {
 		t.Fatal("unexpected effects")
 	}
 	on := true
-	if _, err := f.s.Preferences(ctx, "bob", &on); err != nil {
+	if _, err := f.s.UpdatePreferences(ctx, "bob", n.PreferencesUpdate{ReplyEnabled: &on, LikeEnabled: &on}); err != nil {
 		t.Fatal(err)
 	}
 	e.Recipients = []string{"alice", "bob"}

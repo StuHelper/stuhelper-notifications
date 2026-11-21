@@ -16,13 +16,13 @@ import (
 )
 
 type titleBatch struct {
-	calls, legacy, refs    int
+	calls, single, refs    int
 	state, name, contextID string
 	fail                   bool
 }
 
 func (b *titleBatch) Resolve(context.Context, string, string, n.Target) (string, error) {
-	b.legacy++
+	b.single++
 	return "", errors.New("single target resolution must not run")
 }
 func (b *titleBatch) ResolveBatch(ctx context.Context, owner string, refs []n.TargetRef) (map[n.TargetRef]n.TargetResolution, error) {
@@ -56,7 +56,7 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 	}
 	check := func(state, name string) {
 		t.Helper()
-		page, e := f.s.ListWithContentNames(ctx, "alice", "", 100)
+		page, e := f.s.List(ctx, "alice", "", 100)
 		if e != nil || len(page.Items) != 100 {
 			t.Fatal(len(page.Items), e)
 		}
@@ -64,20 +64,10 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 			if item.TitleParams["content_name_state"] != state || item.TitleParams["content_name"] != name || item.TitleParams["content_id"] != "example-1" {
 				t.Fatal(item)
 			}
-			raw, _ := json.Marshal(item)
-			var old struct {
-				TitleKey    string `json:"title_key"`
-				TitleParams struct {
-					ContentID string `json:"content_id"`
-				} `json:"title_params"`
-			}
-			if json.Unmarshal(raw, &old) != nil || old.TitleParams.ContentID != "example-1" {
-				t.Fatal("legacy client failed")
-			}
 		}
 	}
 	check("available", batch.name)
-	if batch.calls != 1 || batch.refs != 50 || batch.legacy != 0 {
+	if batch.calls != 1 || batch.refs != 50 || batch.single != 0 {
 		t.Fatal("N+1 resolution", batch)
 	}
 	batch.name = "改名后的标题"
@@ -104,10 +94,10 @@ func TestNotificationNamesAreCurrentBoundedAndNeverPersisted(t *testing.T) {
 		t.Fatal("producer supplied name", err)
 	}
 	before := batch.calls
-	if page, err := f.s.ListWithContentNames(ctx, "bob", "", 100); err != nil || len(page.Items) != 0 || batch.calls != before {
+	if page, err := f.s.List(ctx, "bob", "", 100); err != nil || len(page.Items) != 0 || batch.calls != before {
 		t.Fatal("other owner lookup", page, err)
 	}
-	if _, err = f.s.ListWithContentNames(ctx, "", "", 100); !errors.Is(err, n.ErrUnauthenticated) || batch.calls != before {
+	if _, err = f.s.List(ctx, "", "", 100); !errors.Is(err, n.ErrUnauthenticated) || batch.calls != before {
 		t.Fatal("unauthenticated lookup", err)
 	}
 }
@@ -139,7 +129,7 @@ type blockingBatchResolver struct {
 }
 
 func (b *blockingBatchResolver) Resolve(context.Context, string, string, n.Target) (string, error) {
-	return "", errors.New("unexpected legacy call")
+	return "", errors.New("unexpected single target resolution")
 }
 
 func (b *blockingBatchResolver) ResolveBatch(ctx context.Context, owner string, refs []n.TargetRef) (map[n.TargetRef]n.TargetResolution, error) {
@@ -218,7 +208,7 @@ func TestParentContextCancellationAbortsTargetResolutionWithoutFake200(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = batchSvc.ListWithContentNames(batchParent, "alice", "", 20); !errors.Is(err, context.Canceled) {
+	if _, err = batchSvc.List(batchParent, "alice", "", 20); !errors.Is(err, context.Canceled) {
 		t.Fatalf("expected context.Canceled from BatchResolver, got %v", err)
 	}
 
@@ -233,7 +223,7 @@ func TestParentContextCancellationAbortsTargetResolutionWithoutFake200(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	page, err := childTimeoutSvc.ListWithContentNames(bg, "alice", "", 20)
+	page, err := childTimeoutSvc.List(bg, "alice", "", 20)
 	if err != nil || len(page.Items) != 20 {
 		t.Fatalf("child ResolveTimeout should degrade gracefully, got err=%v items=%d", err, len(page.Items))
 	}
@@ -287,69 +277,34 @@ func TestCommentContextIDAndReasonCodeReadBehavior(t *testing.T) {
 		t.Fatalf("expected ErrInput for producer-supplied context_id, got %v", err)
 	}
 
-	// Expanded read includes context_id on accessible comment targets, omits context_id on resource targets, and retains reason_code.
-	page, err := f.s.ListWithContentNames(ctx, "alice", "", 10)
-	if err != nil || len(page.Items) != 2 {
-		t.Fatal(page, err)
+	// The default HTTP read includes the comment context and the current name.
+	h := httpapi.Handler{Service: f.s, Authenticate: func(*http.Request) (string, error) { return "alice", nil }}
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/notifications", nil))
+	var page n.Page
+	if rec.Code != http.StatusOK || json.Unmarshal(rec.Body.Bytes(), &page) != nil || len(page.Items) != 2 {
+		t.Fatalf("status=%d body=%s", rec.Code, rec.Body.String())
 	}
 	byID := map[string]n.Notification{}
 	for _, it := range page.Items {
 		byID[it.Target.Kind] = it
 	}
-	if byID["comment"].TitleParams["context_id"] != "review-root-42" || byID["comment"].TitleParams["content_name"] != "数据结构课程评价" {
-		t.Fatalf("missing comment context_id: %+v", byID["comment"])
+	comment := byID["comment"].TitleParams
+	if comment["context_id"] != "review-root-42" || comment["content_name"] != batch.name ||
+		comment["content_name_state"] != "available" || comment["content_id"] != "comment-101" {
+		t.Fatalf("unexpected comment title parameters: %v", comment)
 	}
 	if _, hasCtx := byID["resource"].TitleParams["context_id"]; hasCtx {
 		t.Fatalf("non-comment target must not expose context_id: %+v", byID["resource"])
 	}
-	if byID["resource"].TitleParams["reason_code"] != "copyright_claim" {
-		t.Fatalf("missing reason_code: %+v", byID["resource"])
-	}
-
-	// Legacy List omits read-only parameters (content_name, content_name_state, context_id) while keeping stored reason_code.
-	legacyPage, err := f.s.List(ctx, "alice", "", 10)
-	if err != nil || len(legacyPage.Items) != 2 {
-		t.Fatal(legacyPage, err)
-	}
-	for _, it := range legacyPage.Items {
-		if _, hasCtx := it.TitleParams["context_id"]; hasCtx {
-			t.Fatalf("legacy list leaked context_id: %+v", it)
-		}
-	}
-
-	h := httpapi.Handler{Service: f.s, Authenticate: func(*http.Request) (string, error) { return "alice", nil }}
-	for _, tc := range []struct {
-		query          string
-		reason         string
-		commentContext string
-	}{
-		{"?include_content_names=true", "", ""},
-		{"?include_extended=true", "copyright_claim", ""},
-		{"?include_extended=true&include_content_names=true", "copyright_claim", "review-root-42"},
-	} {
-		rec := httptest.NewRecorder()
-		h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/notifications"+tc.query, nil))
-		var response n.Page
-		if rec.Code != http.StatusOK || json.Unmarshal(rec.Body.Bytes(), &response) != nil || len(response.Items) != 2 {
-			t.Fatalf("query %s: status=%d body=%s", tc.query, rec.Code, rec.Body.String())
-		}
-		got := make(map[string]map[string]string)
-		for _, item := range response.Items {
-			got[item.Target.Kind] = item.TitleParams
-		}
-		if got["resource"]["reason_code"] != tc.reason || got["comment"]["context_id"] != tc.commentContext ||
-			got["resource"]["content_id"] != "resource-202" || got["comment"]["content_id"] != "comment-101" {
-			t.Fatalf("query %s: params=%v", tc.query, got)
-		}
-		if strings.Contains(tc.query, "include_content_names=true") &&
-			(got["comment"]["content_name"] != batch.name || got["comment"]["content_name_state"] != "available") {
-			t.Fatalf("query %s: missing permitted content name: %v", tc.query, got)
-		}
+	resource := byID["resource"].TitleParams
+	if resource["reason_code"] != "copyright_claim" || resource["content_id"] != "resource-202" {
+		t.Fatalf("unexpected resource title parameters: %v", resource)
 	}
 
 	// Inaccessible, unavailable, or unsafe context_id values are never exposed.
 	batch.state = "inaccessible"
-	inaccPage, err := f.s.ListWithContentNames(ctx, "alice", "", 10)
+	inaccPage, err := f.s.List(ctx, "alice", "", 10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -361,7 +316,7 @@ func TestCommentContextIDAndReasonCodeReadBehavior(t *testing.T) {
 	batch.state = "accessible"
 	for _, unsafeID := range []string{"", "review/evil", "review?x=1", "review#frag", "..", "bad\nid", strings.Repeat("r", 257)} {
 		batch.contextID = unsafeID
-		unsafePage, e := f.s.ListWithContentNames(ctx, "alice", "", 10)
+		unsafePage, e := f.s.List(ctx, "alice", "", 10)
 		if e != nil {
 			t.Fatal(e)
 		}
