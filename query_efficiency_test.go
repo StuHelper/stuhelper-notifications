@@ -108,9 +108,10 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 	f := setup(t)
 	ctx := context.Background()
 	repo := &postgres.Repository{DB: f.db}
+	cutoffs := n.RetentionCutoffs{Read: f.now.Add(-24 * time.Hour), Unread: f.now.Add(-24 * time.Hour)}
 
 	for _, badLimit := range []int{-1, 0, 102, 10000} {
-		if _, err := repo.List(ctx, "alice", n.Cursor{}, badLimit); !errors.Is(err, n.ErrInput) {
+		if _, err := repo.List(ctx, "alice", n.Cursor{}, badLimit, cutoffs); !errors.Is(err, n.ErrInput) {
 			t.Fatalf("repo.List limit=%d: expected ErrInput, got %v", badLimit, err)
 		}
 	}
@@ -118,7 +119,7 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 		{ID: "00000000-0000-4000-8000-000000000001"},
 		{CreatedAt: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)},
 	} {
-		if _, err := repo.List(ctx, "alice", badCursor, 10); !errors.Is(err, n.ErrInput) {
+		if _, err := repo.List(ctx, "alice", badCursor, 10, cutoffs); !errors.Is(err, n.ErrInput) {
 			t.Fatalf("repo.List partial cursor %+v: expected ErrInput, got %v", badCursor, err)
 		}
 	}
@@ -154,7 +155,7 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 		}
 	}
 
-	// Verify under PostgreSQL force_generic_plan that the cursor query pushes (updated_at, id) into Index Cond without Filter.
+	// Verify under PostgreSQL force_generic_plan that the cursor query pushes (updated_at, id) into Index Cond.
 	tx, err := f.db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -163,7 +164,7 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 	if _, err = tx.ExecContext(ctx, `SET LOCAL enable_seqscan = off; SET LOCAL plan_cache_mode = force_generic_plan`); err != nil {
 		t.Fatal(err)
 	}
-	rows, err := tx.QueryContext(ctx, `EXPLAIN (COSTS OFF) `+postgres.ListCursorQuery, "alice", collected[9].UpdatedAt, collected[9].ID, 11)
+	rows, err := tx.QueryContext(ctx, `EXPLAIN (COSTS OFF) `+postgres.ListCursorQuery, "alice", collected[9].UpdatedAt, collected[9].ID, cutoffs.Read, cutoffs.Unread, 11)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +178,7 @@ func TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds(t *testing.
 		planLines = append(planLines, line)
 	}
 	plan := strings.Join(planLines, "\n")
-	if !strings.Contains(plan, "items_owner_updated_cursor") || !strings.Contains(plan, "updated_at") || strings.Contains(plan, "Filter:") {
+	if !strings.Contains(plan, "items_owner_updated_cursor") || !strings.Contains(plan, "Index Cond: ((owner =") || !strings.Contains(plan, "ROW(updated_at, id) <") {
 		t.Fatalf("generic plan did not push cursor predicate into items_owner_updated_cursor Index Cond:\n%s", plan)
 	}
 }

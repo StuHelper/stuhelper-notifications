@@ -192,18 +192,18 @@ type Cursor struct {
 }
 type Repository interface {
 	Consume(context.Context, Event, string, time.Time, time.Duration) (Result, error)
-	List(context.Context, string, Cursor, int) ([]Notification, error)
-	ListFiltered(context.Context, string, ListQuery, Cursor, int) ([]Notification, error)
-	Unread(context.Context, string) (int64, error)
-	UnreadSummary(context.Context, string) (UnreadSummary, error)
-	MarkRead(context.Context, string, string, time.Time) error
-	MarkAllRead(context.Context, string, time.Time) error
-	MarkAllReadFiltered(context.Context, string, ReadFilter, time.Time) error
+	List(context.Context, string, Cursor, int, RetentionCutoffs) ([]Notification, error)
+	ListFiltered(context.Context, string, ListQuery, Cursor, int, RetentionCutoffs) ([]Notification, error)
+	Unread(context.Context, string, time.Time) (int64, error)
+	UnreadSummary(context.Context, string, time.Time) (UnreadSummary, error)
+	MarkRead(context.Context, string, string, time.Time, RetentionCutoffs) error
+	MarkAllRead(context.Context, string, time.Time, time.Time) error
+	MarkAllReadFiltered(context.Context, string, ReadFilter, time.Time, time.Time) error
 	Delete(context.Context, string, string) error
 	Preferences(context.Context, string, *bool) (Preferences, error)
 	UpdatePreferences(context.Context, string, PreferencesUpdate) (Preferences, error)
-	Cleanup(context.Context, time.Time, int) (int64, error)
-	MaintenanceStats(context.Context, time.Time) (MaintenanceStats, error)
+	Cleanup(context.Context, RetentionCutoffs, int) (int64, error)
+	MaintenanceStats(context.Context, RetentionCutoffs) (MaintenanceStats, error)
 }
 
 // AccountCloser permanently removes personal notifications and preferences while
@@ -257,8 +257,20 @@ type Observer interface {
 	ObserveCleanup(CleanupObservation)
 }
 
+// RetentionCutoffs are the latest timestamps whose items are already due for deletion.
+type RetentionCutoffs struct {
+	Read   time.Time
+	Unread time.Time
+}
+
+const (
+	DefaultReadRetention   = 180 * 24 * time.Hour
+	DefaultUnreadRetention = 365 * 24 * time.Hour
+)
+
 type Config struct {
-	Retention         time.Duration
+	ReadRetention     time.Duration
+	UnreadRetention   time.Duration
 	AggregationWindow time.Duration
 	CleanupBatch      int
 	ResolveTimeout    time.Duration

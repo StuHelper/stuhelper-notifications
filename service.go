@@ -24,7 +24,9 @@ type Service struct {
 }
 
 func New(repo Repository, resolver Resolver, config Config, now func() time.Time) (*Service, error) {
-	if repo == nil || resolver == nil || config.Retention <= 0 || config.AggregationWindow <= 0 || config.AggregationWindow > config.Retention || config.CleanupBatch < 1 || config.CleanupBatch > 10000 || config.ResolveTimeout <= 0 {
+	if repo == nil || resolver == nil || config.ReadRetention <= 0 || config.ReadRetention > DefaultReadRetention ||
+		config.UnreadRetention <= 0 || config.UnreadRetention > DefaultUnreadRetention ||
+		config.AggregationWindow <= 0 || config.AggregationWindow > config.UnreadRetention || config.CleanupBatch < 1 || config.CleanupBatch > 10000 || config.ResolveTimeout <= 0 {
 		return nil, ErrInput
 	}
 	if now == nil {
@@ -173,7 +175,7 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 		}
 		cursor.ID = u.String()
 	}
-	rows, e := s.repo.ListFiltered(ctx, owner, q, cursor, q.Limit+1)
+	rows, e := s.repo.ListFiltered(ctx, owner, q, cursor, q.Limit+1, s.retentionCutoffs(s.now().UTC()))
 	if e != nil {
 		return Page{}, e
 	}
@@ -200,7 +202,7 @@ func (s *Service) UnreadSummary(ctx context.Context, owner string) (UnreadSummar
 	if e := ownerOK(owner); e != nil {
 		return UnreadSummary{}, e
 	}
-	return s.repo.UnreadSummary(ctx, owner)
+	return s.repo.UnreadSummary(ctx, owner, s.now().UTC().Add(-s.config.UnreadRetention))
 }
 func (s *Service) MarkRead(ctx context.Context, owner, id string) error {
 	if e := ownerOK(owner); e != nil {
@@ -210,7 +212,8 @@ func (s *Service) MarkRead(ctx context.Context, owner, id string) error {
 	if e != nil {
 		return ErrInput
 	}
-	return s.repo.MarkRead(ctx, owner, normalized, s.now().UTC())
+	now := s.now().UTC()
+	return s.repo.MarkRead(ctx, owner, normalized, now, s.retentionCutoffs(now))
 }
 func (s *Service) MarkAllRead(ctx context.Context, owner string) error {
 	return s.MarkAllReadFiltered(ctx, owner, ReadFilter{})
@@ -225,7 +228,8 @@ func (s *Service) MarkAllReadFiltered(ctx context.Context, owner string, filter 
 	if filter.Type != "" && !validNotificationType(filter.Type) {
 		return ErrInput
 	}
-	return s.repo.MarkAllReadFiltered(ctx, owner, filter, s.now().UTC())
+	now := s.now().UTC()
+	return s.repo.MarkAllReadFiltered(ctx, owner, filter, now, now.Add(-s.config.UnreadRetention))
 }
 func (s *Service) Delete(ctx context.Context, owner, id string) error {
 	if e := ownerOK(owner); e != nil {
@@ -257,10 +261,14 @@ func (s *Service) UpdatePreferences(ctx context.Context, owner string, patch Pre
 	return s.repo.UpdatePreferences(ctx, owner, patch)
 }
 
+func (s *Service) retentionCutoffs(now time.Time) RetentionCutoffs {
+	return RetentionCutoffs{Read: now.Add(-s.config.ReadRetention), Unread: now.Add(-s.config.UnreadRetention)}
+}
+
 // Cleanup performs one bounded batch. The host schedules further batches.
 func (s *Service) Cleanup(ctx context.Context) (int64, error) {
 	started := time.Now()
-	deleted, err := s.repo.Cleanup(ctx, s.now().UTC().Add(-s.config.Retention), s.config.CleanupBatch)
+	deleted, err := s.repo.Cleanup(ctx, s.retentionCutoffs(s.now().UTC()), s.config.CleanupBatch)
 	if s.config.Observer != nil {
 		s.config.Observer.ObserveCleanup(CleanupObservation{
 			Deleted:   deleted,
@@ -274,7 +282,7 @@ func (s *Service) Cleanup(ctx context.Context) (int64, error) {
 
 // MaintenanceStats reports PII-free retention backlog and deduplication table growth.
 func (s *Service) MaintenanceStats(ctx context.Context) (MaintenanceStats, error) {
-	return s.repo.MaintenanceStats(ctx, s.now().UTC().Add(-s.config.Retention))
+	return s.repo.MaintenanceStats(ctx, s.retentionCutoffs(s.now().UTC()))
 }
 
 // CloseAccount permanently deletes personal notifications and preferences for owner

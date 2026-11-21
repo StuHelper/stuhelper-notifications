@@ -41,6 +41,11 @@ type fixture struct {
 
 func setup(t *testing.T) *fixture {
 	t.Helper()
+	return setupDatabase(t, nil)
+}
+
+func setupDatabase(t *testing.T, initialize func(*sql.DB)) *fixture {
+	t.Helper()
 	dsn := os.Getenv("STUHELPER_NOTIFICATIONS_TEST_DSN")
 	if dsn == "" {
 		t.Fatal("isolated PostgreSQL required")
@@ -70,6 +75,9 @@ func setup(t *testing.T) *fixture {
 	ownerCfg := adminCfg.Copy()
 	ownerCfg.Database = name
 	owner = stdlib.OpenDB(*ownerCfg)
+	if initialize != nil {
+		initialize(owner)
+	}
 	for range 2 {
 		if e = postgres.Migrate(context.Background(), owner); e != nil {
 			t.Fatal(e)
@@ -95,7 +103,7 @@ func setup(t *testing.T) *fixture {
 		}
 	}
 	f := &fixture{db: owner, runtime: runtime, src: &resolver{state: "accessible"}, now: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)}
-	f.s, e = n.New(repo, f.src, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
+	f.s, e = n.New(repo, f.src, n.Config{ReadRetention: 24 * time.Hour, UnreadRetention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -380,7 +388,7 @@ func TestDeliveryRollbackAndRetentionBoundary(t *testing.T) {
 	if count(t, f, "items") != 1 || count(t, f, "inbox") != 1 {
 		t.Fatal("canceled delivery wrote data")
 	}
-	f.now = f.now.Add(24 * time.Hour)
+	f.now = f.now.Add(24*time.Hour - time.Second)
 	removed, e := f.s.Cleanup(ctx)
 	if e != nil || removed != 0 {
 		t.Fatal("retention boundary", removed, e)

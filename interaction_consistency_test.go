@@ -40,7 +40,8 @@ func TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate(t *t
 	var clockMu sync.Mutex
 	curNow := f2.now
 	syncedSvc, err := n.New(&postgres.Repository{DB: f2.db}, f2.src, n.Config{
-		Retention:         24 * time.Hour,
+		ReadRetention:     24 * time.Hour,
+		UnreadRetention:   24 * time.Hour,
 		AggregationWindow: time.Hour,
 		CleanupBatch:      2,
 		ResolveTimeout:    time.Second,

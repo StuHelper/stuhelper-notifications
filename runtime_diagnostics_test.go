@@ -32,7 +32,7 @@ func TestCheckRuntimeEnforcesLeastPrivilegeAndOwnership(t *testing.T) {
 	if err := emptyRepo.CheckRuntime(ctx); !errors.Is(err, n.ErrUnavailable) || n.UnavailableReason(err) != n.ReasonDatabaseNil {
 		t.Fatalf("nil DB CheckRuntime: expected %s, got %v", n.ReasonDatabaseNil, err)
 	}
-	if _, err := emptyRepo.Unread(ctx, "alice"); !errors.Is(err, n.ErrUnavailable) || n.UnavailableReason(err) != n.ReasonDatabaseNil {
+	if _, err := emptyRepo.Unread(ctx, "alice", f.now.Add(-24*time.Hour)); !errors.Is(err, n.ErrUnavailable) || n.UnavailableReason(err) != n.ReasonDatabaseNil {
 		t.Fatalf("nil DB Unread: expected %s, got %v", n.ReasonDatabaseNil, err)
 	}
 
@@ -193,7 +193,8 @@ func TestURIDSNSetupAndDesensitizedDiagnostics(t *testing.T) {
 	// Target resolution diagnostics hook emits desensitized reason codes without user identifiers.
 	var diagReasons []string
 	diagSvc, err := n.New(&postgres.Repository{DB: f.db}, &resolver{err: context.DeadlineExceeded}, n.Config{
-		Retention:         24 * time.Hour,
+		ReadRetention:     24 * time.Hour,
+		UnreadRetention:   24 * time.Hour,
 		AggregationWindow: time.Hour,
 		CleanupBatch:      2,
 		ResolveTimeout:    time.Second,
@@ -219,7 +220,8 @@ func TestURIDSNSetupAndDesensitizedDiagnostics(t *testing.T) {
 	}
 	_ = closedDB.Close()
 	brokenSvc, err := n.New(&postgres.Repository{DB: closedDB}, f.src, n.Config{
-		Retention:         24 * time.Hour,
+		ReadRetention:     24 * time.Hour,
+		UnreadRetention:   24 * time.Hour,
 		AggregationWindow: time.Hour,
 		CleanupBatch:      2,
 		ResolveTimeout:    time.Second,

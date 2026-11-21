@@ -87,6 +87,8 @@ CREATE INDEX IF NOT EXISTS items_owner_type_unread_updated_cursor ON notificatio
 CREATE INDEX IF NOT EXISTS items_unread ON notifications.items(owner) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_unread_grouped ON notifications.items(owner,box,type) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_expiry ON notifications.items(created_at,id);
+CREATE INDEX IF NOT EXISTS items_read_expiry ON notifications.items(read_at,id) WHERE read_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS items_unread_expiry ON notifications.items(created_at,id) WHERE read_at IS NULL;
 CREATE INDEX IF NOT EXISTS items_aggregation ON notifications.items(owner,source_module,target_kind,target_id,title_key,created_at DESC) WHERE type='interaction' AND read_at IS NULL;
 -- Upgrade an empty candidate inbox in place. Existing single-recipient receipts
 -- omit the recipient on suppression and cannot be converted without source events.

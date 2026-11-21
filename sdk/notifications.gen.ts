@@ -11,6 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description 分页返回本人未到保留期限的通知。 */
         get: operations["listNotifications"];
         put?: never;
         post?: never;
@@ -27,6 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description 统计本人未到保留期限的未读通知。 */
         get: operations["getUnreadCount"];
         put?: never;
         post?: never;
@@ -47,6 +49,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description 记录本人未到保留期限的通知的首次已读时间。 */
         post: operations["markRead"];
         delete?: never;
         options?: never;
@@ -81,6 +84,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description 按筛选条件标记本人未到保留期限的未读通知。 */
         post: operations["markAllRead"];
         delete?: never;
         options?: never;
@@ -845,7 +849,7 @@ export interface operations {
                 box?: components["schemas"]["Box"];
                 /** @description 按通知底层类别过滤。 */
                 type?: "interaction" | "business" | "security" | "account";
-                /** @description 仅返回未读通知（read_at 为 null）。 */
+                /** @description 仅返回未到保留期限的未读通知（read_at 为 null）。 */
                 unread_only?: boolean;
             };
             header?: never;
@@ -1020,7 +1024,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 不存在或不属于本人 */
+            /** @description 不存在、不属于本人或已到保留期限 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1108,7 +1112,7 @@ export interface operations {
     markAllRead: {
         parameters: {
             query?: {
-                /** @description 可选按分箱批量标为已读；省略时标记本人全部未读通知。 */
+                /** @description 可选按分箱批量标为已读。省略时包含所有分箱。 */
                 box?: components["schemas"]["Box"];
                 /** @description 可选按通知类别批量标为已读。 */
                 type?: "interaction" | "business" | "security" | "account";
