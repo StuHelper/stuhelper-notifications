@@ -47,13 +47,21 @@ func TestGranularReplyAndLikePreferencesAndLegacyCompatibility(t *testing.T) {
 
 	// Disable only likes via generated SDK; replies remain active and interaction_enabled stays true.
 	off := false
-	setResp, err := client.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{LikeEnabled: &off})
-	if err != nil || setResp.StatusCode() != 200 || setResp.JSON200 == nil {
-		t.Fatal(err, setResp.StatusCode())
+	on := true
+	opts := &sdk.SetPreferencesParams{IncludeExtended: &on}
+	assertPreferences := func(resp *sdk.SetPreferencesResponse, err error, interaction, reply, like bool) {
+		t.Helper()
+		if err != nil || resp == nil || resp.StatusCode() != http.StatusOK || resp.JSON200 == nil {
+			t.Fatalf("set preferences failed: response=%+v err=%v", resp, err)
+		}
+		prefs := resp.JSON200
+		if prefs.InteractionEnabled != interaction || prefs.ReplyEnabled == nil || *prefs.ReplyEnabled != reply ||
+			prefs.LikeEnabled == nil || *prefs.LikeEnabled != like {
+			t.Fatalf("unexpected full preferences: %+v", prefs)
+		}
 	}
-	if !setResp.JSON200.InteractionEnabled || !setResp.JSON200.ReplyEnabled || setResp.JSON200.LikeEnabled {
-		t.Fatalf("unexpected preferences after disabling likes: %+v", setResp.JSON200)
-	}
+	setResp, err := client.SetPreferencesWithResponse(ctx, opts, sdk.SetPreferencesJSONRequestBody{LikeEnabled: &off})
+	assertPreferences(setResp, err, true, true, false)
 
 	likeEvent := delivery("like-suppressed", "interaction")
 	likeEvent.TitleKey = "notifications.interaction.like"
@@ -70,11 +78,8 @@ func TestGranularReplyAndLikePreferencesAndLegacyCompatibility(t *testing.T) {
 	}
 
 	// Now flip: enable likes, disable replies.
-	on := true
-	setResp, err = client.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{ReplyEnabled: &off, LikeEnabled: &on})
-	if err != nil || setResp.StatusCode() != 200 || !setResp.JSON200.InteractionEnabled || setResp.JSON200.ReplyEnabled || !setResp.JSON200.LikeEnabled {
-		t.Fatalf("unexpected preferences after flipping: %+v, err=%v", setResp.JSON200, err)
-	}
+	setResp, err = client.SetPreferencesWithResponse(ctx, opts, sdk.SetPreferencesJSONRequestBody{ReplyEnabled: &off, LikeEnabled: &on})
+	assertPreferences(setResp, err, true, false, true)
 	replyBlocked := delivery("reply-suppressed", "interaction")
 	replyBlocked.TitleKey = "notifications.interaction.reply"
 	if res := deliver(t, f, replyBlocked); res.Recipients[0].SuppressionReason != n.SuppressionInteractionDisabled {
@@ -87,15 +92,25 @@ func TestGranularReplyAndLikePreferencesAndLegacyCompatibility(t *testing.T) {
 	}
 
 	// Disabling the remaining granular flag sets interaction_enabled to false.
-	setResp, err = client.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{LikeEnabled: &off})
-	if err != nil || setResp.StatusCode() != 200 || setResp.JSON200.InteractionEnabled || setResp.JSON200.ReplyEnabled || setResp.JSON200.LikeEnabled {
-		t.Fatalf("expected all flags false: %+v, err=%v", setResp.JSON200, err)
-	}
+	setResp, err = client.SetPreferencesWithResponse(ctx, opts, sdk.SetPreferencesJSONRequestBody{LikeEnabled: &off})
+	assertPreferences(setResp, err, false, false, false)
 
-	// Legacy PUT {"interaction_enabled": true} re-enables both reply and like.
-	setResp, err = client.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{InteractionEnabled: &on})
-	if err != nil || setResp.StatusCode() != 200 || !setResp.JSON200.InteractionEnabled || !setResp.JSON200.ReplyEnabled || !setResp.JSON200.LikeEnabled {
-		t.Fatalf("legacy master enable failed: %+v, err=%v", setResp.JSON200, err)
+	// The published clients reject extra keys in either preferences response.
+	rawPrefs, err := client.GetPreferencesWithResponse(ctx, nil)
+	if err != nil || rawPrefs == nil || rawPrefs.StatusCode() != http.StatusOK ||
+		strings.TrimSpace(string(rawPrefs.Body)) != `{"interaction_enabled":false}` {
+		t.Fatalf("legacy preference read failed: response=%+v err=%v", rawPrefs, err)
+	}
+	setResp, err = client.SetPreferencesWithResponse(ctx, nil, sdk.SetPreferencesJSONRequestBody{InteractionEnabled: &on})
+	if err != nil || setResp == nil || setResp.StatusCode() != http.StatusOK ||
+		strings.TrimSpace(string(setResp.Body)) != `{"interaction_enabled":true}` {
+		t.Fatalf("legacy master enable failed: response=%+v err=%v", setResp, err)
+	}
+	fullPrefs, err := client.GetPreferencesWithResponse(ctx, &sdk.GetPreferencesParams{IncludeExtended: &on})
+	if err != nil || fullPrefs == nil || fullPrefs.StatusCode() != http.StatusOK || fullPrefs.JSON200 == nil ||
+		!fullPrefs.JSON200.InteractionEnabled || fullPrefs.JSON200.ReplyEnabled == nil || !*fullPrefs.JSON200.ReplyEnabled ||
+		fullPrefs.JSON200.LikeEnabled == nil || !*fullPrefs.JSON200.LikeEnabled {
+		t.Fatalf("legacy master update did not enable both switches: response=%+v err=%v", fullPrefs, err)
 	}
 
 	// Reject contradictory, null, empty, and unknown payloads without altering state.

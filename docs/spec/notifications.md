@@ -27,7 +27,7 @@ notifications 拥有站内通知、互动偏好、投递回执、修订和账号
 | 方法 | 路径 | 行为 |
 | --- | --- | --- |
 | GET | `/api/v1/notifications` | 按条件分页列出未到期通知 |
-| GET | `/api/v1/notifications/unread-count` | 统计未到期的未读通知，返回总数、按分箱及按类型的数量 |
+| GET | `/api/v1/notifications/unread-count` | 返回未到期的未读总数，扩展模式同时按分箱及类型统计 |
 | POST | `/api/v1/notifications/{id}/read` | 标记一条未到期的通知已读 |
 | POST | `/api/v1/notifications/read-all` | 按可选分箱、通知类型标记未到期的通知已读 |
 | DELETE | `/api/v1/notifications/{id}` | 删除本人一条通知 |
@@ -45,9 +45,17 @@ notifications 拥有站内通知、互动偏好、投递回执、修订和账号
 
 通知 ID 与游标中的 ID 均使用标准带连字符的 UUID。ID 格式无效、查询参数未知或重复时返回 400。未声明的路径返回 404，204 响应省略 Content-Type。
 
+### 兼容模式
+
+列表、未读数和批量标记已读共用同一通知范围。默认范围包含 v0.1.2 已发布的标题键和目标类型。传 `include_extended=true` 时使用完整目录，返回分箱和分类型未读数，并允许标题附带 `reason_code`。续页使用与首页相同的范围。
+
+两个布尔参数独立控制响应。`include_content_names=true` 仍返回允许的名称和名称状态。当 `include_extended` 亦为 `true` 时，可访问的评论目标还可返回根评价 ID `context_id`。批量标记已读时，客户端传与列表一致的 `include_extended`。
+
 ## 互动偏好与聚合
 
 评论回复（`reply_enabled`）与点赞（`like_enabled`）默认开启，可独立更新。只提交 `interaction_enabled` 时同步设置两个开关。更新任一细项时，总开关值为两个细项的逻辑或。混合提交且总值不一致时返回 400。
+
+偏好 GET 和 PUT 默认只返回 `interaction_enabled`。传 `include_extended=true` 后，响应同时返回两项独立偏好的当前值。
 
 业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，关闭开关后开始的投递按新偏好处理。读取偏好时直接返回当前值或默认值。
 
@@ -89,6 +97,8 @@ OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目�
 | notifications.teacher_verification.approved | business | teacher_application | application_id |
 | notifications.teacher_verification.rejected | business | teacher_application | application_id |
 | notifications.teacher_verification.supplement_required | business | teacher_application | application_id |
+| notifications.teacher_homepage_request.approved | business | teacher_homepage_request | request_id |
+| notifications.teacher_homepage_request.rejected | business | teacher_homepage_request | request_id |
 | notifications.student_verification.revoked | account | verification_credential | credential_id |
 | notifications.group_membership.grace_expiring | business | group_membership | group_id |
 | notifications.storage_contribution.exit_completed | business | storage_contribution | contribution_id |
@@ -113,6 +123,7 @@ target.id 是对应模块对象的原始 ID，title_params 是用于显示的业
 | moderation_appeal | moderation 的处置申诉复核记录，进入本人申诉结果 |
 | verification_application | verification 的学生认证 Application，进入本人申请详情 |
 | teacher_application | verification 的教师认证 Application，进入本人教师申请详情 |
+| teacher_homepage_request | catalog 的教师主页更正申请，进入本人申请详情 |
 | verification_credential | verification 的学生 Credential，进入本人认证记录 |
 | verification_removal_request | verification 的 RemovalRequest，进入本人撤销或删除申请结果 |
 | verification_operation | verification 的 Operation，进入本人实名核验操作结果 |
@@ -213,9 +224,13 @@ content_name_state 为 available 时，content_name 为当前评价标题或资�
 
 读取参数由 x-title-catalog 的 read_parameters 声明，生产者参数仍由 parameters 与 optional_parameters 封闭校验。旧客户端继续使用编号参数，新客户端按名称状态选择可读标题或占位文案。
 
-可访问的 comment 目标在标题目录允许时附带有效的根评价 ID `context_id`，供客户端构造直达路由。
-
 HTTP 的 `include_content_names` 只接受单个 `true` 或 `false`，默认 `false`。Go 调用方使用 `ListWithContentNames` 启用标题扩展。
+
+## 教师主页申请通知
+
+Catalog 在审批通过或拒绝时持久化结果事件。站内通知仅发送给原申请账号，标题参数仅保存业务编号 `request_id`。打开详情时，Catalog 检查账号、当前认证和目录教师归属。
+
+该类通知属于业务和审核分箱。客户端在列表、未读统计和批量已读请求传同一个 `include_extended=true`。默认视图保留此前公开的标题和目标范围，扩展通知仍保存在原收件人的通知中心。
 
 ## 验收场景
 
@@ -230,6 +245,7 @@ HTTP 的 `include_content_names` 只接受单个 `true` 或 `false`，默认 `fa
 | NT-07 | 投递匹配封闭标题目录，读取可按权限补充当前标题 |
 | NT-08 | 同一事件重放返回原结果，忽略旧修订，重复点赞不会重复通知 |
 | NT-09 | 同一事件的收件人去重，逐人应用偏好，整批原子写入 |
+| NT-11 | 教师主页决定只进入申请人通知。默认视图过滤扩展项，分页、未读和批量已读范围一致 |
 | PC-07 | 账号注销清理个人通知与偏好，并阻止延迟投递 |
 
 实际测试函数在 [module.yaml](https://github.com/StuHelper/stuhelper-notifications/blob/develop/module.yaml) 的 `scenario_tests` 登记。生产与独立 CI 情况见 [实施与验证](https://github.com/StuHelper/stuhelper-notifications/blob/develop/README.md#实施与验证)。

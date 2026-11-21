@@ -121,11 +121,13 @@ type ListQuery struct {
 	Type                string
 	UnreadOnly          bool
 	IncludeContentNames bool
+	LegacyOnly          bool
 }
 
 type ReadFilter struct {
-	Box  string
-	Type string
+	Box        string
+	Type       string
+	LegacyOnly bool
 }
 
 type Preferences struct {
@@ -189,6 +191,7 @@ type Cursor struct {
 	Box        string    `json:"box,omitempty"`
 	Type       string    `json:"type,omitempty"`
 	UnreadOnly bool      `json:"unread_only,omitempty"`
+	Extended   *bool     `json:"extended,omitempty"`
 }
 type Repository interface {
 	Consume(context.Context, Event, string, time.Time, time.Duration) (Result, error)
@@ -196,6 +199,7 @@ type Repository interface {
 	ListFiltered(context.Context, string, ListQuery, Cursor, int, RetentionCutoffs) ([]Notification, error)
 	Unread(context.Context, string, time.Time) (int64, error)
 	UnreadSummary(context.Context, string, time.Time) (UnreadSummary, error)
+	UnreadSummaryFiltered(context.Context, string, time.Time, bool) (UnreadSummary, error)
 	MarkRead(context.Context, string, string, time.Time, RetentionCutoffs) error
 	MarkAllRead(context.Context, string, time.Time, time.Time) error
 	MarkAllReadFiltered(context.Context, string, ReadFilter, time.Time, time.Time) error

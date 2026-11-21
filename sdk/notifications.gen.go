@@ -1665,6 +1665,7 @@ const (
 	TargetKindReview                     TargetKind = "review"
 	TargetKindStorageContribution        TargetKind = "storage_contribution"
 	TargetKindTeacherApplication         TargetKind = "teacher_application"
+	TargetKindTeacherHomepageRequest     TargetKind = "teacher_homepage_request"
 	TargetKindVerificationApplication    TargetKind = "verification_application"
 	TargetKindVerificationCredential     TargetKind = "verification_credential"
 	TargetKindVerificationOperation      TargetKind = "verification_operation"
@@ -1694,6 +1695,8 @@ func (e TargetKind) Valid() bool {
 		return true
 	case TargetKindTeacherApplication:
 		return true
+	case TargetKindTeacherHomepageRequest:
+		return true
 	case TargetKindVerificationApplication:
 		return true
 	case TargetKindVerificationCredential:
@@ -1701,6 +1704,96 @@ func (e TargetKind) Valid() bool {
 	case TargetKindVerificationOperation:
 		return true
 	case TargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestApprovedTitlePayloadTargetKind.
+const (
+	TeacherHomepageRequestApprovedTitlePayloadTargetKindTeacherHomepageRequest TeacherHomepageRequestApprovedTitlePayloadTargetKind = "teacher_homepage_request"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestApprovedTitlePayloadTargetKind enum.
+func (e TeacherHomepageRequestApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestApprovedTitlePayloadTargetKindTeacherHomepageRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestApprovedTitlePayloadTitleKey.
+const (
+	TeacherHomepageRequestApprovedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestApproved TeacherHomepageRequestApprovedTitlePayloadTitleKey = "notifications.teacher_homepage_request.approved"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestApprovedTitlePayloadTitleKey enum.
+func (e TeacherHomepageRequestApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestApprovedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestApprovedTitlePayloadType.
+const (
+	TeacherHomepageRequestApprovedTitlePayloadTypeBusiness TeacherHomepageRequestApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestApprovedTitlePayloadType enum.
+func (e TeacherHomepageRequestApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestRejectedTitlePayloadTargetKind.
+const (
+	TeacherHomepageRequestRejectedTitlePayloadTargetKindTeacherHomepageRequest TeacherHomepageRequestRejectedTitlePayloadTargetKind = "teacher_homepage_request"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestRejectedTitlePayloadTargetKind enum.
+func (e TeacherHomepageRequestRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestRejectedTitlePayloadTargetKindTeacherHomepageRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestRejectedTitlePayloadTitleKey.
+const (
+	TeacherHomepageRequestRejectedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestRejected TeacherHomepageRequestRejectedTitlePayloadTitleKey = "notifications.teacher_homepage_request.rejected"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestRejectedTitlePayloadTitleKey enum.
+func (e TeacherHomepageRequestRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestRejectedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestRejectedTitlePayloadType.
+const (
+	TeacherHomepageRequestRejectedTitlePayloadTypeBusiness TeacherHomepageRequestRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestRejectedTitlePayloadType enum.
+func (e TeacherHomepageRequestRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestRejectedTitlePayloadTypeBusiness:
 		return true
 	default:
 		return false
@@ -1870,6 +1963,8 @@ const (
 	TitleKeyNotificationsSystemAccount                         TitleKey = "notifications.system.account"
 	TitleKeyNotificationsSystemNotice                          TitleKey = "notifications.system.notice"
 	TitleKeyNotificationsSystemSecurity                        TitleKey = "notifications.system.security"
+	TitleKeyNotificationsTeacherHomepageRequestApproved        TitleKey = "notifications.teacher_homepage_request.approved"
+	TitleKeyNotificationsTeacherHomepageRequestRejected        TitleKey = "notifications.teacher_homepage_request.rejected"
 	TitleKeyNotificationsTeacherVerificationApproved           TitleKey = "notifications.teacher_verification.approved"
 	TitleKeyNotificationsTeacherVerificationRejected           TitleKey = "notifications.teacher_verification.rejected"
 	TitleKeyNotificationsTeacherVerificationSupplementRequired TitleKey = "notifications.teacher_verification.supplement_required"
@@ -1933,6 +2028,10 @@ func (e TitleKey) Valid() bool {
 	case TitleKeyNotificationsSystemNotice:
 		return true
 	case TitleKeyNotificationsSystemSecurity:
+		return true
+	case TitleKeyNotificationsTeacherHomepageRequestApproved:
+		return true
+	case TitleKeyNotificationsTeacherHomepageRequestRejected:
 		return true
 	case TitleKeyNotificationsTeacherVerificationApproved:
 		return true
@@ -2608,12 +2707,12 @@ type Notification struct {
 	// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 	TitleKey TitleKey `json:"title_key"`
 
-	// TitleParams 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。
+	// TitleParams 业务编号由标题键决定。include_content_names=true 时可返回当前权限下的 content_name 和 content_name_state。reason_code 和 comment 目标的 context_id 仅在 include_extended=true 时可返回，context_id 还要求 include_content_names=true。各字段见 x-title-catalog。
 	TitleParams map[string]string `json:"title_params"`
 	Type        NotificationType  `json:"type"`
 
 	// UpdatedAt 最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。
-	UpdatedAt time.Time `json:"updated_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 	union     json.RawMessage
 }
 
@@ -2634,11 +2733,11 @@ type Preferences struct {
 	// InteractionEnabled 互动通知总状态；当 reply_enabled 或 like_enabled 任一为 true 时为 true。
 	InteractionEnabled bool `json:"interaction_enabled"`
 
-	// LikeEnabled 点赞通知独立开关，默认 true。
-	LikeEnabled bool `json:"like_enabled"`
+	// LikeEnabled 点赞通知独立开关，默认 true。include_extended=true 时返回。
+	LikeEnabled *bool `json:"like_enabled,omitempty"`
 
-	// ReplyEnabled 评论回复通知独立开关，默认 true。
-	ReplyEnabled bool `json:"reply_enabled"`
+	// ReplyEnabled 评论回复通知独立开关，默认 true。include_extended=true 时返回。
+	ReplyEnabled *bool `json:"reply_enabled,omitempty"`
 }
 
 // PreferencesUpdate defines model for PreferencesUpdate.
@@ -2992,6 +3091,52 @@ type Target struct {
 // TargetKind defines model for Target.Kind.
 type TargetKind string
 
+// TeacherHomepageRequestApprovedTitlePayload 教师主页修改申请已通过
+type TeacherHomepageRequestApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                               `json:"id"`
+		Kind TeacherHomepageRequestApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    TeacherHomepageRequestApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type TeacherHomepageRequestApprovedTitlePayloadType `json:"type"`
+}
+
+// TeacherHomepageRequestApprovedTitlePayloadTargetKind defines model for TeacherHomepageRequestApprovedTitlePayload.Target.Kind.
+type TeacherHomepageRequestApprovedTitlePayloadTargetKind string
+
+// TeacherHomepageRequestApprovedTitlePayloadTitleKey defines model for TeacherHomepageRequestApprovedTitlePayload.TitleKey.
+type TeacherHomepageRequestApprovedTitlePayloadTitleKey string
+
+// TeacherHomepageRequestApprovedTitlePayloadType defines model for TeacherHomepageRequestApprovedTitlePayload.Type.
+type TeacherHomepageRequestApprovedTitlePayloadType string
+
+// TeacherHomepageRequestRejectedTitlePayload 教师主页修改申请未通过
+type TeacherHomepageRequestRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                               `json:"id"`
+		Kind TeacherHomepageRequestRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    TeacherHomepageRequestRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type TeacherHomepageRequestRejectedTitlePayloadType `json:"type"`
+}
+
+// TeacherHomepageRequestRejectedTitlePayloadTargetKind defines model for TeacherHomepageRequestRejectedTitlePayload.Target.Kind.
+type TeacherHomepageRequestRejectedTitlePayloadTargetKind string
+
+// TeacherHomepageRequestRejectedTitlePayloadTitleKey defines model for TeacherHomepageRequestRejectedTitlePayload.TitleKey.
+type TeacherHomepageRequestRejectedTitlePayloadTitleKey string
+
+// TeacherHomepageRequestRejectedTitlePayloadType defines model for TeacherHomepageRequestRejectedTitlePayload.Type.
+type TeacherHomepageRequestRejectedTitlePayloadType string
+
 // TeacherVerificationApprovedTitlePayload 教师认证通过
 type TeacherVerificationApprovedTitlePayload struct {
 	Target struct {
@@ -3070,11 +3215,11 @@ type TeacherVerificationSupplementRequiredTitlePayloadType string
 // TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 type TitleKey string
 
-// Unread defines model for Unread.
+// Unread 默认只有未读总数。传 include_extended=true 时同时返回按通知盒和类型统计的数量。
 type Unread struct {
-	ByBox  UnreadByBox  `json:"by_box"`
-	ByType UnreadByType `json:"by_type"`
-	Count  int64        `json:"count"`
+	ByBox  *UnreadByBox  `json:"by_box,omitempty"`
+	ByType *UnreadByType `json:"by_type,omitempty"`
+	Count  int64         `json:"count"`
 }
 
 // UnreadByBox defines model for UnreadByBox.
@@ -3191,6 +3336,9 @@ type VerificationRevocationRejectedTitlePayloadTitleKey string
 // VerificationRevocationRejectedTitlePayloadType defines model for VerificationRevocationRejectedTitlePayload.Type.
 type VerificationRevocationRejectedTitlePayloadType string
 
+// IncludeExtended defines model for IncludeExtended.
+type IncludeExtended = bool
+
 // ListNotificationsParams defines parameters for ListNotifications.
 type ListNotificationsParams struct {
 	// Cursor 不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。
@@ -3199,6 +3347,9 @@ type ListNotificationsParams struct {
 
 	// IncludeContentNames 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。
 	IncludeContentNames *bool `form:"include_content_names,omitempty" json:"include_content_names,omitempty"`
+
+	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
+	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
 
 	// Box 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。
 	Box *Box `form:"box,omitempty" json:"box,omitempty"`
@@ -3213,9 +3364,24 @@ type ListNotificationsParams struct {
 // ListNotificationsParamsType defines parameters for ListNotifications.
 type ListNotificationsParamsType string
 
+// GetPreferencesParams defines parameters for GetPreferences.
+type GetPreferencesParams struct {
+	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
+	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
+}
+
+// SetPreferencesParams defines parameters for SetPreferences.
+type SetPreferencesParams struct {
+	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
+	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
+}
+
 // MarkAllReadParams defines parameters for MarkAllRead.
 type MarkAllReadParams struct {
-	// Box 可选按分箱批量标为已读。省略时包含所有分箱。
+	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
+	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
+
+	// Box 可选按分箱批量标为已读。省略时处理当前客户端范围内的全部分箱。
 	Box *Box `form:"box,omitempty" json:"box,omitempty"`
 
 	// Type 可选按通知类别批量标为已读。
@@ -3224,6 +3390,12 @@ type MarkAllReadParams struct {
 
 // MarkAllReadParamsType defines parameters for MarkAllRead.
 type MarkAllReadParamsType string
+
+// GetUnreadCountParams defines parameters for GetUnreadCount.
+type GetUnreadCountParams struct {
+	// IncludeExtended 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。
+	IncludeExtended *IncludeExtended `form:"include_extended,omitempty" json:"include_extended,omitempty"`
+}
 
 // SetPreferencesJSONRequestBody defines body for SetPreferences for application/json ContentType.
 type SetPreferencesJSONRequestBody = PreferencesUpdate
@@ -4008,6 +4180,58 @@ func (t *Notification) MergeBillingRefundRejectedTitlePayload(v BillingRefundRej
 	return err
 }
 
+// AsTeacherHomepageRequestApprovedTitlePayload returns the union data inside the Notification as a TeacherHomepageRequestApprovedTitlePayload
+func (t Notification) AsTeacherHomepageRequestApprovedTitlePayload() (TeacherHomepageRequestApprovedTitlePayload, error) {
+	var body TeacherHomepageRequestApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTeacherHomepageRequestApprovedTitlePayload overwrites any union data inside the Notification as the provided TeacherHomepageRequestApprovedTitlePayload
+func (t *Notification) FromTeacherHomepageRequestApprovedTitlePayload(v TeacherHomepageRequestApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTeacherHomepageRequestApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided TeacherHomepageRequestApprovedTitlePayload
+func (t *Notification) MergeTeacherHomepageRequestApprovedTitlePayload(v TeacherHomepageRequestApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsTeacherHomepageRequestRejectedTitlePayload returns the union data inside the Notification as a TeacherHomepageRequestRejectedTitlePayload
+func (t Notification) AsTeacherHomepageRequestRejectedTitlePayload() (TeacherHomepageRequestRejectedTitlePayload, error) {
+	var body TeacherHomepageRequestRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTeacherHomepageRequestRejectedTitlePayload overwrites any union data inside the Notification as the provided TeacherHomepageRequestRejectedTitlePayload
+func (t *Notification) FromTeacherHomepageRequestRejectedTitlePayload(v TeacherHomepageRequestRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTeacherHomepageRequestRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided TeacherHomepageRequestRejectedTitlePayload
+func (t *Notification) MergeTeacherHomepageRequestRejectedTitlePayload(v TeacherHomepageRequestRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsSystemNoticeTitlePayload returns the union data inside the Notification as a SystemNoticeTitlePayload
 func (t Notification) AsSystemNoticeTitlePayload() (SystemNoticeTitlePayload, error) {
 	var body SystemNoticeTitlePayload
@@ -4151,11 +4375,12 @@ func (t Notification) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error marshaling 'type': %w", err)
 	}
 
-	object["updated_at"], err = json.Marshal(t.UpdatedAt)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'updated_at': %w", err)
+	if t.UpdatedAt != nil {
+		object["updated_at"], err = json.Marshal(t.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'updated_at': %w", err)
+		}
 	}
-
 	b, err = json.Marshal(object)
 	return b, err
 }
@@ -4331,15 +4556,21 @@ type ClientInterface interface {
 	ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetPreferences performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
-	GetPreferences(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	//
+	// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
+	GetPreferences(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SetPreferencesWithBody performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 	// with any type of body and a specified content type.
-	SetPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	//
+	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+	SetPreferencesWithBody(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SetPreferences performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 	// Takes a body of the `application/json` content type.
-	SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	//
+	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+	SetPreferences(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 	//
@@ -4349,7 +4580,7 @@ type ClientInterface interface {
 	// GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 	//
 	// 统计本人未到保留期限的未读通知。.
-	GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetUnreadCount(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNotification performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
 	DeleteNotification(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4376,8 +4607,10 @@ func (c *Client) ListNotifications(ctx context.Context, params *ListNotification
 }
 
 // GetPreferences performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
-func (c *Client) GetPreferences(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPreferencesRequest(c.Server)
+//
+// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
+func (c *Client) GetPreferences(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPreferencesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -4390,8 +4623,10 @@ func (c *Client) GetPreferences(ctx context.Context, reqEditors ...RequestEditor
 
 // SetPreferencesWithBody performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 // with any type of body and a specified content type.
-func (c *Client) SetPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSetPreferencesRequestWithBody(c.Server, contentType, body)
+//
+// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+func (c *Client) SetPreferencesWithBody(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetPreferencesRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4404,8 +4639,10 @@ func (c *Client) SetPreferencesWithBody(ctx context.Context, contentType string,
 
 // SetPreferences performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 // Takes a body of the `application/json` content type.
-func (c *Client) SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSetPreferencesRequest(c.Server, body)
+//
+// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+func (c *Client) SetPreferences(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetPreferencesRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4434,8 +4671,8 @@ func (c *Client) MarkAllRead(ctx context.Context, params *MarkAllReadParams, req
 // GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
 //
 // 统计本人未到保留期限的未读通知。.
-func (c *Client) GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetUnreadCountRequest(c.Server)
+func (c *Client) GetUnreadCount(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUnreadCountRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -4538,6 +4775,18 @@ func NewListNotificationsRequest(server string, params *ListNotificationsParams)
 
 		}
 
+		if params.IncludeExtended != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.Box != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -4589,7 +4838,7 @@ func NewListNotificationsRequest(server string, params *ListNotificationsParams)
 }
 
 // NewGetPreferencesRequest constructs an http.Request for the GetPreferences method
-func NewGetPreferencesRequest(server string) (*http.Request, error) {
+func NewGetPreferencesRequest(server string, params *GetPreferencesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4605,6 +4854,33 @@ func NewGetPreferencesRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.IncludeExtended != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -4616,18 +4892,18 @@ func NewGetPreferencesRequest(server string) (*http.Request, error) {
 }
 
 // NewSetPreferencesRequest calls the generic SetPreferences builder with application/json body
-func NewSetPreferencesRequest(server string, body SetPreferencesJSONRequestBody) (*http.Request, error) {
+func NewSetPreferencesRequest(server string, params *SetPreferencesParams, body SetPreferencesJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewSetPreferencesRequestWithBody(server, "application/json", bodyReader)
+	return NewSetPreferencesRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewSetPreferencesRequestWithBody constructs an http.Request for the SetPreferences method, with any body, and a specified content type
-func NewSetPreferencesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewSetPreferencesRequestWithBody(server string, params *SetPreferencesParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4643,6 +4919,33 @@ func NewSetPreferencesRequestWithBody(server string, contentType string, body io
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.IncludeExtended != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
@@ -4683,6 +4986,18 @@ func NewMarkAllReadRequest(server string, params *MarkAllReadParams) (*http.Requ
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
 
+		if params.IncludeExtended != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.Box != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -4722,7 +5037,7 @@ func NewMarkAllReadRequest(server string, params *MarkAllReadParams) (*http.Requ
 }
 
 // NewGetUnreadCountRequest constructs an http.Request for the GetUnreadCount method
-func NewGetUnreadCountRequest(server string) (*http.Request, error) {
+func NewGetUnreadCountRequest(server string, params *GetUnreadCountParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4738,6 +5053,33 @@ func NewGetUnreadCountRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.IncludeExtended != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_extended", *params.IncludeExtended, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -4869,18 +5211,24 @@ type ClientWithResponsesInterface interface {
 
 	// GetPreferencesWithResponse performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
 	//
+	// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
+	//
 	// Returns a wrapper object for the known response body format(s).
-	GetPreferencesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error)
+	GetPreferencesWithResponse(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error)
 
 	// SetPreferencesWithBodyWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 	// with any type of body and a specified content type.
 	//
+	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+	//
 	// Returns a wrapper object for the known response body format(s).
-	SetPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
+	SetPreferencesWithBodyWithResponse(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
 
 	// SetPreferencesWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-	SetPreferencesWithResponse(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
+	//
+	// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+	SetPreferencesWithResponse(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
 
 	// MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 	//
@@ -4894,7 +5242,7 @@ type ClientWithResponsesInterface interface {
 	// 统计本人未到保留期限的未读通知。.
 	//
 	// Returns a wrapper object for the known response body format(s).
-	GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error)
+	GetUnreadCountWithResponse(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error)
 
 	// DeleteNotificationWithResponse performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
 	//
@@ -5435,9 +5783,11 @@ func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context,
 
 // GetPreferencesWithResponse performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
 //
+// 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。.
+//
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error) {
-	rsp, err := c.GetPreferences(ctx, reqEditors...)
+func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, params *GetPreferencesParams, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error) {
+	rsp, err := c.GetPreferences(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5447,9 +5797,11 @@ func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, re
 // SetPreferencesWithBodyWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 // with any type of body and a specified content type.
 //
+// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+//
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
-	rsp, err := c.SetPreferencesWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Context, params *SetPreferencesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
+	rsp, err := c.SetPreferencesWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5458,8 +5810,10 @@ func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Con
 
 // SetPreferencesWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
-	rsp, err := c.SetPreferences(ctx, body, reqEditors...)
+//
+// 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。.
+func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, params *SetPreferencesParams, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
+	rsp, err := c.SetPreferences(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5484,8 +5838,8 @@ func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, param
 // 统计本人未到保留期限的未读通知。.
 //
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error) {
-	rsp, err := c.GetUnreadCount(ctx, reqEditors...)
+func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, params *GetUnreadCountParams, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error) {
+	rsp, err := c.GetUnreadCount(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

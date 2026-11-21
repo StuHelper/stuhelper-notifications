@@ -87,7 +87,7 @@ func BoxForTitleKey(titleKey string) string {
 	switch {
 	case subject == "interaction":
 		return BoxInteraction
-	case subject == "content" || subject == "resource_removal" || subject == "report" || subject == "appeal":
+	case subject == "content" || subject == "resource_removal" || subject == "report" || subject == "appeal" || subject == "teacher_homepage_request":
 		return BoxReview
 	case strings.HasSuffix(subject, "_verification") || strings.HasPrefix(subject, "verification_"):
 		return BoxVerification

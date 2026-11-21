@@ -174,7 +174,7 @@ func TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	prefs, err := client.GetPreferencesWithResponse(ctx)
+	prefs, err := client.GetPreferencesWithResponse(ctx, nil)
 	if err != nil || prefs.JSON403 == nil || prefs.JSON403.Code != "forbidden" {
 		t.Fatalf("SDK closed account response: %+v %v", prefs, err)
 	}
