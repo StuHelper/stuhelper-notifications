@@ -46,12 +46,12 @@ bash scripts/check-with-postgres.sh
 
 ### 配置
 
-Backend 使用 `read_retention_seconds` 和 `unread_retention_seconds` 配置期限，默认分别为 15552000 秒和 31536000 秒。下表为模块的 Go `Config` 字段。
+Backend 使用 `read_retention_seconds` 和 `unread_retention_seconds` 配置各自期限。某项未配置时沿用 `retention_seconds`（默认 90 日），超出该项上限时取上限。下表列出模块的 Go `Config` 字段。
 
 | 字段 | 条件与用途 |
 | --- | --- |
-| `ReadRetention` | 大于零且最多 180 日，首次标为已读后起算，Backend 默认 180 日 |
-| `UnreadRetention` | 大于零且最多 365 日，从创建起算，Backend 默认 365 日 |
+| `ReadRetention` | 大于零且最多 180 日，从首次标为已读起算 |
+| `UnreadRetention` | 大于零且最多 365 日，从创建起算 |
 | `AggregationWindow` | 正时长且不超过 `UnreadRetention`，限制互动聚合窗口 |
 | `CleanupBatch` | 1 至 10000，每批清理条数上限 |
 | `ResolveTimeout` | 正时长，限制每次目标解析调用 |
@@ -66,7 +66,9 @@ StuHelper v0.1.31 已启用站内通知。Backend v0.1.46 固定本模块的 Go 
 
 ### 源码与持续集成
 
-develop 提供分箱筛选、按类别统计、回复与点赞独立偏好、最近动态排序及单条删除。Go 发布标签和 OpenAPI 版本分别记录，消费方按锁定源码生成 SDK。两套契约的版本号均为 0.3.1。通知条目按已读与未读分别到期，PostgreSQL 场景覆盖 v0.1.2 旧表迁移、期限边界、主动删除、并发清理和失败重试。
+develop 的 OpenAPI 0.4.0 通过扩展模式提供教师主页申请结果、分箱统计及回复和点赞的独立偏好。默认读取保持与 v0.1.2 的兼容。消费方按锁定源码生成 SDK。
+
+通知条目按已读与未读分别到期。PostgreSQL 场景覆盖 v0.1.2 旧表迁移、期限边界、主动删除、并发清理和失败重试。
 
 develop 源码 `b9be6e7` 已通过隔离 PostgreSQL 的 Notifications checks。测试覆盖用例见 [场景登记](docs/spec/notifications.md#验收场景)。见 [CI 运行](https://github.com/StuHelper/stuhelper-notifications/actions/runs/44604785405)。
 

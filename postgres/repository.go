@@ -382,6 +382,9 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 	}
 	clauses := []string{"owner=$1"}
 	args := []any{owner}
+	if q.LegacyOnly {
+		clauses, args = legacyFilter(clauses, args)
+	}
 	if q.Box != "" {
 		args = append(args, q.Box)
 		clauses = append(clauses, fmt.Sprintf("box=$%d", len(args)))
@@ -406,7 +409,7 @@ func (r *Repository) ListFiltered(ctx context.Context, owner string, q n.ListQue
 	}
 	args = append(args, limit)
 	query := fmt.Sprintf("SELECT id,type,source_module,target_kind,target_id,title_key,title_params,created_at,updated_at,read_at,count FROM notifications.items WHERE %s ORDER BY updated_at DESC,id DESC LIMIT $%d", strings.Join(clauses, " AND "), len(args))
-	if q.Box == "" && q.Type == "" && !q.UnreadOnly {
+	if q.Box == "" && q.Type == "" && !q.UnreadOnly && !q.LegacyOnly {
 		if c.ID == "" {
 			query = ListFirstPageQuery
 		} else {
@@ -436,7 +439,17 @@ func (r *Repository) Unread(ctx context.Context, owner string, unreadCutoff time
 	summary, e := r.UnreadSummary(ctx, owner, unreadCutoff)
 	return summary.Count, e
 }
+
+func legacyFilter(clauses []string, args []any) ([]string, []any) {
+	args = append(args, n.LegacyTitleKeys(), n.LegacyTargetKinds())
+	return append(clauses, fmt.Sprintf("title_key=ANY($%d::text[]) AND target_kind=ANY($%d::text[])", len(args)-1, len(args))), args
+}
+
 func (r *Repository) UnreadSummary(ctx context.Context, owner string, unreadCutoff time.Time) (n.UnreadSummary, error) {
+	return r.UnreadSummaryFiltered(ctx, owner, unreadCutoff, false)
+}
+
+func (r *Repository) UnreadSummaryFiltered(ctx context.Context, owner string, unreadCutoff time.Time, legacyOnly bool) (n.UnreadSummary, error) {
 	db, e := r.db()
 	if e != nil {
 		return n.UnreadSummary{}, e
@@ -444,7 +457,11 @@ func (r *Repository) UnreadSummary(ctx context.Context, owner string, unreadCuto
 	if e = r.ensureOpenOwner(ctx, owner); e != nil {
 		return n.UnreadSummary{}, e
 	}
-	rows, e := db.QueryContext(ctx, `SELECT box,type,count(*) FROM notifications.items WHERE owner=$1 AND read_at IS NULL AND created_at > $2 GROUP BY box,type`, owner, unreadCutoff)
+	clauses, args := []string{"owner=$1", "read_at IS NULL", "created_at > $2"}, []any{owner, unreadCutoff}
+	if legacyOnly {
+		clauses, args = legacyFilter(clauses, args)
+	}
+	rows, e := db.QueryContext(ctx, `SELECT box,type,count(*) FROM notifications.items WHERE `+strings.Join(clauses, " AND ")+` GROUP BY box,type`, args...)
 	if e != nil {
 		return n.UnreadSummary{}, safe(e)
 	}
@@ -537,6 +554,9 @@ func (r *Repository) MarkAllReadFiltered(ctx context.Context, owner string, filt
 	}
 	clauses := []string{"owner=$1", "read_at IS NULL", "created_at > $3"}
 	args := []any{owner, now, unreadCutoff}
+	if filter.LegacyOnly {
+		clauses, args = legacyFilter(clauses, args)
+	}
 	if filter.Box != "" {
 		args = append(args, filter.Box)
 		clauses = append(clauses, fmt.Sprintf("box=$%d", len(args)))

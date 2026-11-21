@@ -110,18 +110,18 @@ func TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes(t *testing.T) {
 		t.Fatalf("expected Cache-Control no-store, got %q", cc)
 	}
 
-	unreadResp, err := authedClient.GetUnreadCountWithResponse(ctx)
+	unreadResp, err := authedClient.GetUnreadCountWithResponse(ctx, nil)
 	if err != nil || unreadResp.StatusCode() != http.StatusOK || unreadResp.JSON200 == nil || unreadResp.JSON200.Count != 0 {
 		t.Fatalf("SDK GetUnreadCount failed: %+v err=%v", unreadResp.JSON200, err)
 	}
 
-	prefsResp, err := authedClient.GetPreferencesWithResponse(ctx)
+	prefsResp, err := authedClient.GetPreferencesWithResponse(ctx, nil)
 	if err != nil || prefsResp.StatusCode() != http.StatusOK || prefsResp.JSON200 == nil || !prefsResp.JSON200.InteractionEnabled {
 		t.Fatalf("SDK GetPreferences failed: %+v err=%v", prefsResp.JSON200, err)
 	}
 
 	disabled := false
-	setResp, err := authedClient.SetPreferencesWithResponse(ctx, sdk.SetPreferencesJSONRequestBody{InteractionEnabled: &disabled})
+	setResp, err := authedClient.SetPreferencesWithResponse(ctx, nil, sdk.SetPreferencesJSONRequestBody{InteractionEnabled: &disabled})
 	if err != nil || setResp.StatusCode() != http.StatusOK || setResp.JSON200 == nil || setResp.JSON200.InteractionEnabled {
 		t.Fatalf("SDK SetPreferences failed: %+v err=%v", setResp.JSON200, err)
 	}

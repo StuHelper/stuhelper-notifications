@@ -99,7 +99,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description 默认仅返回互动通知总开关。传 include_extended=true 同时返回回复与点赞的独立偏好。 */
         get: operations["getPreferences"];
+        /** @description 只提交 interaction_enabled 时，同步更新回复与点赞开关。支持提交单项更新。传 include_extended=true 时，响应同时返回两个单项当前值。 */
         put: operations["setPreferences"];
         post?: never;
         delete?: never;
@@ -114,7 +116,7 @@ export interface components {
     schemas: {
         Target: {
             /** @enum {string} */
-            kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
+            kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order" | "teacher_homepage_request";
             id: string;
         };
         Notification: {
@@ -125,7 +127,7 @@ export interface components {
             source_module: string;
             target: components["schemas"]["Target"];
             title_key: components["schemas"]["TitleKey"];
-            /** @description 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。 */
+            /** @description 业务编号由标题键决定。include_content_names=true 时可返回当前权限下的 content_name 和 content_name_state。reason_code 和 comment 目标的 context_id 仅在 include_extended=true 时可返回，context_id 还要求 include_content_names=true。各字段见 x-title-catalog。 */
             title_params: {
                 [key: string]: string;
             };
@@ -135,14 +137,14 @@ export interface components {
              * Format: date-time
              * @description 最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。
              */
-            updated_at: string;
+            updated_at?: string;
             /** Format: date-time */
             read_at: string | null;
             /** @enum {string} */
             target_status: "accessible" | "inaccessible" | "unavailable";
             /** Format: int64 */
             count: number;
-        } & (components["schemas"]["InteractionReplyTitlePayload"] | components["schemas"]["InteractionLikeTitlePayload"] | components["schemas"]["ContentApprovedTitlePayload"] | components["schemas"]["ContentRejectedTitlePayload"] | components["schemas"]["ContentRemovedTitlePayload"] | components["schemas"]["ResourceRemovalApprovedTitlePayload"] | components["schemas"]["ResourceRemovalRejectedTitlePayload"] | components["schemas"]["ReportApprovedTitlePayload"] | components["schemas"]["ReportRejectedTitlePayload"] | components["schemas"]["StudentVerificationApprovedTitlePayload"] | components["schemas"]["StudentVerificationRejectedTitlePayload"] | components["schemas"]["IdentityVerificationApprovedTitlePayload"] | components["schemas"]["IdentityVerificationRejectedTitlePayload"] | components["schemas"]["VerificationRevocationApprovedTitlePayload"] | components["schemas"]["VerificationRevocationRejectedTitlePayload"] | components["schemas"]["VerificationDeletionApprovedTitlePayload"] | components["schemas"]["VerificationDeletionRejectedTitlePayload"] | components["schemas"]["TeacherVerificationApprovedTitlePayload"] | components["schemas"]["TeacherVerificationRejectedTitlePayload"] | components["schemas"]["StudentVerificationRevokedTitlePayload"] | components["schemas"]["ContentDraftExpiringTitlePayload"] | components["schemas"]["StudentVerificationSupplementRequiredTitlePayload"] | components["schemas"]["TeacherVerificationSupplementRequiredTitlePayload"] | components["schemas"]["AppealApprovedTitlePayload"] | components["schemas"]["AppealRejectedTitlePayload"] | components["schemas"]["GroupMembershipGraceExpiringTitlePayload"] | components["schemas"]["StorageContributionExitCompletedTitlePayload"] | components["schemas"]["BillingTopupReviewRequiredTitlePayload"] | components["schemas"]["BillingRefundCompletedTitlePayload"] | components["schemas"]["BillingRefundRejectedTitlePayload"] | components["schemas"]["SystemNoticeTitlePayload"] | components["schemas"]["SystemSecurityTitlePayload"] | components["schemas"]["SystemAccountTitlePayload"]);
+        } & (components["schemas"]["InteractionReplyTitlePayload"] | components["schemas"]["InteractionLikeTitlePayload"] | components["schemas"]["ContentApprovedTitlePayload"] | components["schemas"]["ContentRejectedTitlePayload"] | components["schemas"]["ContentRemovedTitlePayload"] | components["schemas"]["ResourceRemovalApprovedTitlePayload"] | components["schemas"]["ResourceRemovalRejectedTitlePayload"] | components["schemas"]["ReportApprovedTitlePayload"] | components["schemas"]["ReportRejectedTitlePayload"] | components["schemas"]["StudentVerificationApprovedTitlePayload"] | components["schemas"]["StudentVerificationRejectedTitlePayload"] | components["schemas"]["IdentityVerificationApprovedTitlePayload"] | components["schemas"]["IdentityVerificationRejectedTitlePayload"] | components["schemas"]["VerificationRevocationApprovedTitlePayload"] | components["schemas"]["VerificationRevocationRejectedTitlePayload"] | components["schemas"]["VerificationDeletionApprovedTitlePayload"] | components["schemas"]["VerificationDeletionRejectedTitlePayload"] | components["schemas"]["TeacherVerificationApprovedTitlePayload"] | components["schemas"]["TeacherVerificationRejectedTitlePayload"] | components["schemas"]["StudentVerificationRevokedTitlePayload"] | components["schemas"]["ContentDraftExpiringTitlePayload"] | components["schemas"]["StudentVerificationSupplementRequiredTitlePayload"] | components["schemas"]["TeacherVerificationSupplementRequiredTitlePayload"] | components["schemas"]["AppealApprovedTitlePayload"] | components["schemas"]["AppealRejectedTitlePayload"] | components["schemas"]["GroupMembershipGraceExpiringTitlePayload"] | components["schemas"]["StorageContributionExitCompletedTitlePayload"] | components["schemas"]["BillingTopupReviewRequiredTitlePayload"] | components["schemas"]["BillingRefundCompletedTitlePayload"] | components["schemas"]["BillingRefundRejectedTitlePayload"] | components["schemas"]["TeacherHomepageRequestApprovedTitlePayload"] | components["schemas"]["TeacherHomepageRequestRejectedTitlePayload"] | components["schemas"]["SystemNoticeTitlePayload"] | components["schemas"]["SystemSecurityTitlePayload"] | components["schemas"]["SystemAccountTitlePayload"]);
         Page: {
             items: components["schemas"]["Notification"][];
             next_cursor: string;
@@ -172,19 +174,20 @@ export interface components {
             /** Format: int64 */
             account: number;
         };
+        /** @description 默认只有未读总数。传 include_extended=true 时同时返回按通知盒和类型统计的数量。 */
         Unread: {
             /** Format: int64 */
             count: number;
-            by_box: components["schemas"]["UnreadByBox"];
-            by_type: components["schemas"]["UnreadByType"];
+            by_box?: components["schemas"]["UnreadByBox"];
+            by_type?: components["schemas"]["UnreadByType"];
         };
         Preferences: {
             /** @description 互动通知总状态；当 reply_enabled 或 like_enabled 任一为 true 时为 true。 */
             interaction_enabled: boolean;
-            /** @description 评论回复通知独立开关，默认 true。 */
-            reply_enabled: boolean;
-            /** @description 点赞通知独立开关，默认 true。 */
-            like_enabled: boolean;
+            /** @description 评论回复通知独立开关，默认 true。include_extended=true 时返回。 */
+            reply_enabled?: boolean;
+            /** @description 点赞通知独立开关，默认 true。include_extended=true 时返回。 */
+            like_enabled?: boolean;
         };
         PreferencesUpdate: {
             /** @description 兼容旧客户端的总开关；仅传该字段时同步设置 reply_enabled 与 like_enabled。 */
@@ -201,7 +204,7 @@ export interface components {
          * @description 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
          * @enum {string}
          */
-        TitleKey: "notifications.interaction.reply" | "notifications.interaction.like" | "notifications.content.approved" | "notifications.content.rejected" | "notifications.content.removed" | "notifications.resource_removal.approved" | "notifications.resource_removal.rejected" | "notifications.report.approved" | "notifications.report.rejected" | "notifications.student_verification.approved" | "notifications.student_verification.rejected" | "notifications.identity_verification.approved" | "notifications.identity_verification.rejected" | "notifications.verification_revocation.approved" | "notifications.verification_revocation.rejected" | "notifications.verification_deletion.approved" | "notifications.verification_deletion.rejected" | "notifications.teacher_verification.approved" | "notifications.teacher_verification.rejected" | "notifications.student_verification.revoked" | "notifications.content.draft_expiring" | "notifications.student_verification.supplement_required" | "notifications.teacher_verification.supplement_required" | "notifications.appeal.approved" | "notifications.appeal.rejected" | "notifications.group_membership.grace_expiring" | "notifications.storage_contribution.exit_completed" | "notifications.billing.topup_review_required" | "notifications.billing.refund_completed" | "notifications.billing.refund_rejected" | "notifications.system.notice" | "notifications.system.security" | "notifications.system.account";
+        TitleKey: "notifications.interaction.reply" | "notifications.interaction.like" | "notifications.content.approved" | "notifications.content.rejected" | "notifications.content.removed" | "notifications.resource_removal.approved" | "notifications.resource_removal.rejected" | "notifications.report.approved" | "notifications.report.rejected" | "notifications.student_verification.approved" | "notifications.student_verification.rejected" | "notifications.identity_verification.approved" | "notifications.identity_verification.rejected" | "notifications.verification_revocation.approved" | "notifications.verification_revocation.rejected" | "notifications.verification_deletion.approved" | "notifications.verification_deletion.rejected" | "notifications.teacher_verification.approved" | "notifications.teacher_verification.rejected" | "notifications.student_verification.revoked" | "notifications.content.draft_expiring" | "notifications.student_verification.supplement_required" | "notifications.teacher_verification.supplement_required" | "notifications.appeal.approved" | "notifications.appeal.rejected" | "notifications.group_membership.grace_expiring" | "notifications.storage_contribution.exit_completed" | "notifications.billing.topup_review_required" | "notifications.billing.refund_completed" | "notifications.billing.refund_rejected" | "notifications.teacher_homepage_request.approved" | "notifications.teacher_homepage_request.rejected" | "notifications.system.notice" | "notifications.system.security" | "notifications.system.account";
         /**
          * @description 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
          * @enum {string}
@@ -753,6 +756,38 @@ export interface components {
                 reason_code?: components["schemas"]["ReasonCode"];
             };
         };
+        /** @description 教师主页修改申请已通过 */
+        TeacherHomepageRequestApprovedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.teacher_homepage_request.approved";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "teacher_homepage_request";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                request_id: string;
+            };
+        };
+        /** @description 教师主页修改申请未通过 */
+        TeacherHomepageRequestRejectedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.teacher_homepage_request.rejected";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "teacher_homepage_request";
+                id: string;
+            };
+            title_params: {
+                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                request_id: string;
+            };
+        };
         /** @description 系统通知 */
         SystemNoticeTitlePayload: {
             /** @enum {string} */
@@ -830,7 +865,10 @@ export interface components {
         };
     };
     responses: never;
-    parameters: never;
+    parameters: {
+        /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
+        IncludeExtended: boolean;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -845,6 +883,8 @@ export interface operations {
                 limit?: number;
                 /** @description 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。 */
                 include_content_names?: boolean;
+                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
+                include_extended?: components["parameters"]["IncludeExtended"];
                 /** @description 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。 */
                 box?: components["schemas"]["Box"];
                 /** @description 按通知底层类别过滤。 */
@@ -916,7 +956,10 @@ export interface operations {
     };
     getUnreadCount: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
+                include_extended?: components["parameters"]["IncludeExtended"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1112,7 +1155,9 @@ export interface operations {
     markAllRead: {
         parameters: {
             query?: {
-                /** @description 可选按分箱批量标为已读。省略时包含所有分箱。 */
+                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
+                include_extended?: components["parameters"]["IncludeExtended"];
+                /** @description 可选按分箱批量标为已读。省略时处理当前客户端范围内的全部分箱。 */
                 box?: components["schemas"]["Box"];
                 /** @description 可选按通知类别批量标为已读。 */
                 type?: "interaction" | "business" | "security" | "account";
@@ -1179,7 +1224,10 @@ export interface operations {
     };
     getPreferences: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
+                include_extended?: components["parameters"]["IncludeExtended"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1244,7 +1292,10 @@ export interface operations {
     };
     setPreferences: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 显式接受扩展通知标题、目标和偏好字段。通知列表、未读统计与批量已读使用相同范围。默认只处理旧客户端可识别的通知，扩展通知继续保留。 */
+                include_extended?: components["parameters"]["IncludeExtended"];
+            };
             header?: never;
             path?: never;
             cookie?: never;

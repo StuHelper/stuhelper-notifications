@@ -50,7 +50,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		for k := range query {
 			switch k {
-			case "cursor", "limit", "include_content_names", "box", "type", "unread_only":
+			case "cursor", "limit", "include_content_names", "include_extended", "box", "type", "unread_only":
 			default:
 				failure(w, n.ErrInput)
 				return
@@ -96,28 +96,49 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, n.ErrInput)
 			return
 		}
-		out, e = h.Service.ListFiltered(ctx, owner, n.ListQuery{
+		includeExtended, ok := boolQuery(query, "include_extended")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
+		}
+		page, err := h.Service.ListFiltered(ctx, owner, n.ListQuery{
 			Cursor:              cursor,
 			Limit:               limit,
 			Box:                 box,
 			Type:                kind,
 			UnreadOnly:          unreadOnly,
 			IncludeContentNames: includeNames,
+			LegacyOnly:          !includeExtended,
 		})
+		if !includeExtended {
+			page = legacyNotificationsPage(page)
+		}
+		out, e = page, err
 	case r.Method == http.MethodGet && path == "/unread-count":
-		if !emptyQuery(r.URL.RawQuery) {
+		includeExtended, ok := extendedOnlyQuery(r.URL.RawQuery)
+		if !ok {
 			failure(w, n.ErrInput)
 			return
 		}
-		out, e = h.Service.UnreadSummary(ctx, owner)
+		summary, err := h.Service.UnreadSummaryFiltered(ctx, owner, !includeExtended)
+		out, e = summary, err
+		if !includeExtended {
+			out = struct {
+				Count int64 `json:"count"`
+			}{Count: summary.Count}
+		}
 	case r.Method == http.MethodGet && path == "/preferences":
-		if !emptyQuery(r.URL.RawQuery) {
+		extended, ok := extendedOnlyQuery(r.URL.RawQuery)
+		if !ok {
 			failure(w, n.ErrInput)
 			return
 		}
-		out, e = h.Service.Preferences(ctx, owner, nil)
+		var prefs n.Preferences
+		prefs, e = h.Service.Preferences(ctx, owner, nil)
+		out = preferencesView(prefs, extended)
 	case r.Method == http.MethodPut && path == "/preferences":
-		if !emptyQuery(r.URL.RawQuery) {
+		extended, ok := extendedOnlyQuery(r.URL.RawQuery)
+		if !ok {
 			failure(w, n.ErrInput)
 			return
 		}
@@ -137,11 +158,13 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, n.ErrInput)
 			return
 		}
-		out, e = h.Service.UpdatePreferences(ctx, owner, n.PreferencesUpdate{
+		var prefs n.Preferences
+		prefs, e = h.Service.UpdatePreferences(ctx, owner, n.PreferencesUpdate{
 			InteractionEnabled: in.Interaction.ptr(),
 			ReplyEnabled:       in.Reply.ptr(),
 			LikeEnabled:        in.Like.ptr(),
 		})
+		out = preferencesView(prefs, extended)
 	case r.Method == http.MethodPost && path == "/read-all":
 		query, err := url.ParseQuery(r.URL.RawQuery)
 		if err != nil {
@@ -149,7 +172,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		for k := range query {
-			if k != "box" && k != "type" {
+			if k != "box" && k != "type" && k != "include_extended" {
 				failure(w, n.ErrInput)
 				return
 			}
@@ -164,7 +187,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			failure(w, n.ErrInput)
 			return
 		}
-		e = h.Service.MarkAllReadFiltered(ctx, owner, n.ReadFilter{Box: box, Type: kind})
+		includeExtended, ok := boolQuery(query, "include_extended")
+		if !ok {
+			failure(w, n.ErrInput)
+			return
+		}
+		e = h.Service.MarkAllReadFiltered(ctx, owner, n.ReadFilter{Box: box, Type: kind, LegacyOnly: !includeExtended})
 	case r.Method == http.MethodPost && isSingleRead:
 		if !emptyQuery(r.URL.RawQuery) {
 			failure(w, n.ErrInput)

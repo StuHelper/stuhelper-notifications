@@ -88,3 +88,5 @@ scenario_tests:
     - recipients_test.go#TestConsumeRecipientsRollbackAllWrites
     - recipients_test.go#TestConsumeRecipientsConcurrentReplayAndOverlap
     - recipients_test.go#TestBatchInboxMigrationPreservesExistingData
+  NT-11:
+    - teacher_homepage_test.go#TestTeacherHomepageNotificationOptInScopesPagingUnreadAndBulkRead

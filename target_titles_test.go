@@ -317,6 +317,36 @@ func TestCommentContextIDAndReasonCodeReadBehavior(t *testing.T) {
 		}
 	}
 
+	h := httpapi.Handler{Service: f.s, Authenticate: func(*http.Request) (string, error) { return "alice", nil }}
+	for _, tc := range []struct {
+		query          string
+		reason         string
+		commentContext string
+	}{
+		{"?include_content_names=true", "", ""},
+		{"?include_extended=true", "copyright_claim", ""},
+		{"?include_extended=true&include_content_names=true", "copyright_claim", "review-root-42"},
+	} {
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/notifications"+tc.query, nil))
+		var response n.Page
+		if rec.Code != http.StatusOK || json.Unmarshal(rec.Body.Bytes(), &response) != nil || len(response.Items) != 2 {
+			t.Fatalf("query %s: status=%d body=%s", tc.query, rec.Code, rec.Body.String())
+		}
+		got := make(map[string]map[string]string)
+		for _, item := range response.Items {
+			got[item.Target.Kind] = item.TitleParams
+		}
+		if got["resource"]["reason_code"] != tc.reason || got["comment"]["context_id"] != tc.commentContext ||
+			got["resource"]["content_id"] != "resource-202" || got["comment"]["content_id"] != "comment-101" {
+			t.Fatalf("query %s: params=%v", tc.query, got)
+		}
+		if strings.Contains(tc.query, "include_content_names=true") &&
+			(got["comment"]["content_name"] != batch.name || got["comment"]["content_name_state"] != "available") {
+			t.Fatalf("query %s: missing permitted content name: %v", tc.query, got)
+		}
+	}
+
 	// Inaccessible, unavailable, or unsafe context_id values are never exposed.
 	batch.state = "inaccessible"
 	inaccPage, err := f.s.ListWithContentNames(ctx, "alice", "", 10)

@@ -145,6 +145,7 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 		return Page{}, ErrInput
 	}
 	var cursor Cursor
+	extended := !q.LegacyOnly
 	if q.Cursor != "" {
 		b, e := base64.RawURLEncoding.DecodeString(q.Cursor)
 		if e != nil {
@@ -166,7 +167,8 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 			return Page{}, ErrInput
 		}
 		cursor.ID = id
-		if cursor.Box != q.Box || cursor.Type != q.Type || cursor.UnreadOnly != q.UnreadOnly {
+		if cursor.Box != q.Box || cursor.Type != q.Type || cursor.UnreadOnly != q.UnreadOnly ||
+			cursor.Extended != nil && *cursor.Extended != extended {
 			return Page{}, ErrInput
 		}
 		u, e := uuid.Parse(cursor.ID)
@@ -183,7 +185,10 @@ func (s *Service) ListFiltered(ctx context.Context, owner string, q ListQuery) (
 	if len(rows) > q.Limit {
 		out.Items = rows[:q.Limit]
 		last := out.Items[q.Limit-1]
-		b, _ := json.Marshal(Cursor{UpdatedAt: last.UpdatedAt, ID: last.ID, Box: q.Box, Type: q.Type, UnreadOnly: q.UnreadOnly})
+		b, _ := json.Marshal(Cursor{
+			UpdatedAt: last.UpdatedAt, ID: last.ID, Box: q.Box, Type: q.Type,
+			UnreadOnly: q.UnreadOnly, Extended: &extended,
+		})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(b)
 	}
 	if e = s.resolvePage(ctx, owner, out.Items, q.IncludeContentNames); e != nil {
@@ -199,10 +204,14 @@ func (s *Service) Unread(ctx context.Context, owner string) (int64, error) {
 	return summary.Count, nil
 }
 func (s *Service) UnreadSummary(ctx context.Context, owner string) (UnreadSummary, error) {
+	return s.UnreadSummaryFiltered(ctx, owner, false)
+}
+
+func (s *Service) UnreadSummaryFiltered(ctx context.Context, owner string, legacyOnly bool) (UnreadSummary, error) {
 	if e := ownerOK(owner); e != nil {
 		return UnreadSummary{}, e
 	}
-	return s.repo.UnreadSummary(ctx, owner, s.now().UTC().Add(-s.config.UnreadRetention))
+	return s.repo.UnreadSummaryFiltered(ctx, owner, s.now().UTC().Add(-s.config.UnreadRetention), legacyOnly)
 }
 func (s *Service) MarkRead(ctx context.Context, owner, id string) error {
 	if e := ownerOK(owner); e != nil {

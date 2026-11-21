@@ -31,7 +31,7 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 	if e := json.Unmarshal(n.OpenAPI(), &contract); e != nil {
 		t.Fatal(e)
 	}
-	if len(contract.Catalog) != 33 {
+	if len(contract.Catalog) != 35 {
 		t.Fatal("catalog coverage changed", len(contract.Catalog))
 	}
 	serial := 0

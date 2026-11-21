@@ -80,11 +80,13 @@ func TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead(t *testing.T) {
 	}
 
 	// Unread endpoint through generated SDK.
-	unreadResp, err := client.GetUnreadCountWithResponse(ctx)
+	extended := true
+	unreadResp, err := client.GetUnreadCountWithResponse(ctx, &sdk.GetUnreadCountParams{IncludeExtended: &extended})
 	if err != nil || unreadResp.StatusCode() != 200 || unreadResp.JSON200 == nil {
 		t.Fatal(err, unreadResp.StatusCode())
 	}
-	if unreadResp.JSON200.Count != 41 || unreadResp.JSON200.ByBox.Verification != 2 || unreadResp.JSON200.ByBox.Review != 2 || unreadResp.JSON200.ByType.Security != 1 {
+	if unreadResp.JSON200.Count != 41 || unreadResp.JSON200.ByBox == nil || unreadResp.JSON200.ByType == nil ||
+		unreadResp.JSON200.ByBox.Verification != 2 || unreadResp.JSON200.ByBox.Review != 2 || unreadResp.JSON200.ByType.Security != 1 {
 		t.Fatalf("unexpected SDK unread response: %+v", unreadResp.JSON200)
 	}
 
