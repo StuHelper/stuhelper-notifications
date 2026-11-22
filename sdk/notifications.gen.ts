@@ -11,6 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。 */
         get: operations["listNotifications"];
         put?: never;
         post?: never;
@@ -27,6 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description 返回本人未到保留期限的未读总数及分箱、通知类型统计。 */
         get: operations["getUnreadCount"];
         put?: never;
         post?: never;
@@ -47,8 +49,27 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description 记录本人未到保留期限的通知的首次已读时间。 */
         post: operations["markRead"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteNotification"];
         options?: never;
         head?: never;
         patch?: never;
@@ -63,6 +84,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description 按筛选条件标记本人未到保留期限的未读通知。 */
         post: operations["markAllRead"];
         delete?: never;
         options?: never;
@@ -77,7 +99,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description 读取回复与点赞的当前通知偏好。 */
         get: operations["getPreferences"];
+        /** @description 更新提交的回复或点赞偏好，返回两项当前值。 */
         put: operations["setPreferences"];
         post?: never;
         delete?: never;
@@ -92,38 +116,82 @@ export interface components {
     schemas: {
         Target: {
             /** @enum {string} */
-            kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+            kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order" | "teacher_homepage_request";
             id: string;
         };
         Notification: {
+            /** Format: uuid */
             id: string;
             /** @enum {string} */
             type: "interaction" | "business" | "security" | "account";
             source_module: string;
             target: components["schemas"]["Target"];
             title_key: components["schemas"]["TitleKey"];
-            /** @description 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。 */
+            /** @description 标题参数见 x-title-catalog。允许的标题按当前权限返回内容名称和名称状态，可访问的评论可附带所属根评价 ID。适用的通知可附带 reason_code。 */
             title_params: {
                 [key: string]: string;
             };
             /** Format: date-time */
             created_at: string;
+            /**
+             * Format: date-time
+             * @description 最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。
+             */
+            updated_at?: string;
             /** Format: date-time */
             read_at: string | null;
             /** @enum {string} */
             target_status: "accessible" | "inaccessible" | "unavailable";
+            /** Format: int64 */
             count: number;
-        } & (components["schemas"]["InteractionReplyTitlePayload"] | components["schemas"]["InteractionLikeTitlePayload"] | components["schemas"]["ContentApprovedTitlePayload"] | components["schemas"]["ContentRejectedTitlePayload"] | components["schemas"]["ContentRemovedTitlePayload"] | components["schemas"]["ResourceRemovalApprovedTitlePayload"] | components["schemas"]["ResourceRemovalRejectedTitlePayload"] | components["schemas"]["ReportApprovedTitlePayload"] | components["schemas"]["ReportRejectedTitlePayload"] | components["schemas"]["StudentVerificationApprovedTitlePayload"] | components["schemas"]["StudentVerificationRejectedTitlePayload"] | components["schemas"]["IdentityVerificationApprovedTitlePayload"] | components["schemas"]["IdentityVerificationRejectedTitlePayload"] | components["schemas"]["VerificationRevocationApprovedTitlePayload"] | components["schemas"]["VerificationRevocationRejectedTitlePayload"] | components["schemas"]["VerificationDeletionApprovedTitlePayload"] | components["schemas"]["VerificationDeletionRejectedTitlePayload"] | components["schemas"]["TeacherVerificationApprovedTitlePayload"] | components["schemas"]["TeacherVerificationRejectedTitlePayload"] | components["schemas"]["StudentVerificationRevokedTitlePayload"] | components["schemas"]["SystemNoticeTitlePayload"] | components["schemas"]["SystemSecurityTitlePayload"] | components["schemas"]["SystemAccountTitlePayload"]);
+        } & (components["schemas"]["InteractionReplyTitlePayload"] | components["schemas"]["InteractionLikeTitlePayload"] | components["schemas"]["ContentApprovedTitlePayload"] | components["schemas"]["ContentRejectedTitlePayload"] | components["schemas"]["ContentRemovedTitlePayload"] | components["schemas"]["ResourceRemovalApprovedTitlePayload"] | components["schemas"]["ResourceRemovalRejectedTitlePayload"] | components["schemas"]["ReportApprovedTitlePayload"] | components["schemas"]["ReportRejectedTitlePayload"] | components["schemas"]["StudentVerificationApprovedTitlePayload"] | components["schemas"]["StudentVerificationRejectedTitlePayload"] | components["schemas"]["IdentityVerificationApprovedTitlePayload"] | components["schemas"]["IdentityVerificationRejectedTitlePayload"] | components["schemas"]["VerificationRevocationApprovedTitlePayload"] | components["schemas"]["VerificationRevocationRejectedTitlePayload"] | components["schemas"]["VerificationDeletionApprovedTitlePayload"] | components["schemas"]["VerificationDeletionRejectedTitlePayload"] | components["schemas"]["TeacherVerificationApprovedTitlePayload"] | components["schemas"]["TeacherVerificationRejectedTitlePayload"] | components["schemas"]["StudentVerificationRevokedTitlePayload"] | components["schemas"]["ContentDraftExpiringTitlePayload"] | components["schemas"]["StudentVerificationSupplementRequiredTitlePayload"] | components["schemas"]["TeacherVerificationSupplementRequiredTitlePayload"] | components["schemas"]["AppealApprovedTitlePayload"] | components["schemas"]["AppealRejectedTitlePayload"] | components["schemas"]["GroupMembershipGraceExpiringTitlePayload"] | components["schemas"]["StorageContributionExitCompletedTitlePayload"] | components["schemas"]["BillingTopupReviewRequiredTitlePayload"] | components["schemas"]["BillingRefundCompletedTitlePayload"] | components["schemas"]["BillingRefundRejectedTitlePayload"] | components["schemas"]["TeacherHomepageRequestApprovedTitlePayload"] | components["schemas"]["TeacherHomepageRequestRejectedTitlePayload"] | components["schemas"]["SystemNoticeTitlePayload"] | components["schemas"]["SystemSecurityTitlePayload"] | components["schemas"]["SystemAccountTitlePayload"]);
         Page: {
             items: components["schemas"]["Notification"][];
             next_cursor: string;
         };
+        /**
+         * @description 通知中心分箱标识。
+         * @enum {string}
+         */
+        Box: "interaction" | "review" | "verification" | "system";
+        UnreadByBox: {
+            /** Format: int64 */
+            interaction: number;
+            /** Format: int64 */
+            review: number;
+            /** Format: int64 */
+            verification: number;
+            /** Format: int64 */
+            system: number;
+        };
+        UnreadByType: {
+            /** Format: int64 */
+            interaction: number;
+            /** Format: int64 */
+            business: number;
+            /** Format: int64 */
+            security: number;
+            /** Format: int64 */
+            account: number;
+        };
+        /** @description 未读总数、分箱统计和按通知类型统计。 */
         Unread: {
             /** Format: int64 */
             count: number;
+            by_box: components["schemas"]["UnreadByBox"];
+            by_type: components["schemas"]["UnreadByType"];
         };
         Preferences: {
-            interaction_enabled: boolean;
+            /** @description 评论回复通知独立开关，默认 true。 */
+            reply_enabled: boolean;
+            /** @description 点赞通知独立开关，默认 true。 */
+            like_enabled: boolean;
+        };
+        PreferencesUpdate: {
+            /** @description 评论回复通知独立开关。 */
+            reply_enabled?: boolean;
+            /** @description 点赞通知独立开关。 */
+            like_enabled?: boolean;
         };
         Error: {
             code: string;
@@ -132,7 +200,12 @@ export interface components {
          * @description 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
          * @enum {string}
          */
-        TitleKey: "notifications.interaction.reply" | "notifications.interaction.like" | "notifications.content.approved" | "notifications.content.rejected" | "notifications.content.removed" | "notifications.resource_removal.approved" | "notifications.resource_removal.rejected" | "notifications.report.approved" | "notifications.report.rejected" | "notifications.student_verification.approved" | "notifications.student_verification.rejected" | "notifications.identity_verification.approved" | "notifications.identity_verification.rejected" | "notifications.verification_revocation.approved" | "notifications.verification_revocation.rejected" | "notifications.verification_deletion.approved" | "notifications.verification_deletion.rejected" | "notifications.teacher_verification.approved" | "notifications.teacher_verification.rejected" | "notifications.student_verification.revoked" | "notifications.system.notice" | "notifications.system.security" | "notifications.system.account";
+        TitleKey: "notifications.interaction.reply" | "notifications.interaction.like" | "notifications.content.approved" | "notifications.content.rejected" | "notifications.content.removed" | "notifications.resource_removal.approved" | "notifications.resource_removal.rejected" | "notifications.report.approved" | "notifications.report.rejected" | "notifications.student_verification.approved" | "notifications.student_verification.rejected" | "notifications.identity_verification.approved" | "notifications.identity_verification.rejected" | "notifications.verification_revocation.approved" | "notifications.verification_revocation.rejected" | "notifications.verification_deletion.approved" | "notifications.verification_deletion.rejected" | "notifications.teacher_verification.approved" | "notifications.teacher_verification.rejected" | "notifications.student_verification.revoked" | "notifications.content.draft_expiring" | "notifications.student_verification.supplement_required" | "notifications.teacher_verification.supplement_required" | "notifications.appeal.approved" | "notifications.appeal.rejected" | "notifications.group_membership.grace_expiring" | "notifications.storage_contribution.exit_completed" | "notifications.billing.topup_review_required" | "notifications.billing.refund_completed" | "notifications.billing.refund_rejected" | "notifications.teacher_homepage_request.approved" | "notifications.teacher_homepage_request.rejected" | "notifications.system.notice" | "notifications.system.security" | "notifications.system.account";
+        /**
+         * @description 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+         * @enum {string}
+         */
+        ReasonCode: "duplicate_material" | "copyright_claim" | "community_guidelines" | "off_topic" | "privacy_exposure" | "low_quality" | "author_request" | "insufficient_evidence" | "expired_document" | "unclear_material" | "identity_mismatch" | "ineligible_status" | "eligibility_revoked" | "duplicate_binding" | "policy_violation" | "payment_channel_rejected";
         /** @description 收到回复 */
         InteractionReplyTitlePayload: {
             /** @enum {string} */
@@ -145,15 +218,17 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 收到点赞 */
@@ -168,15 +243,17 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 内容审核通过 */
@@ -191,15 +268,17 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 内容审核驳回 */
@@ -214,15 +293,18 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 内容下架 */
@@ -237,15 +319,18 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 content_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
-                readonly content_name?: string;
+                readonly content_name: string;
                 /**
                  * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
                  * @enum {string}
                  */
-                readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 资料下架申请通过 */
@@ -260,7 +345,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -276,8 +361,9 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 举报处理通过 */
@@ -292,7 +378,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 report_id: string;
             };
         };
@@ -308,8 +394,9 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 report_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 学生认证通过 */
@@ -324,7 +411,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
             };
         };
@@ -340,8 +427,9 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 实名核验通过 */
@@ -356,7 +444,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 operation_id: string;
             };
         };
@@ -372,8 +460,9 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 operation_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 认证撤销申请通过 */
@@ -388,7 +477,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -404,8 +493,9 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 认证删除申请通过 */
@@ -420,7 +510,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
             };
         };
@@ -436,8 +526,9 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 request_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 教师认证通过 */
@@ -452,7 +543,7 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
             };
         };
@@ -468,8 +559,9 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
             };
         };
         /** @description 学生认证被撤销 */
@@ -484,8 +576,212 @@ export interface components {
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 credential_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 撤回重编草稿即将过期 */
+        ContentDraftExpiringTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.content.draft_expiring";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "review";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                content_id: string;
+                /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
+                readonly content_name: string;
+                /**
+                 * @description available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+                 * @enum {string}
+                 */
+                readonly content_name_state: "available" | "inaccessible" | "unavailable";
+            };
+        };
+        /** @description 学生认证需补充材料 */
+        StudentVerificationSupplementRequiredTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.student_verification.supplement_required";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "verification_application";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 教师认证需补充材料 */
+        TeacherVerificationSupplementRequiredTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.teacher_verification.supplement_required";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "teacher_application";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                application_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 审核申诉通过 */
+        AppealApprovedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.appeal.approved";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "moderation_appeal";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                appeal_id: string;
+            };
+        };
+        /** @description 审核申诉驳回 */
+        AppealRejectedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.appeal.rejected";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "moderation_appeal";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                appeal_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 群准入资格宽限期即将到期 */
+        GroupMembershipGraceExpiringTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.group_membership.grace_expiring";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "group_membership";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                group_id: string;
+            };
+        };
+        /** @description 存储贡献退出完成 */
+        StorageContributionExitCompletedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.storage_contribution.exit_completed";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "storage_contribution";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                contribution_id: string;
+            };
+        };
+        /** @description 充值订单转人工核查 */
+        BillingTopupReviewRequiredTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.billing.topup_review_required";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "billing_order";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                order_id: string;
+            };
+        };
+        /** @description 退款打款完成 */
+        BillingRefundCompletedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.billing.refund_completed";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "billing_order";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                order_id: string;
+            };
+        };
+        /** @description 退款申请驳回 */
+        BillingRefundRejectedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.billing.refund_rejected";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "billing_order";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                order_id: string;
+                reason_code?: components["schemas"]["ReasonCode"];
+            };
+        };
+        /** @description 教师主页修改申请已通过 */
+        TeacherHomepageRequestApprovedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.teacher_homepage_request.approved";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "teacher_homepage_request";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                request_id: string;
+            };
+        };
+        /** @description 教师主页修改申请未通过 */
+        TeacherHomepageRequestRejectedTitlePayload: {
+            /** @enum {string} */
+            title_key: "notifications.teacher_homepage_request.rejected";
+            /** @enum {string} */
+            type: "business";
+            target: {
+                /** @enum {string} */
+                kind: "teacher_homepage_request";
+                id: string;
+            };
+            title_params: {
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
+                request_id: string;
             };
         };
         /** @description 系统通知 */
@@ -496,11 +792,11 @@ export interface components {
             type: "business";
             target: {
                 /** @enum {string} */
-                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 reference_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
@@ -509,6 +805,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 安全通知 */
@@ -519,11 +817,11 @@ export interface components {
             type: "security";
             target: {
                 /** @enum {string} */
-                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 reference_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
@@ -532,6 +830,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
         /** @description 账号通知 */
@@ -542,11 +842,11 @@ export interface components {
             type: "account";
             target: {
                 /** @enum {string} */
-                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation";
+                kind: "review" | "comment" | "resource" | "resource_removal_request" | "report" | "moderation_appeal" | "verification_application" | "teacher_application" | "verification_credential" | "verification_removal_request" | "verification_operation" | "group_membership" | "storage_contribution" | "billing_order";
                 id: string;
             };
             title_params: {
-                /** @description 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。 */
+                /** @description 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。 */
                 reference_id: string;
                 /** @description 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。 */
                 readonly content_name?: string;
@@ -555,6 +855,8 @@ export interface components {
                  * @enum {string}
                  */
                 readonly content_name_state?: "available" | "inaccessible" | "unavailable";
+                /** @description 可访问评论所属的根评价 ID，用于打开讨论上下文。 */
+                readonly context_id?: string;
             };
         };
     };
@@ -569,11 +871,15 @@ export interface operations {
     listNotifications: {
         parameters: {
             query?: {
-                /** @description 不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。 */
+                /** @description 不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。 */
                 cursor?: string;
                 limit?: number;
-                /** @description 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。 */
-                include_content_names?: boolean;
+                /** @description 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。 */
+                box?: components["schemas"]["Box"];
+                /** @description 按通知底层类别过滤。 */
+                type?: "interaction" | "business" | "security" | "account";
+                /** @description 仅返回未到保留期限的未读通知（read_at 为 null）。 */
+                unread_only?: boolean;
             };
             header?: never;
             path?: never;
@@ -601,6 +907,15 @@ export interface operations {
             };
             /** @description 未登录 */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 无权访问或请求人账号已注销 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -664,6 +979,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description 无权访问或请求人账号已注销 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description 不存在或不属于本人 */
             404: {
                 headers: {
@@ -720,7 +1044,81 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description 不存在或不属于本人 */
+            /** @description 无权访问或请求人账号已注销 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 不存在、不属于本人或已到保留期限 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 依赖暂不可用 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 通知已删除；保留 inbox 去重与修订记录，原事件重放不会恢复该通知 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 无效参数 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 未登录 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 无权访问或请求人账号已注销 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 不存在、已删除或不属于本人 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -742,7 +1140,12 @@ export interface operations {
     };
     markAllRead: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 可选按分箱批量标为已读。省略时处理全部分箱。 */
+                box?: components["schemas"]["Box"];
+                /** @description 可选按通知类别批量标为已读。 */
+                type?: "interaction" | "business" | "security" | "account";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -767,6 +1170,15 @@ export interface operations {
             };
             /** @description 未登录 */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 无权访问或请求人账号已注销 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -830,6 +1242,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description 无权访问或请求人账号已注销 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description 不存在或不属于本人 */
             404: {
                 headers: {
@@ -859,7 +1280,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Preferences"];
+                "application/json": components["schemas"]["PreferencesUpdate"];
             };
         };
         responses: {
@@ -883,6 +1304,15 @@ export interface operations {
             };
             /** @description 未登录 */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description 无权访问或请求人账号已注销 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

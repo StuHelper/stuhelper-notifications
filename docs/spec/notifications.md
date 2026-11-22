@@ -1,38 +1,69 @@
 ---
 type: spec
 status: Accepted
-updated: 2026-11-17
+updated: 2026-11-22
 ---
 
-# 通知模块实现说明
+# 站内通知
 
-本模块实现站内通知。来源模块通过公开 Go Consumer 接口投递，HTTP API 只允许当前登录用户读取和修改本人通知。profiles 为可选依赖，缺失时不影响站内通知。reviews、resources、verification、moderation 是目标解析的可选依赖，缺失时仅对应目标返回 unavailable。
+## 数据归属与依赖
 
-通知包含类型、来源模块、目标引用、标题翻译键与字符串参数、创建时间、已读时间和聚合数量。调用方只提交目录规定的业务编号，不能放入正文或个人敏感信息。客户端负责八语言翻译。
+notifications 拥有站内通知、互动偏好、投递回执、修订和账号关闭记录。来源模块通过 Go `Consumer` 投递。目标的内容、当前可见性和读取权限由目标所属模块管理。
 
-列表按创建时间和 UUID 倒序，使用不透明游标，每页默认 30 条，上限 100 条。游标不是数据库快照，并发新增通知需刷新首页。未读数统计通知项，聚合项算一条。
+| 清单声明 | 模块或能力 | 装配影响 |
+| --- | --- | --- |
+| 必需依赖 | platform | 提供宿主运行平台 |
+| 可选依赖 | identity | `notifications.inbox` 的能力依赖，支撑已登录用户的站内访问 |
+| 可选依赖 | reviews、resources、verification、moderation | 支撑相应目标状态与名称查询，是否可用由宿主解析器决定 |
+| 可选依赖 | profiles | 当前站内逻辑无需个人资料 |
+| 对外能力 | `notifications.inbox`、`notifications.consume` | 分别用于用户 HTTP 操作和可信 Go 事件消费 |
 
-列表通过 Resolver 查询目标当前权限。accessible 表示可访问，inaccessible 表示目标删除、下架或权限不足，unavailable 表示查询失败或依赖不可用。目标页仍须执行自己的授权。
+清单记录宿主启用模块时的要求。标题目录定义允许投递的目标。各类型目标能否跳转取决于宿主是否装配相应的解析器，以及收件人能否访问当前对象。
 
-单条已读保持第一次已读时间。全部已读更新事务执行时属于本人的通知。其他用户的通知返回 404。接口不接受用户 ID，身份由宿主认证回调提供。
+## HTTP 操作
 
-互动通知默认开启，用户可关闭。业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，因此偏好关闭后开始的投递不会写入互动通知。
+接口仅处理登录用户的本人通知，用户标识来自宿主认证。账号已注销时返回 403 `forbidden`。
 
-互动聚合要求接收人、来源模块、目标、标题键和参数一致，并且原通知未读、处于配置窗口内。窗口从原通知创建时起计算，边界不聚合。聚合增加 count，保留原创建时间；已读后新事件产生新通知。
+| 方法 | 路径 | 行为 |
+| --- | --- | --- |
+| GET | `/api/v1/notifications` | 按条件分页列出未到期通知 |
+| GET | `/api/v1/notifications/unread-count` | 返回未到期的未读总数及分箱、通知类型统计 |
+| POST | `/api/v1/notifications/{id}/read` | 标记一条未到期的通知已读 |
+| POST | `/api/v1/notifications/read-all` | 按可选分箱、通知类型标记未到期的通知已读 |
+| DELETE | `/api/v1/notifications/{id}` | 删除本人一条通知 |
+| GET、PUT | `/api/v1/notifications/preferences` | 读取和更新互动通知偏好 |
 
-事件按 (source, id) 唯一。重复输入返回原结果，同一身份对应不同映射返回 idempotency_conflict。被偏好拒收的事件也保存结果，开启偏好后重投仍不入站。
+通知包括类型、来源模块、目标引用、标题翻译键和参数、创建时间、最近动态时间（`updated_at`）、已读时间和聚合数量。客户端按八种语言展示标题。
 
-通知、inbox 和已处理修订在同一数据库事务写入。清理按创建时间删除超过保留期限的通知，每次最多 CleanupBatch 条。并发清理跳过已锁定行。未到保留期限边界的通知继续保留。
+列表按最近动态时间和 UUID 倒序，默认每页 30 条，上限 100 条。支持按分箱、通知类型和 `unread_only` 过滤。游标绑定筛选条件。并发新投递和前移的聚合项可在刷新首页后读取。
 
-inbox 和修订记录不随通知清理。inbox 保存来源、事件 ID、subject、revision、映射摘要及原结果，不保存标题参数。记录长期增长，回收需要明确上游最大重投期限，否则旧事件可能重新入站。
+分箱包括互动（`interaction`）、内容审核（`review`）、认证（`verification`）和系统（`system`）。通知类型包括互动、业务、安全和账号。未读统计中的聚合项按一条计数。
 
-当前只实现站内渠道。邮件、QQ、客户端推送、免打扰及提醒提前量未接入，不对外声明可用。
+已读操作仅更新未读且未到期的行，保留已有的首次已读时间及最近动态时间。单条标记遇到已到期条目返回 404，批量标记跳过这些条目。
+
+本人可直接删除数据库中仍存在的通知，成功时返回 204。重复删除、目标不存在或目标属于其他用户时返回 404。删除保留消费回执、修订和点赞去重记录，原事件重放不会恢复条目。
+
+通知 ID 与游标中的 ID 均使用标准带连字符的 UUID。ID 格式无效、查询参数未知或重复时返回 400。未声明的路径返回 404，204 响应省略 Content-Type。
+
+列表、未读统计和批量标记已读使用完整标题目录，并按各操作的筛选条件处理通知。
+
+## 互动偏好与聚合
+
+评论回复（`reply_enabled`）与点赞（`like_enabled`）默认开启。GET 和 PUT 均返回两项当前值。PUT 可提交一项或两项，只更新提交的字段。
+
+业务处理、安全和账号通知始终接收。偏好修改与投递按接收人串行提交，关闭开关后开始的投递按新偏好处理。读取偏好时直接返回当前值或默认值。
+
+升级时，数据库按原总开关和单项选择保留实际投递偏好。总开关关闭的账号迁移为两项均关闭。迁移在同一事务删除原列，后端与客户端按 OpenAPI 0.5.0 同步切换。
+
+互动聚合要求接收人、来源模块、目标、标题键和参数相同，且原通知未读、处于配置窗口内。持有收件人锁后采样时间，窗口以首次创建时间为准。聚合保留首次创建时间，增加计数并更新最近动态时间。已读后的新互动产生新条目。
 
 ## 标题键目录
 
-OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，Notification 的条件 schema 校验每种组合。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
+OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目标和参数的机器可读映射，scripts/generate.mjs 据此自动生成各 TitlePayload 子模式并校验一致性。Consumer 在写入前校验同一目录，目录外键、类型或目标不符、缺少或额外参数均返回 invalid_input。
 
-下表参数全部必填，只允许 1 至 64 位 ASCII 字母、数字及点、下划线、冒号、短横线，首位为字母或数字。参数是显示用业务编号，不能填姓名、学号、证件号、联系方式或正文。格式校验不能识别所有敏感编号，生产者须保证数据来源正确。
+必填投递参数引用业务对象，长度为 1 至 64 位。首位为 ASCII 字母或数字，后续可包含点、下划线、冒号和短横线。姓名、学号、证件号、联系方式和正文不得用作参数。
+
+允许附带 `reason_code` 的标题及可用原因由 OpenAPI 的标题目录和 `ReasonCode` 声明。审核备注只保留在来源模块。
 
 互动文案使用顶层 count 作为复数参数。Consumer 不传 count，首次为 1，聚合由仓库累加。客户端将 count 与 title_params 组合传给公共国际化接口，按语言选择复数形式。
 
@@ -43,12 +74,16 @@ OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目�
 | notifications.content.approved | business | review, comment, resource | content_id |
 | notifications.content.rejected | business | review, comment, resource | content_id |
 | notifications.content.removed | business | review, comment, resource | content_id |
+| notifications.content.draft_expiring | business | review | content_id |
 | notifications.resource_removal.approved | business | resource_removal_request | request_id |
 | notifications.resource_removal.rejected | business | resource_removal_request | request_id |
 | notifications.report.approved | business | report | report_id |
 | notifications.report.rejected | business | report | report_id |
+| notifications.appeal.approved | business | moderation_appeal | appeal_id |
+| notifications.appeal.rejected | business | moderation_appeal | appeal_id |
 | notifications.student_verification.approved | business | verification_application | application_id |
 | notifications.student_verification.rejected | business | verification_application | application_id |
+| notifications.student_verification.supplement_required | business | verification_application | application_id |
 | notifications.identity_verification.approved | account | verification_operation | operation_id |
 | notifications.identity_verification.rejected | account | verification_operation | operation_id |
 | notifications.verification_revocation.approved | account | verification_removal_request | request_id |
@@ -57,35 +92,48 @@ OpenAPI 的 TitleKey 是封闭枚举。x-title-catalog 提供键与类型、目�
 | notifications.verification_deletion.rejected | account | verification_removal_request | request_id |
 | notifications.teacher_verification.approved | business | teacher_application | application_id |
 | notifications.teacher_verification.rejected | business | teacher_application | application_id |
+| notifications.teacher_verification.supplement_required | business | teacher_application | application_id |
+| notifications.teacher_homepage_request.approved | business | teacher_homepage_request | request_id |
+| notifications.teacher_homepage_request.rejected | business | teacher_homepage_request | request_id |
 | notifications.student_verification.revoked | account | verification_credential | credential_id |
-| notifications.system.notice | business | review, comment, resource, resource_removal_request, report, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation | reference_id |
-| notifications.system.security | security | review, comment, resource, resource_removal_request, report, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation | reference_id |
-| notifications.system.account | account | review, comment, resource, resource_removal_request, report, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation | reference_id |
+| notifications.group_membership.grace_expiring | business | group_membership | group_id |
+| notifications.storage_contribution.exit_completed | business | storage_contribution | contribution_id |
+| notifications.billing.topup_review_required | business | billing_order | order_id |
+| notifications.billing.refund_completed | business | billing_order | order_id |
+| notifications.billing.refund_rejected | business | billing_order | order_id |
+| notifications.system.notice | business | review, comment, resource, resource_removal_request, report, moderation_appeal, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation, group_membership, storage_contribution, billing_order | reference_id |
+| notifications.system.security | security | review, comment, resource, resource_removal_request, report, moderation_appeal, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation, group_membership, storage_contribution, billing_order | reference_id |
+| notifications.system.account | account | review, comment, resource, resource_removal_request, report, moderation_appeal, verification_application, teacher_application, verification_credential, verification_removal_request, verification_operation, group_membership, storage_contribution, billing_order | reference_id |
 
 ## 目标路由约定
 
-target.id 是对应模块对象的原始 ID，title_params 是用于显示的业务编号。客户端按 target.kind 和 target.id 构造本地页面路由，禁止把参数当作 URL。仅 accessible 状态允许跳转，其他状态显示不可访问或暂不可用。
+客户端按 `target.kind` 和 `target.id` 构造目标页路由。仅 `accessible` 状态允许跳转，其他状态显示不可访问或暂不可用。标题参数通过国际化接口用于展示，禁止将参数当作 URL。
 
 | target.kind | 对象与页面 |
 | --- | --- |
 | review | reviews 的评价详情 |
-| comment | reviews 的评论对象；通过评论公开接口定位所属评价 |
+| comment | reviews 的评论对象，可访问且取得根评价 ID 时附带 `context_id` |
 | resource | resources 的资料详情 |
 | resource_removal_request | resources 的下架申请或投诉回执，进入本人资料申请结果 |
 | report | moderation 的举报回执，进入本人举报处理结果 |
+| moderation_appeal | moderation 的处置申诉复核记录，进入本人申诉结果 |
 | verification_application | verification 的学生认证 Application，进入本人申请详情 |
 | teacher_application | verification 的教师认证 Application，进入本人教师申请详情 |
+| teacher_homepage_request | catalog 的教师主页更正申请，进入本人申请详情 |
 | verification_credential | verification 的学生 Credential，进入本人认证记录 |
 | verification_removal_request | verification 的 RemovalRequest，进入本人撤销或删除申请结果 |
 | verification_operation | verification 的 Operation，进入本人实名核验操作结果 |
+| group_membership | groups 的本人群准入与成员资格记录，进入我的群页面 |
+| storage_contribution | storage-contribution 的本人存储贡献记录，进入存储贡献面板 |
+| billing_order | billing 的本人充值或退款订单记录，进入账户明细页面 |
 
-系统通知的三个键均指向目录内已有业务对象，使用 reference_id 展示引用编号。目录不定义任意系统正文、外部链接或尚不存在的公告对象。来源模块与 Resolver 装配须能查询该对象，否则返回 unavailable。
+系统通知的三个键均指向目录内的业务对象，使用 `reference_id` 显示引用编号。目标页打开时独立执行授权。
 
-HTTP 契约版本为 0.3.1，模块版本为 0.5.1。生产者使用目录键，客户端按目录提供八语言文案。
+目标删除、下架、权限不足或未知时，解析器返回 `inaccessible`。依赖未装配、子查询超时或结果缺失时对应目标标记 `unavailable`。父请求取消或超时会中断剩余解析，并返回 HTTP 503。
 
 ## 事件消费
 
-notifications 是事件消费者，不提供 OutboxChannel、PendingOutbox 或 ConfirmOutbox。backend 读取提供方 outbox 后调用公开消费接口：
+backend 从来源模块的 outbox 读取事件，并调用 notifications 的公开消费接口。
 
 ```go
 type Consumer interface {
@@ -100,73 +148,98 @@ func (s *Service) Consume(ctx context.Context, event Event) (Result, error)
 | Source | 原 CloudEvents source，模块标识，最长 80 字节 |
 | ID | 原事件 id，最长 256 字节，重试保持不变 |
 | EventType | 原事件 type，如 moderation.result.v1，最长 128 字节 |
-| Subject | 原 subject，最长 512 字节，不按接收人或通知目标重写 |
+| Subject | 原 subject，最长 512 字节；互动事件使用独立实体标识，例如评论 ID 或目标与点赞者的关系键 |
 | Revision | 原 data.revision，正 int64 |
-| Recipients | 1–20 个稳定用户标识，每项最长 256 字节；提交列表为空或超过 20 项时拒绝 |
+| Recipients | 1 至 20 个稳定用户标识，每项最长 256 字节 |
 | Type | 通知类别，必须与标题目录相符 |
 | Target | 通知目标 kind 与 id |
 | TitleKey、TitleParams | 标题目录规定的键和显示用编号 |
 
-这是可信 Go 映射接口，不接收原始封套或任意网络请求。relay 校验 CloudEvents 1.0、JSON 内容类型、获准来源与事件类型、学校范围和接收人，按业务结果生成完整通知映射。不得把失败中间状态映射为业务成功通知。
+relay 负责校验 CloudEvents 1.0、JSON 内容类型、获准来源、事件类型、学校范围和收件人。Consumer 接收已转换的可信 Go 事件，校验用户标识及字符串字段为合法 UTF-8，且无控制字符和首尾空白。非法输入返回 `invalid_input`。
 
 每个源事件一次提交全部收件人，共享通知类别、目标和标题参数。模块先检查提交列表长度，再去重并按用户标识排序。全部收件人的通知、聚合结果、偏好拒收结果、修订和 inbox 在同一事务提交。
 
-消费按 (source, subject) 记录最大已处理修订。新 ID 的 revision 小于或等于该值时写入 Ignored 结果，不写通知、不推进修订。完整结果允许跨修订跳跃；本接口不接受需要逐条应用的增量事件。
+消费按 `(source, subject)` 记录最大修订。互动实体的 subject 绑定一种互动标题键，具有冲突标题键的交付返回 `invalid_input`。点赞新交付须使用独立关系键。新 ID 的修订若不大于已处理修订，记录 `Ignored` 回执，保留既有通知和修订。
 
-重复 ID 优先返回已保存的 Result。收件人顺序改变或重复条目增减不改变请求摘要，实际收件人集合改变则返回冲突。事件锁、修订行锁和按用户标识排序的偏好锁依次获取，避免重叠收件人集合反向加锁。
+点赞事件按 (owner, source, subject) 去重。同一用户在点赞、取消后再次点赞递增修订时，返回 duplicate_interaction 抑制原因，不重复累加聚合数量，也不在原通知已读后重复生成新通知。
 
-Result.Recipients 按用户标识排序，每项包含 Recipient、ID 和 SuppressionReason。成功入站时 ID 非空且原因为空；偏好拒收时 ID 为空，原因是 interaction_disabled；旧修订原因是 stale_revision，并设置 Result.Ignored。
+以 `(source, id)` 去重。回执详情仍在时，重复投递返回原结果。收件人重排或重复条目增减不会改变摘要，映射改变时返回 `idempotency_conflict`。事务依次锁定事件、修订行及按用户标识排序的收件人。
 
-偏好拒收和旧修订忽略均为成功消费。偏好拒收也推进修订，其他收件人照常入站。任何收件人写入或 inbox 写入失败时，整批通知、聚合数量、偏好行和修订都回滚。
+`Result.Recipients` 按用户标识排序，每项包含 `Recipient`、`ID` 和 `SuppressionReason`。成功入站时返回通知 ID，抑制时返回以下原因。
 
-Consume 返回 nil error 后，relay 才可 ConfirmOutbox。确认丢失时重新读取并消费同一事件，返回原结果。取消或超时先按原事件重试，不根据错误猜测事务是否已提交。
-
-relay 对提供方频道 LISTEN，通知到达后读取最多 100 条未发送事件。重连后立即补读，并每 60 秒兜底读取。失败从 5 秒指数退避，单次最长 1 小时，累计 24 小时后进入待处理队列。
-
-inbox 的 result JSON 保存整批消费结果，不随通知清理。业务运行身份仅持有 inbox 的 SELECT、INSERT 和 revisions 的 SELECT、INSERT、UPDATE。启动时 CheckRuntime 验证权限，迁移身份不进入业务进程。
-
-空的单收件人候选 inbox 可原位迁移，保留运行权限和已有通知。有记录的候选 inbox 会拒绝自动升级并保留数据，因为部分记录缺少收件人。负责人须依据原始事件恢复收件人与规范化摘要后再升级，不能直接清空去重历史。
-
-结果类型如下：
-
-```go
-type RecipientResult struct {
-    Recipient         string
-    ID                string
-    SuppressionReason string
-}
-type Result struct {
-    Recipients []RecipientResult
-    Ignored    bool
-}
-```
-
-## 验收覆盖
-
-| 场景 | 实现与测试 |
+| 原因 | 条件 |
 | --- | --- |
-| NT-01 | 互动投递、聚合、偏好拒收、并发重投 |
-| NT-02 | 单条与全部已读、重复操作、未读数 |
-| NT-03 | 业务处理、安全及账号通知不受互动偏好影响 |
-| NT-04 | 目标不可访问及依赖超时状态 |
-| NT-05 | HTTP 未登录拒绝、他人通知隔离、严格偏好输入 |
-| NT-09 | 多收件人去重、部分拒收、整批回滚、并发重投、重叠收件人锁顺序、迁移保护 |
-| NT-08 | 乱序、旧修订、跨接收人重复冲突、原结果回放、事务回滚与锁等待取消 |
-| NT-07 | 全部目录键投递、非法组合拒绝且不写入、回复和点赞聚合数量 |
-| NT-06 | 投递失败回滚、保留期限边界、不同目标与接收人不聚合 |
+| `interaction_disabled` | 接收人关闭了该类互动通知 |
+| `account_closed` | 接收人已注销 |
+| `stale_revision` | 事件修订已过时，消费结果同时置 `Ignored` |
+| `duplicate_interaction` | 此收件人已收到同一点赞关系的通知 |
 
-实际测试函数在 module.yaml 的 scenario_tests 登记。隔离数据库测试还验证游标分页、清理上限、迁移重复执行与运行身份权限。
+抑制和旧修订忽略均为成功消费。有效新修订即使被偏好、账号注销或点赞去重抑制，仍推进修订并保存本次结果。收件人写入或回执写入失败时，整批通知、聚合、偏好行和修订都回滚。
+
+`Consume` 成功后，relay 才能在来源模块执行 `ConfirmOutbox`。确认丢失、取消或超时时使用同一事件重试，由消费回执判断此前的结果。
+
+## 通知保留与迁移
+
+站内通知首次标为已读后保留 180 日。未读期间自创建起最多保留 365 日。以 UTC 时间戳为起点，每日按 24 小时计算，到达截止时间即到期。最近动态时间不影响保留期。主动删除无需等待截止时间。
+
+清理按到期时间顺序删除，每批最多 `CleanupBatch` 条，跳过被并发事务锁定的行。失败的批次回滚，后续批次重新选择当前到期的行。监控记录汇总数量和脱敏错误原因。回执键和修订记录独立保留。
+
+已发行版本用 `read_at` 存储首次已读时间，空值表示未读。升级建立两类到期索引，保留已有已读时间与未读状态。旧数据中只有具备独立已读证据的条目需要修复缺失时间。
+
+对于另有证据确认已读、但缺失 `read_at` 的导入或恢复数据，使用最早可证实条目已经读过的时间，例如首次已读事件、带可信时间的已读快照或首次核对时间。该时间须不早于条目创建时间。
+
+维护方先在隔离导入环境核对行和证据时间，对已确认的行填入 `read_at`，保留已有值。未找到有效证据时保留原状态，供维护方核对。
+
+## 回执保留与迁移
+
+回执保存来源、事件 ID、subject、revision、映射摘要、消费时间和逐人投递结果。独立维护身份按已确认的 90 天保留期计算截止时间，再调用 `CleanupInboxDetails` 分批清空 `result`。回执键和摘要继续抑制重复投递。详情过期后，重放返回 `Ignored`。
+
+业务账号注销在同一事务删除本人的通知、偏好及点赞去重数据，并写入 `closed_owners` 阻止重新投递和读取。相同 `closureID` 重试幂等成功，不同 `closureID` 返回 `idempotency_conflict`。
+
+`MaintenanceStats` 返回过期条目数量、最早过期条目的创建时间及回执、修订表的估算行数。见 [数据库授权](https://github.com/StuHelper/stuhelper-notifications/blob/develop/README.md#数据库授权)。
+
+空的旧单收件人 inbox 可以原位升级。含历史记录时迁移会拒绝并保留数据，需依据来源事件重建收件人集合与规范化摘要后再升级。
+
+升级时，迁移按旧 inbox 回执关联收件人和通知条目，补录已投递的点赞并绑定互动类型。同键重放先校验原摘要，再返回已有结果。已清空详情的旧回执仍可抑制重复投递。
+
+首次建立点赞去重表时，若旧回执详情已过期、有效接收人的通知条目缺失或同一 subject 曾使用不同互动类型，迁移会回滚。此时需依据来源记录核对最小去重事实，避免重复通知。已注销账号不补录个人记录。
+
+需要重建时，维护方先核对来源投递记录，在同一迁移事务内准备完整的 `like_subjects(owner, source, subject)` 和 `revisions.interaction_title_key`。表定义及联合主键见本仓 schema.sql。运行身份对去重表只需 SELECT、INSERT。
+
+随后执行 `Migrate` 安装注销清理触发器。已过期的 `inbox.result` 保持为空。
 
 ## 读取时补充内容名称
 
-原 TitleKey 和编号参数保持不变。请求 include_content_names=true 时，review、comment、resource 目标在 title_params 中增加 content_name 与 content_name_state。名称来自所属模块的当前公开接口，不接受事件生产者提交，也不写入通知表或聚合指纹。
+读取通知时，允许名称解析的 review、comment、resource 目标在 `title_params` 中返回 `content_name` 与 `content_name_state`。所属模块的公开接口按当前权限提供名称。通知条目和聚合指纹只保存投递参数。
 
 content_name_state 为 available 时，content_name 为当前评价标题或资料标题。回复采用根评价标题，空标题采用所属课程或教师目录名称。名称最多 256 个 Unicode 字符，不含控制字符。
 
 对象删除、下架或失去阅读权限时，状态为 inaccessible，名称为空。依赖失败或名称无效时为 unavailable，名称为空。前端分别使用本地化的“内容不可用”和“名称暂不可用”，避免重用缓存名称。
 
-宿主实现 BatchResolver，一次处理本页去重后的目标，并按所属模块使用批量接口。旧 Resolver 继续兼容；未提供名称解析的旧宿主返回名称暂不可用。通知分页、计数、消费幂等与原编号字段保持原行为。
+宿主使用 `BatchResolver` 一次处理本页去重后的目标，并按所属模块调用批量接口。仅实现 `Resolver` 的宿主仍返回目标状态，可访问目标的名称状态为 `unavailable`。
 
-读取参数由 x-title-catalog 的 read_parameters 声明，生产者参数仍由 parameters 封闭校验。旧客户端继续使用编号参数，新客户端按名称状态选择可读标题或占位文案。
+OpenAPI 的 `x-title-catalog` 用 `read_parameters` 声明读取时补充的字段。生产者按 `parameters` 与 `optional_parameters` 提交投递参数。
 
-旧 HTTP 请求和 Go List 保留原封闭参数结构。新客户端通过 include_content_names=true 或 Go ListWithContentNames 启用名称。参数只接受单个 true 或 false，未指定时为 false。
+## 教师主页申请通知
+
+Catalog 在审批通过或拒绝时持久化结果事件。站内通知仅发送给原申请账号，标题参数仅保存业务编号 `request_id`。打开详情时，Catalog 检查账号、当前认证和目录教师归属。
+
+该类通知属于业务类型和审核分箱，纳入列表、未读统计及批量标记已读。
+
+## 验收场景
+
+| 场景 | 预期结果 |
+| --- | --- |
+| NT-01 | 投递互动通知，按偏好与聚合窗口处理，并发更新保留首次创建时间 |
+| NT-02 | 按条件分页、统计未读及标记已读，单条删除只影响本人通知 |
+| NT-03 | 关闭互动开关后仍接收业务处理、安全与账号通知 |
+| NT-04 | 目标不可访问与依赖失败各有稳定状态，父请求取消则停止解析 |
+| NT-05 | HTTP 拒绝未登录、越权或无效请求，保留原偏好或通知 |
+| NT-06 | 投递失败回滚，通知在已读和未读边界到期。清理受批次限制，并发跳过锁行，失败可重试。主动删除立即生效，回执详情另行清理 |
+| NT-07 | 投递匹配封闭标题目录，读取可按权限补充当前标题 |
+| NT-08 | 同一事件重放返回原结果，忽略旧修订，重复点赞不会重复通知 |
+| NT-09 | 同一事件的收件人去重，逐人应用偏好，整批原子写入 |
+| NT-11 | 教师主页决定只通知申请人，纳入分页、未读统计和批量标记已读 |
+| PC-07 | 账号注销清理个人通知与偏好，并阻止延迟投递 |
+
+实际测试函数在 [module.yaml](https://github.com/StuHelper/stuhelper-notifications/blob/develop/module.yaml) 的 `scenario_tests` 登记。生产与独立 CI 情况见 [实施与验证](https://github.com/StuHelper/stuhelper-notifications/blob/develop/README.md#实施与验证)。

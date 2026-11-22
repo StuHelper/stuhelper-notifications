@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "StuHelper Notifications",
-    "version": "0.3.1",
-    "description": "仅访问本人通知；业务、安全、账号通知始终开启。时间使用 UTC RFC3339。"
+    "version": "0.5.0",
+    "description": "仅访问本人通知；业务、安全、账号通知始终开启。支持 Bearer 令牌或宿主会话 Cookie（Cookie 写请求由宿主同时执行 CSRF 防护）。时间使用 UTC RFC3339。"
   },
   "security": [
     {
@@ -14,6 +14,7 @@
     "/api/v1/notifications": {
       "get": {
         "operationId": "listNotifications",
+        "description": "分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。",
         "responses": {
           "200": {
             "description": "成功",
@@ -37,6 +38,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或请求人账号已注销",
             "content": {
               "application/json": {
                 "schema": {
@@ -71,9 +82,10 @@
             "name": "cursor",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 1024
             },
-            "description": "不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。"
+            "description": "不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。"
           },
           {
             "name": "limit",
@@ -86,14 +98,38 @@
             }
           },
           {
-            "name": "include_content_names",
+            "name": "box",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Box"
+            },
+            "description": "按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interaction",
+                "business",
+                "security",
+                "account"
+              ]
+            },
+            "description": "按通知底层类别过滤。"
+          },
+          {
+            "name": "unread_only",
             "in": "query",
             "required": false,
             "schema": {
               "type": "boolean",
               "default": false
             },
-            "description": "启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。"
+            "description": "仅返回未到保留期限的未读通知（read_at 为 null）。"
           }
         ]
       }
@@ -101,6 +137,7 @@
     "/api/v1/notifications/unread-count": {
       "get": {
         "operationId": "getUnreadCount",
+        "description": "返回本人未到保留期限的未读总数及分箱、通知类型统计。",
         "responses": {
           "200": {
             "description": "成功",
@@ -124,6 +161,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或请求人账号已注销",
             "content": {
               "application/json": {
                 "schema": {
@@ -158,6 +205,7 @@
     "/api/v1/notifications/{id}/read": {
       "post": {
         "operationId": "markRead",
+        "description": "记录本人未到保留期限的通知的首次已读时间。",
         "responses": {
           "204": {
             "description": "已读状态已保存，重复请求无额外效果"
@@ -182,8 +230,89 @@
               }
             }
           },
+          "403": {
+            "description": "无权访问或请求人账号已注销",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "不存在或不属于本人",
+            "description": "不存在、不属于本人或已到保留期限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "依赖暂不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ]
+    },
+    "/api/v1/notifications/{id}": {
+      "delete": {
+        "operationId": "deleteNotification",
+        "responses": {
+          "204": {
+            "description": "通知已删除；保留 inbox 去重与修订记录，原事件重放不会恢复该通知"
+          },
+          "400": {
+            "description": "无效参数",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或请求人账号已注销",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "不存在、已删除或不属于本人",
             "content": {
               "application/json": {
                 "schema": {
@@ -219,6 +348,7 @@
     "/api/v1/notifications/read-all": {
       "post": {
         "operationId": "markAllRead",
+        "description": "按筛选条件标记本人未到保留期限的未读通知。",
         "responses": {
           "204": {
             "description": "已读状态已保存，重复请求无额外效果"
@@ -235,6 +365,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或请求人账号已注销",
             "content": {
               "application/json": {
                 "schema": {
@@ -263,12 +403,39 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "box",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Box"
+            },
+            "description": "可选按分箱批量标为已读。省略时处理全部分箱。"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "interaction",
+                "business",
+                "security",
+                "account"
+              ]
+            },
+            "description": "可选按通知类别批量标为已读。"
+          }
+        ]
       }
     },
     "/api/v1/notifications/preferences": {
       "get": {
         "operationId": "getPreferences",
+        "description": "读取回复与点赞的当前通知偏好。",
         "responses": {
           "200": {
             "description": "成功",
@@ -292,6 +459,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或请求人账号已注销",
             "content": {
               "application/json": {
                 "schema": {
@@ -324,6 +501,7 @@
       },
       "put": {
         "operationId": "setPreferences",
+        "description": "更新提交的回复或点赞偏好，返回两项当前值。",
         "responses": {
           "200": {
             "description": "成功",
@@ -347,6 +525,16 @@
           },
           "401": {
             "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问或请求人账号已注销",
             "content": {
               "application/json": {
                 "schema": {
@@ -381,7 +569,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Preferences"
+                "$ref": "#/components/schemas/PreferencesUpdate"
               }
             }
           }
@@ -407,11 +595,16 @@
               "resource",
               "resource_removal_request",
               "report",
+              "moderation_appeal",
               "verification_application",
               "teacher_application",
               "verification_credential",
               "verification_removal_request",
-              "verification_operation"
+              "verification_operation",
+              "group_membership",
+              "storage_contribution",
+              "billing_order",
+              "teacher_homepage_request"
             ]
           },
           "id": {
@@ -435,7 +628,8 @@
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "type": {
             "type": "string",
@@ -460,11 +654,16 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。"
+            "description": "标题参数见 x-title-catalog。允许的标题按当前权限返回内容名称和名称状态，可访问的评论可附带所属根评价 ID。适用的通知可附带 reason_code。"
           },
           "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。"
           },
           "read_at": {
             "type": "string",
@@ -481,6 +680,7 @@
           },
           "count": {
             "type": "integer",
+            "format": "int64",
             "minimum": 1
           }
         },
@@ -548,6 +748,42 @@
                 "$ref": "#/components/schemas/StudentVerificationRevokedTitlePayload"
               },
               {
+                "$ref": "#/components/schemas/ContentDraftExpiringTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/StudentVerificationSupplementRequiredTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/TeacherVerificationSupplementRequiredTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/AppealApprovedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/AppealRejectedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/GroupMembershipGraceExpiringTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/StorageContributionExitCompletedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/BillingTopupReviewRequiredTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/BillingRefundCompletedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/BillingRefundRejectedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/TeacherHomepageRequestApprovedTitlePayload"
+              },
+              {
+                "$ref": "#/components/schemas/TeacherHomepageRequestRejectedTitlePayload"
+              },
+              {
                 "$ref": "#/components/schemas/SystemNoticeTitlePayload"
               },
               {
@@ -578,16 +814,99 @@
           }
         }
       },
+      "Box": {
+        "type": "string",
+        "enum": [
+          "interaction",
+          "review",
+          "verification",
+          "system"
+        ],
+        "description": "通知中心分箱标识。"
+      },
+      "UnreadByBox": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "interaction",
+          "review",
+          "verification",
+          "system"
+        ],
+        "properties": {
+          "interaction": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "review": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "verification": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "system": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "UnreadByType": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "interaction",
+          "business",
+          "security",
+          "account"
+        ],
+        "properties": {
+          "interaction": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "business": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "security": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "account": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
       "Unread": {
         "type": "object",
+        "description": "未读总数、分箱统计和按通知类型统计。",
         "required": [
-          "count"
+          "count",
+          "by_box",
+          "by_type"
         ],
         "properties": {
           "count": {
             "type": "integer",
             "format": "int64",
             "minimum": 0
+          },
+          "by_box": {
+            "$ref": "#/components/schemas/UnreadByBox"
+          },
+          "by_type": {
+            "$ref": "#/components/schemas/UnreadByType"
           }
         }
       },
@@ -595,11 +914,32 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "interaction_enabled"
+          "reply_enabled",
+          "like_enabled"
         ],
         "properties": {
-          "interaction_enabled": {
-            "type": "boolean"
+          "reply_enabled": {
+            "type": "boolean",
+            "description": "评论回复通知独立开关，默认 true。"
+          },
+          "like_enabled": {
+            "type": "boolean",
+            "description": "点赞通知独立开关，默认 true。"
+          }
+        }
+      },
+      "PreferencesUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "reply_enabled": {
+            "type": "boolean",
+            "description": "评论回复通知独立开关。"
+          },
+          "like_enabled": {
+            "type": "boolean",
+            "description": "点赞通知独立开关。"
           }
         }
       },
@@ -637,11 +977,45 @@
           "notifications.teacher_verification.approved",
           "notifications.teacher_verification.rejected",
           "notifications.student_verification.revoked",
+          "notifications.content.draft_expiring",
+          "notifications.student_verification.supplement_required",
+          "notifications.teacher_verification.supplement_required",
+          "notifications.appeal.approved",
+          "notifications.appeal.rejected",
+          "notifications.group_membership.grace_expiring",
+          "notifications.storage_contribution.exit_completed",
+          "notifications.billing.topup_review_required",
+          "notifications.billing.refund_completed",
+          "notifications.billing.refund_rejected",
+          "notifications.teacher_homepage_request.approved",
+          "notifications.teacher_homepage_request.rejected",
           "notifications.system.notice",
           "notifications.system.security",
           "notifications.system.account"
         ],
         "description": "封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。"
+      },
+      "ReasonCode": {
+        "type": "string",
+        "enum": [
+          "duplicate_material",
+          "copyright_claim",
+          "community_guidelines",
+          "off_topic",
+          "privacy_exposure",
+          "low_quality",
+          "author_request",
+          "insufficient_evidence",
+          "expired_document",
+          "unclear_material",
+          "identity_mismatch",
+          "ineligible_status",
+          "eligibility_revoked",
+          "duplicate_binding",
+          "policy_violation",
+          "payment_channel_rejected"
+        ],
+        "description": "封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。"
       },
       "InteractionReplyTitlePayload": {
         "type": "object",
@@ -691,7 +1065,9 @@
           "title_params": {
             "type": "object",
             "required": [
-              "content_id"
+              "content_id",
+              "content_name",
+              "content_name_state"
             ],
             "additionalProperties": false,
             "properties": {
@@ -700,7 +1076,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               },
               "content_name": {
                 "type": "string",
@@ -717,6 +1093,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -770,7 +1153,9 @@
           "title_params": {
             "type": "object",
             "required": [
-              "content_id"
+              "content_id",
+              "content_name",
+              "content_name_state"
             ],
             "additionalProperties": false,
             "properties": {
@@ -779,7 +1164,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               },
               "content_name": {
                 "type": "string",
@@ -796,6 +1181,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -849,7 +1241,9 @@
           "title_params": {
             "type": "object",
             "required": [
-              "content_id"
+              "content_id",
+              "content_name",
+              "content_name_state"
             ],
             "additionalProperties": false,
             "properties": {
@@ -858,7 +1252,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               },
               "content_name": {
                 "type": "string",
@@ -875,6 +1269,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -928,7 +1329,9 @@
           "title_params": {
             "type": "object",
             "required": [
-              "content_id"
+              "content_id",
+              "content_name",
+              "content_name_state"
             ],
             "additionalProperties": false,
             "properties": {
@@ -937,7 +1340,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               },
               "content_name": {
                 "type": "string",
@@ -954,6 +1360,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -1007,7 +1420,9 @@
           "title_params": {
             "type": "object",
             "required": [
-              "content_id"
+              "content_id",
+              "content_name",
+              "content_name_state"
             ],
             "additionalProperties": false,
             "properties": {
@@ -1016,7 +1431,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               },
               "content_name": {
                 "type": "string",
@@ -1033,6 +1451,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -1093,7 +1518,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1154,7 +1579,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1215,7 +1643,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1276,7 +1704,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1337,7 +1768,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1398,7 +1829,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1459,7 +1893,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1520,7 +1954,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1581,7 +2018,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1642,7 +2079,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1703,7 +2143,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1764,7 +2204,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1825,7 +2268,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1886,7 +2329,10 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
               }
             }
           }
@@ -1947,7 +2393,772 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "ContentDraftExpiringTitlePayload": {
+        "type": "object",
+        "description": "撤回重编草稿即将过期",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.content.draft_expiring"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "review"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "content_id",
+              "content_name",
+              "content_name_state"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "content_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "content_name": {
+                "type": "string",
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。"
+              },
+              "content_name_state": {
+                "type": "string",
+                "enum": [
+                  "available",
+                  "inaccessible",
+                  "unavailable"
+                ],
+                "readOnly": true,
+                "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              }
+            }
+          }
+        }
+      },
+      "StudentVerificationSupplementRequiredTitlePayload": {
+        "type": "object",
+        "description": "学生认证需补充材料",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.student_verification.supplement_required"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "verification_application"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "application_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "application_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "TeacherVerificationSupplementRequiredTitlePayload": {
+        "type": "object",
+        "description": "教师认证需补充材料",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.teacher_verification.supplement_required"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "teacher_application"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "application_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "application_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "AppealApprovedTitlePayload": {
+        "type": "object",
+        "description": "审核申诉通过",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.appeal.approved"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "moderation_appeal"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "appeal_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "appeal_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "AppealRejectedTitlePayload": {
+        "type": "object",
+        "description": "审核申诉驳回",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.appeal.rejected"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "moderation_appeal"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "appeal_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "appeal_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "GroupMembershipGraceExpiringTitlePayload": {
+        "type": "object",
+        "description": "群准入资格宽限期即将到期",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.group_membership.grace_expiring"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "group_membership"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "group_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "group_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "StorageContributionExitCompletedTitlePayload": {
+        "type": "object",
+        "description": "存储贡献退出完成",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.storage_contribution.exit_completed"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "storage_contribution"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "contribution_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "contribution_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "BillingTopupReviewRequiredTitlePayload": {
+        "type": "object",
+        "description": "充值订单转人工核查",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.billing.topup_review_required"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "billing_order"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "BillingRefundCompletedTitlePayload": {
+        "type": "object",
+        "description": "退款打款完成",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.billing.refund_completed"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "billing_order"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "BillingRefundRejectedTitlePayload": {
+        "type": "object",
+        "description": "退款申请驳回",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.billing.refund_rejected"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "billing_order"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "order_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              },
+              "reason_code": {
+                "$ref": "#/components/schemas/ReasonCode"
+              }
+            }
+          }
+        }
+      },
+      "TeacherHomepageRequestApprovedTitlePayload": {
+        "type": "object",
+        "description": "教师主页修改申请已通过",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.teacher_homepage_request.approved"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "teacher_homepage_request"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "request_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "request_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
+              }
+            }
+          }
+        }
+      },
+      "TeacherHomepageRequestRejectedTitlePayload": {
+        "type": "object",
+        "description": "教师主页修改申请未通过",
+        "required": [
+          "title_key",
+          "type",
+          "target",
+          "title_params"
+        ],
+        "properties": {
+          "title_key": {
+            "type": "string",
+            "enum": [
+              "notifications.teacher_homepage_request.rejected"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "business"
+            ]
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "teacher_homepage_request"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          },
+          "title_params": {
+            "type": "object",
+            "required": [
+              "request_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "request_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               }
             }
           }
@@ -1991,11 +3202,15 @@
                   "resource",
                   "resource_removal_request",
                   "report",
+                  "moderation_appeal",
                   "verification_application",
                   "teacher_application",
                   "verification_credential",
                   "verification_removal_request",
-                  "verification_operation"
+                  "verification_operation",
+                  "group_membership",
+                  "storage_contribution",
+                  "billing_order"
                 ]
               },
               "id": {
@@ -2017,7 +3232,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               },
               "content_name": {
                 "type": "string",
@@ -2034,6 +3249,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -2077,11 +3299,15 @@
                   "resource",
                   "resource_removal_request",
                   "report",
+                  "moderation_appeal",
                   "verification_application",
                   "teacher_application",
                   "verification_credential",
                   "verification_removal_request",
-                  "verification_operation"
+                  "verification_operation",
+                  "group_membership",
+                  "storage_contribution",
+                  "billing_order"
                 ]
               },
               "id": {
@@ -2103,7 +3329,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               },
               "content_name": {
                 "type": "string",
@@ -2120,6 +3346,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -2163,11 +3396,15 @@
                   "resource",
                   "resource_removal_request",
                   "report",
+                  "moderation_appeal",
                   "verification_application",
                   "teacher_application",
                   "verification_credential",
                   "verification_removal_request",
-                  "verification_operation"
+                  "verification_operation",
+                  "group_membership",
+                  "storage_contribution",
+                  "billing_order"
                 ]
               },
               "id": {
@@ -2189,7 +3426,7 @@
                 "minLength": 1,
                 "maxLength": 64,
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
-                "description": "显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。"
+                "description": "事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。"
               },
               "content_name": {
                 "type": "string",
@@ -2206,6 +3443,13 @@
                 ],
                 "readOnly": true,
                 "description": "available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。"
+              },
+              "context_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "readOnly": true,
+                "description": "可访问评论所属的根评价 ID，用于打开讨论上下文。"
               }
             }
           }
@@ -2215,7 +3459,8 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "description": "Bearer 令牌认证；浏览器端亦可由宿主通过会话 Cookie 认证并执行 CSRF 防护。"
       }
     }
   },
@@ -2233,7 +3478,8 @@
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.interaction.like": {
@@ -2249,7 +3495,8 @@
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.content.approved": {
@@ -2265,7 +3512,8 @@
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.content.rejected": {
@@ -2279,9 +3527,13 @@
       "parameters": [
         "content_id"
       ],
+      "optional_parameters": [
+        "reason_code"
+      ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.content.removed": {
@@ -2295,9 +3547,13 @@
       "parameters": [
         "content_id"
       ],
+      "optional_parameters": [
+        "reason_code"
+      ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.resource_removal.approved": {
@@ -2318,6 +3574,9 @@
       ],
       "parameters": [
         "request_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.report.approved": {
@@ -2338,6 +3597,9 @@
       ],
       "parameters": [
         "report_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.student_verification.approved": {
@@ -2358,6 +3620,9 @@
       ],
       "parameters": [
         "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.identity_verification.approved": {
@@ -2378,6 +3643,9 @@
       ],
       "parameters": [
         "operation_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.verification_revocation.approved": {
@@ -2398,6 +3666,9 @@
       ],
       "parameters": [
         "request_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.verification_deletion.approved": {
@@ -2418,6 +3689,9 @@
       ],
       "parameters": [
         "request_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.teacher_verification.approved": {
@@ -2438,6 +3712,9 @@
       ],
       "parameters": [
         "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
       ]
     },
     "notifications.student_verification.revoked": {
@@ -2448,6 +3725,145 @@
       ],
       "parameters": [
         "credential_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.content.draft_expiring": {
+      "description": "撤回重编草稿即将过期",
+      "type": "business",
+      "target_kinds": [
+        "review"
+      ],
+      "parameters": [
+        "content_id"
+      ],
+      "read_parameters": [
+        "content_name",
+        "content_name_state"
+      ]
+    },
+    "notifications.student_verification.supplement_required": {
+      "description": "学生认证需补充材料",
+      "type": "business",
+      "target_kinds": [
+        "verification_application"
+      ],
+      "parameters": [
+        "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.teacher_verification.supplement_required": {
+      "description": "教师认证需补充材料",
+      "type": "business",
+      "target_kinds": [
+        "teacher_application"
+      ],
+      "parameters": [
+        "application_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.appeal.approved": {
+      "description": "审核申诉通过",
+      "type": "business",
+      "target_kinds": [
+        "moderation_appeal"
+      ],
+      "parameters": [
+        "appeal_id"
+      ]
+    },
+    "notifications.appeal.rejected": {
+      "description": "审核申诉驳回",
+      "type": "business",
+      "target_kinds": [
+        "moderation_appeal"
+      ],
+      "parameters": [
+        "appeal_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.group_membership.grace_expiring": {
+      "description": "群准入资格宽限期即将到期",
+      "type": "business",
+      "target_kinds": [
+        "group_membership"
+      ],
+      "parameters": [
+        "group_id"
+      ]
+    },
+    "notifications.storage_contribution.exit_completed": {
+      "description": "存储贡献退出完成",
+      "type": "business",
+      "target_kinds": [
+        "storage_contribution"
+      ],
+      "parameters": [
+        "contribution_id"
+      ]
+    },
+    "notifications.billing.topup_review_required": {
+      "description": "充值订单转人工核查",
+      "type": "business",
+      "target_kinds": [
+        "billing_order"
+      ],
+      "parameters": [
+        "order_id"
+      ]
+    },
+    "notifications.billing.refund_completed": {
+      "description": "退款打款完成",
+      "type": "business",
+      "target_kinds": [
+        "billing_order"
+      ],
+      "parameters": [
+        "order_id"
+      ]
+    },
+    "notifications.billing.refund_rejected": {
+      "description": "退款申请驳回",
+      "type": "business",
+      "target_kinds": [
+        "billing_order"
+      ],
+      "parameters": [
+        "order_id"
+      ],
+      "optional_parameters": [
+        "reason_code"
+      ]
+    },
+    "notifications.teacher_homepage_request.approved": {
+      "description": "教师主页修改申请已通过",
+      "type": "business",
+      "target_kinds": [
+        "teacher_homepage_request"
+      ],
+      "parameters": [
+        "request_id"
+      ]
+    },
+    "notifications.teacher_homepage_request.rejected": {
+      "description": "教师主页修改申请未通过",
+      "type": "business",
+      "target_kinds": [
+        "teacher_homepage_request"
+      ],
+      "parameters": [
+        "request_id"
       ]
     },
     "notifications.system.notice": {
@@ -2459,18 +3875,23 @@
         "resource",
         "resource_removal_request",
         "report",
+        "moderation_appeal",
         "verification_application",
         "teacher_application",
         "verification_credential",
         "verification_removal_request",
-        "verification_operation"
+        "verification_operation",
+        "group_membership",
+        "storage_contribution",
+        "billing_order"
       ],
       "parameters": [
         "reference_id"
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.system.security": {
@@ -2482,18 +3903,23 @@
         "resource",
         "resource_removal_request",
         "report",
+        "moderation_appeal",
         "verification_application",
         "teacher_application",
         "verification_credential",
         "verification_removal_request",
-        "verification_operation"
+        "verification_operation",
+        "group_membership",
+        "storage_contribution",
+        "billing_order"
       ],
       "parameters": [
         "reference_id"
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     },
     "notifications.system.account": {
@@ -2505,20 +3931,25 @@
         "resource",
         "resource_removal_request",
         "report",
+        "moderation_appeal",
         "verification_application",
         "teacher_application",
         "verification_credential",
         "verification_removal_request",
-        "verification_operation"
+        "verification_operation",
+        "group_membership",
+        "storage_contribution",
+        "billing_order"
       ],
       "parameters": [
         "reference_id"
       ],
       "read_parameters": [
         "content_name",
-        "content_name_state"
+        "content_name_state",
+        "context_id"
       ]
     }
   },
-  "x-title-catalog-description": "parameters 是事件生产者必须提交的旧业务编号参数。read_parameters 是读取时按当前权限从所属模块解析的可选参数，不接受生产者提交，也不持久保存名称。"
+  "x-title-catalog-description": "parameters 和 optional_parameters 声明投递参数。read_parameters 由读取端按当前权限解析，禁止由事件生产者提交。名称随读取返回，由所属模块维护。"
 }

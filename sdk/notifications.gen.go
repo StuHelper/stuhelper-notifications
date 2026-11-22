@@ -18,6 +18,255 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AppealApprovedTitlePayloadTargetKind.
+const (
+	AppealApprovedTitlePayloadTargetKindModerationAppeal AppealApprovedTitlePayloadTargetKind = "moderation_appeal"
+)
+
+// Valid indicates whether the value is a known member of the AppealApprovedTitlePayloadTargetKind enum.
+func (e AppealApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case AppealApprovedTitlePayloadTargetKindModerationAppeal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AppealApprovedTitlePayloadTitleKey.
+const (
+	AppealApprovedTitlePayloadTitleKeyNotificationsAppealApproved AppealApprovedTitlePayloadTitleKey = "notifications.appeal.approved"
+)
+
+// Valid indicates whether the value is a known member of the AppealApprovedTitlePayloadTitleKey enum.
+func (e AppealApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case AppealApprovedTitlePayloadTitleKeyNotificationsAppealApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AppealApprovedTitlePayloadType.
+const (
+	AppealApprovedTitlePayloadTypeBusiness AppealApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the AppealApprovedTitlePayloadType enum.
+func (e AppealApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case AppealApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AppealRejectedTitlePayloadTargetKind.
+const (
+	AppealRejectedTitlePayloadTargetKindModerationAppeal AppealRejectedTitlePayloadTargetKind = "moderation_appeal"
+)
+
+// Valid indicates whether the value is a known member of the AppealRejectedTitlePayloadTargetKind enum.
+func (e AppealRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case AppealRejectedTitlePayloadTargetKindModerationAppeal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AppealRejectedTitlePayloadTitleKey.
+const (
+	AppealRejectedTitlePayloadTitleKeyNotificationsAppealRejected AppealRejectedTitlePayloadTitleKey = "notifications.appeal.rejected"
+)
+
+// Valid indicates whether the value is a known member of the AppealRejectedTitlePayloadTitleKey enum.
+func (e AppealRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case AppealRejectedTitlePayloadTitleKeyNotificationsAppealRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AppealRejectedTitlePayloadType.
+const (
+	AppealRejectedTitlePayloadTypeBusiness AppealRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the AppealRejectedTitlePayloadType enum.
+func (e AppealRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case AppealRejectedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingRefundCompletedTitlePayloadTargetKind.
+const (
+	BillingRefundCompletedTitlePayloadTargetKindBillingOrder BillingRefundCompletedTitlePayloadTargetKind = "billing_order"
+)
+
+// Valid indicates whether the value is a known member of the BillingRefundCompletedTitlePayloadTargetKind enum.
+func (e BillingRefundCompletedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case BillingRefundCompletedTitlePayloadTargetKindBillingOrder:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingRefundCompletedTitlePayloadTitleKey.
+const (
+	BillingRefundCompletedTitlePayloadTitleKeyNotificationsBillingRefundCompleted BillingRefundCompletedTitlePayloadTitleKey = "notifications.billing.refund_completed"
+)
+
+// Valid indicates whether the value is a known member of the BillingRefundCompletedTitlePayloadTitleKey enum.
+func (e BillingRefundCompletedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case BillingRefundCompletedTitlePayloadTitleKeyNotificationsBillingRefundCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingRefundCompletedTitlePayloadType.
+const (
+	BillingRefundCompletedTitlePayloadTypeBusiness BillingRefundCompletedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the BillingRefundCompletedTitlePayloadType enum.
+func (e BillingRefundCompletedTitlePayloadType) Valid() bool {
+	switch e {
+	case BillingRefundCompletedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingRefundRejectedTitlePayloadTargetKind.
+const (
+	BillingRefundRejectedTitlePayloadTargetKindBillingOrder BillingRefundRejectedTitlePayloadTargetKind = "billing_order"
+)
+
+// Valid indicates whether the value is a known member of the BillingRefundRejectedTitlePayloadTargetKind enum.
+func (e BillingRefundRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case BillingRefundRejectedTitlePayloadTargetKindBillingOrder:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingRefundRejectedTitlePayloadTitleKey.
+const (
+	BillingRefundRejectedTitlePayloadTitleKeyNotificationsBillingRefundRejected BillingRefundRejectedTitlePayloadTitleKey = "notifications.billing.refund_rejected"
+)
+
+// Valid indicates whether the value is a known member of the BillingRefundRejectedTitlePayloadTitleKey enum.
+func (e BillingRefundRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case BillingRefundRejectedTitlePayloadTitleKeyNotificationsBillingRefundRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingRefundRejectedTitlePayloadType.
+const (
+	BillingRefundRejectedTitlePayloadTypeBusiness BillingRefundRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the BillingRefundRejectedTitlePayloadType enum.
+func (e BillingRefundRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case BillingRefundRejectedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingTopupReviewRequiredTitlePayloadTargetKind.
+const (
+	BillingTopupReviewRequiredTitlePayloadTargetKindBillingOrder BillingTopupReviewRequiredTitlePayloadTargetKind = "billing_order"
+)
+
+// Valid indicates whether the value is a known member of the BillingTopupReviewRequiredTitlePayloadTargetKind enum.
+func (e BillingTopupReviewRequiredTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case BillingTopupReviewRequiredTitlePayloadTargetKindBillingOrder:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingTopupReviewRequiredTitlePayloadTitleKey.
+const (
+	BillingTopupReviewRequiredTitlePayloadTitleKeyNotificationsBillingTopupReviewRequired BillingTopupReviewRequiredTitlePayloadTitleKey = "notifications.billing.topup_review_required"
+)
+
+// Valid indicates whether the value is a known member of the BillingTopupReviewRequiredTitlePayloadTitleKey enum.
+func (e BillingTopupReviewRequiredTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case BillingTopupReviewRequiredTitlePayloadTitleKeyNotificationsBillingTopupReviewRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BillingTopupReviewRequiredTitlePayloadType.
+const (
+	BillingTopupReviewRequiredTitlePayloadTypeBusiness BillingTopupReviewRequiredTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the BillingTopupReviewRequiredTitlePayloadType enum.
+func (e BillingTopupReviewRequiredTitlePayloadType) Valid() bool {
+	switch e {
+	case BillingTopupReviewRequiredTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for Box.
+const (
+	BoxInteraction  Box = "interaction"
+	BoxReview       Box = "review"
+	BoxSystem       Box = "system"
+	BoxVerification Box = "verification"
+)
+
+// Valid indicates whether the value is a known member of the Box enum.
+func (e Box) Valid() bool {
+	switch e {
+	case BoxInteraction:
+		return true
+	case BoxReview:
+		return true
+	case BoxSystem:
+		return true
+	case BoxVerification:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContentApprovedTitlePayloadTargetKind.
 const (
 	ContentApprovedTitlePayloadTargetKindComment  ContentApprovedTitlePayloadTargetKind = "comment"
@@ -84,6 +333,72 @@ const (
 func (e ContentApprovedTitlePayloadType) Valid() bool {
 	switch e {
 	case ContentApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentDraftExpiringTitlePayloadTargetKind.
+const (
+	ContentDraftExpiringTitlePayloadTargetKindReview ContentDraftExpiringTitlePayloadTargetKind = "review"
+)
+
+// Valid indicates whether the value is a known member of the ContentDraftExpiringTitlePayloadTargetKind enum.
+func (e ContentDraftExpiringTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case ContentDraftExpiringTitlePayloadTargetKindReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentDraftExpiringTitlePayloadTitleKey.
+const (
+	ContentDraftExpiringTitlePayloadTitleKeyNotificationsContentDraftExpiring ContentDraftExpiringTitlePayloadTitleKey = "notifications.content.draft_expiring"
+)
+
+// Valid indicates whether the value is a known member of the ContentDraftExpiringTitlePayloadTitleKey enum.
+func (e ContentDraftExpiringTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case ContentDraftExpiringTitlePayloadTitleKeyNotificationsContentDraftExpiring:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentDraftExpiringTitlePayloadTitleParamsContentNameState.
+const (
+	ContentDraftExpiringTitlePayloadTitleParamsContentNameStateAvailable    ContentDraftExpiringTitlePayloadTitleParamsContentNameState = "available"
+	ContentDraftExpiringTitlePayloadTitleParamsContentNameStateInaccessible ContentDraftExpiringTitlePayloadTitleParamsContentNameState = "inaccessible"
+	ContentDraftExpiringTitlePayloadTitleParamsContentNameStateUnavailable  ContentDraftExpiringTitlePayloadTitleParamsContentNameState = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the ContentDraftExpiringTitlePayloadTitleParamsContentNameState enum.
+func (e ContentDraftExpiringTitlePayloadTitleParamsContentNameState) Valid() bool {
+	switch e {
+	case ContentDraftExpiringTitlePayloadTitleParamsContentNameStateAvailable:
+		return true
+	case ContentDraftExpiringTitlePayloadTitleParamsContentNameStateInaccessible:
+		return true
+	case ContentDraftExpiringTitlePayloadTitleParamsContentNameStateUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContentDraftExpiringTitlePayloadType.
+const (
+	ContentDraftExpiringTitlePayloadTypeBusiness ContentDraftExpiringTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the ContentDraftExpiringTitlePayloadType enum.
+func (e ContentDraftExpiringTitlePayloadType) Valid() bool {
+	switch e {
+	case ContentDraftExpiringTitlePayloadTypeBusiness:
 		return true
 	default:
 		return false
@@ -228,6 +543,51 @@ const (
 func (e ContentRemovedTitlePayloadType) Valid() bool {
 	switch e {
 	case ContentRemovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GroupMembershipGraceExpiringTitlePayloadTargetKind.
+const (
+	GroupMembershipGraceExpiringTitlePayloadTargetKindGroupMembership GroupMembershipGraceExpiringTitlePayloadTargetKind = "group_membership"
+)
+
+// Valid indicates whether the value is a known member of the GroupMembershipGraceExpiringTitlePayloadTargetKind enum.
+func (e GroupMembershipGraceExpiringTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case GroupMembershipGraceExpiringTitlePayloadTargetKindGroupMembership:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GroupMembershipGraceExpiringTitlePayloadTitleKey.
+const (
+	GroupMembershipGraceExpiringTitlePayloadTitleKeyNotificationsGroupMembershipGraceExpiring GroupMembershipGraceExpiringTitlePayloadTitleKey = "notifications.group_membership.grace_expiring"
+)
+
+// Valid indicates whether the value is a known member of the GroupMembershipGraceExpiringTitlePayloadTitleKey enum.
+func (e GroupMembershipGraceExpiringTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case GroupMembershipGraceExpiringTitlePayloadTitleKeyNotificationsGroupMembershipGraceExpiring:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GroupMembershipGraceExpiringTitlePayloadType.
+const (
+	GroupMembershipGraceExpiringTitlePayloadTypeBusiness GroupMembershipGraceExpiringTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the GroupMembershipGraceExpiringTitlePayloadType enum.
+func (e GroupMembershipGraceExpiringTitlePayloadType) Valid() bool {
+	switch e {
+	case GroupMembershipGraceExpiringTitlePayloadTypeBusiness:
 		return true
 	default:
 		return false
@@ -513,6 +873,66 @@ func (e NotificationType) Valid() bool {
 	}
 }
 
+// Defines values for ReasonCode.
+const (
+	AuthorRequest          ReasonCode = "author_request"
+	CommunityGuidelines    ReasonCode = "community_guidelines"
+	CopyrightClaim         ReasonCode = "copyright_claim"
+	DuplicateBinding       ReasonCode = "duplicate_binding"
+	DuplicateMaterial      ReasonCode = "duplicate_material"
+	EligibilityRevoked     ReasonCode = "eligibility_revoked"
+	ExpiredDocument        ReasonCode = "expired_document"
+	IdentityMismatch       ReasonCode = "identity_mismatch"
+	IneligibleStatus       ReasonCode = "ineligible_status"
+	InsufficientEvidence   ReasonCode = "insufficient_evidence"
+	LowQuality             ReasonCode = "low_quality"
+	OffTopic               ReasonCode = "off_topic"
+	PaymentChannelRejected ReasonCode = "payment_channel_rejected"
+	PolicyViolation        ReasonCode = "policy_violation"
+	PrivacyExposure        ReasonCode = "privacy_exposure"
+	UnclearMaterial        ReasonCode = "unclear_material"
+)
+
+// Valid indicates whether the value is a known member of the ReasonCode enum.
+func (e ReasonCode) Valid() bool {
+	switch e {
+	case AuthorRequest:
+		return true
+	case CommunityGuidelines:
+		return true
+	case CopyrightClaim:
+		return true
+	case DuplicateBinding:
+		return true
+	case DuplicateMaterial:
+		return true
+	case EligibilityRevoked:
+		return true
+	case ExpiredDocument:
+		return true
+	case IdentityMismatch:
+		return true
+	case IneligibleStatus:
+		return true
+	case InsufficientEvidence:
+		return true
+	case LowQuality:
+		return true
+	case OffTopic:
+		return true
+	case PaymentChannelRejected:
+		return true
+	case PolicyViolation:
+		return true
+	case PrivacyExposure:
+		return true
+	case UnclearMaterial:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReportApprovedTitlePayloadTargetKind.
 const (
 	ReportApprovedTitlePayloadTargetKindReport ReportApprovedTitlePayloadTargetKind = "report"
@@ -693,6 +1113,51 @@ func (e ResourceRemovalRejectedTitlePayloadType) Valid() bool {
 	}
 }
 
+// Defines values for StorageContributionExitCompletedTitlePayloadTargetKind.
+const (
+	StorageContributionExitCompletedTitlePayloadTargetKindStorageContribution StorageContributionExitCompletedTitlePayloadTargetKind = "storage_contribution"
+)
+
+// Valid indicates whether the value is a known member of the StorageContributionExitCompletedTitlePayloadTargetKind enum.
+func (e StorageContributionExitCompletedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case StorageContributionExitCompletedTitlePayloadTargetKindStorageContribution:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StorageContributionExitCompletedTitlePayloadTitleKey.
+const (
+	StorageContributionExitCompletedTitlePayloadTitleKeyNotificationsStorageContributionExitCompleted StorageContributionExitCompletedTitlePayloadTitleKey = "notifications.storage_contribution.exit_completed"
+)
+
+// Valid indicates whether the value is a known member of the StorageContributionExitCompletedTitlePayloadTitleKey enum.
+func (e StorageContributionExitCompletedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case StorageContributionExitCompletedTitlePayloadTitleKeyNotificationsStorageContributionExitCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StorageContributionExitCompletedTitlePayloadType.
+const (
+	StorageContributionExitCompletedTitlePayloadTypeBusiness StorageContributionExitCompletedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the StorageContributionExitCompletedTitlePayloadType enum.
+func (e StorageContributionExitCompletedTitlePayloadType) Valid() bool {
+	switch e {
+	case StorageContributionExitCompletedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for StudentVerificationApprovedTitlePayloadTargetKind.
 const (
 	StudentVerificationApprovedTitlePayloadTargetKindVerificationApplication StudentVerificationApprovedTitlePayloadTargetKind = "verification_application"
@@ -828,13 +1293,62 @@ func (e StudentVerificationRevokedTitlePayloadType) Valid() bool {
 	}
 }
 
+// Defines values for StudentVerificationSupplementRequiredTitlePayloadTargetKind.
+const (
+	StudentVerificationSupplementRequiredTitlePayloadTargetKindVerificationApplication StudentVerificationSupplementRequiredTitlePayloadTargetKind = "verification_application"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationSupplementRequiredTitlePayloadTargetKind enum.
+func (e StudentVerificationSupplementRequiredTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case StudentVerificationSupplementRequiredTitlePayloadTargetKindVerificationApplication:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationSupplementRequiredTitlePayloadTitleKey.
+const (
+	StudentVerificationSupplementRequiredTitlePayloadTitleKeyNotificationsStudentVerificationSupplementRequired StudentVerificationSupplementRequiredTitlePayloadTitleKey = "notifications.student_verification.supplement_required"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationSupplementRequiredTitlePayloadTitleKey enum.
+func (e StudentVerificationSupplementRequiredTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case StudentVerificationSupplementRequiredTitlePayloadTitleKeyNotificationsStudentVerificationSupplementRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudentVerificationSupplementRequiredTitlePayloadType.
+const (
+	StudentVerificationSupplementRequiredTitlePayloadTypeBusiness StudentVerificationSupplementRequiredTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the StudentVerificationSupplementRequiredTitlePayloadType enum.
+func (e StudentVerificationSupplementRequiredTitlePayloadType) Valid() bool {
+	switch e {
+	case StudentVerificationSupplementRequiredTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SystemAccountTitlePayloadTargetKind.
 const (
+	SystemAccountTitlePayloadTargetKindBillingOrder               SystemAccountTitlePayloadTargetKind = "billing_order"
 	SystemAccountTitlePayloadTargetKindComment                    SystemAccountTitlePayloadTargetKind = "comment"
+	SystemAccountTitlePayloadTargetKindGroupMembership            SystemAccountTitlePayloadTargetKind = "group_membership"
+	SystemAccountTitlePayloadTargetKindModerationAppeal           SystemAccountTitlePayloadTargetKind = "moderation_appeal"
 	SystemAccountTitlePayloadTargetKindReport                     SystemAccountTitlePayloadTargetKind = "report"
 	SystemAccountTitlePayloadTargetKindResource                   SystemAccountTitlePayloadTargetKind = "resource"
 	SystemAccountTitlePayloadTargetKindResourceRemovalRequest     SystemAccountTitlePayloadTargetKind = "resource_removal_request"
 	SystemAccountTitlePayloadTargetKindReview                     SystemAccountTitlePayloadTargetKind = "review"
+	SystemAccountTitlePayloadTargetKindStorageContribution        SystemAccountTitlePayloadTargetKind = "storage_contribution"
 	SystemAccountTitlePayloadTargetKindTeacherApplication         SystemAccountTitlePayloadTargetKind = "teacher_application"
 	SystemAccountTitlePayloadTargetKindVerificationApplication    SystemAccountTitlePayloadTargetKind = "verification_application"
 	SystemAccountTitlePayloadTargetKindVerificationCredential     SystemAccountTitlePayloadTargetKind = "verification_credential"
@@ -845,7 +1359,13 @@ const (
 // Valid indicates whether the value is a known member of the SystemAccountTitlePayloadTargetKind enum.
 func (e SystemAccountTitlePayloadTargetKind) Valid() bool {
 	switch e {
+	case SystemAccountTitlePayloadTargetKindBillingOrder:
+		return true
 	case SystemAccountTitlePayloadTargetKindComment:
+		return true
+	case SystemAccountTitlePayloadTargetKindGroupMembership:
+		return true
+	case SystemAccountTitlePayloadTargetKindModerationAppeal:
 		return true
 	case SystemAccountTitlePayloadTargetKindReport:
 		return true
@@ -854,6 +1374,8 @@ func (e SystemAccountTitlePayloadTargetKind) Valid() bool {
 	case SystemAccountTitlePayloadTargetKindResourceRemovalRequest:
 		return true
 	case SystemAccountTitlePayloadTargetKindReview:
+		return true
+	case SystemAccountTitlePayloadTargetKindStorageContribution:
 		return true
 	case SystemAccountTitlePayloadTargetKindTeacherApplication:
 		return true
@@ -923,11 +1445,15 @@ func (e SystemAccountTitlePayloadType) Valid() bool {
 
 // Defines values for SystemNoticeTitlePayloadTargetKind.
 const (
+	SystemNoticeTitlePayloadTargetKindBillingOrder               SystemNoticeTitlePayloadTargetKind = "billing_order"
 	SystemNoticeTitlePayloadTargetKindComment                    SystemNoticeTitlePayloadTargetKind = "comment"
+	SystemNoticeTitlePayloadTargetKindGroupMembership            SystemNoticeTitlePayloadTargetKind = "group_membership"
+	SystemNoticeTitlePayloadTargetKindModerationAppeal           SystemNoticeTitlePayloadTargetKind = "moderation_appeal"
 	SystemNoticeTitlePayloadTargetKindReport                     SystemNoticeTitlePayloadTargetKind = "report"
 	SystemNoticeTitlePayloadTargetKindResource                   SystemNoticeTitlePayloadTargetKind = "resource"
 	SystemNoticeTitlePayloadTargetKindResourceRemovalRequest     SystemNoticeTitlePayloadTargetKind = "resource_removal_request"
 	SystemNoticeTitlePayloadTargetKindReview                     SystemNoticeTitlePayloadTargetKind = "review"
+	SystemNoticeTitlePayloadTargetKindStorageContribution        SystemNoticeTitlePayloadTargetKind = "storage_contribution"
 	SystemNoticeTitlePayloadTargetKindTeacherApplication         SystemNoticeTitlePayloadTargetKind = "teacher_application"
 	SystemNoticeTitlePayloadTargetKindVerificationApplication    SystemNoticeTitlePayloadTargetKind = "verification_application"
 	SystemNoticeTitlePayloadTargetKindVerificationCredential     SystemNoticeTitlePayloadTargetKind = "verification_credential"
@@ -938,7 +1464,13 @@ const (
 // Valid indicates whether the value is a known member of the SystemNoticeTitlePayloadTargetKind enum.
 func (e SystemNoticeTitlePayloadTargetKind) Valid() bool {
 	switch e {
+	case SystemNoticeTitlePayloadTargetKindBillingOrder:
+		return true
 	case SystemNoticeTitlePayloadTargetKindComment:
+		return true
+	case SystemNoticeTitlePayloadTargetKindGroupMembership:
+		return true
+	case SystemNoticeTitlePayloadTargetKindModerationAppeal:
 		return true
 	case SystemNoticeTitlePayloadTargetKindReport:
 		return true
@@ -947,6 +1479,8 @@ func (e SystemNoticeTitlePayloadTargetKind) Valid() bool {
 	case SystemNoticeTitlePayloadTargetKindResourceRemovalRequest:
 		return true
 	case SystemNoticeTitlePayloadTargetKindReview:
+		return true
+	case SystemNoticeTitlePayloadTargetKindStorageContribution:
 		return true
 	case SystemNoticeTitlePayloadTargetKindTeacherApplication:
 		return true
@@ -1016,11 +1550,15 @@ func (e SystemNoticeTitlePayloadType) Valid() bool {
 
 // Defines values for SystemSecurityTitlePayloadTargetKind.
 const (
+	SystemSecurityTitlePayloadTargetKindBillingOrder               SystemSecurityTitlePayloadTargetKind = "billing_order"
 	SystemSecurityTitlePayloadTargetKindComment                    SystemSecurityTitlePayloadTargetKind = "comment"
+	SystemSecurityTitlePayloadTargetKindGroupMembership            SystemSecurityTitlePayloadTargetKind = "group_membership"
+	SystemSecurityTitlePayloadTargetKindModerationAppeal           SystemSecurityTitlePayloadTargetKind = "moderation_appeal"
 	SystemSecurityTitlePayloadTargetKindReport                     SystemSecurityTitlePayloadTargetKind = "report"
 	SystemSecurityTitlePayloadTargetKindResource                   SystemSecurityTitlePayloadTargetKind = "resource"
 	SystemSecurityTitlePayloadTargetKindResourceRemovalRequest     SystemSecurityTitlePayloadTargetKind = "resource_removal_request"
 	SystemSecurityTitlePayloadTargetKindReview                     SystemSecurityTitlePayloadTargetKind = "review"
+	SystemSecurityTitlePayloadTargetKindStorageContribution        SystemSecurityTitlePayloadTargetKind = "storage_contribution"
 	SystemSecurityTitlePayloadTargetKindTeacherApplication         SystemSecurityTitlePayloadTargetKind = "teacher_application"
 	SystemSecurityTitlePayloadTargetKindVerificationApplication    SystemSecurityTitlePayloadTargetKind = "verification_application"
 	SystemSecurityTitlePayloadTargetKindVerificationCredential     SystemSecurityTitlePayloadTargetKind = "verification_credential"
@@ -1031,7 +1569,13 @@ const (
 // Valid indicates whether the value is a known member of the SystemSecurityTitlePayloadTargetKind enum.
 func (e SystemSecurityTitlePayloadTargetKind) Valid() bool {
 	switch e {
+	case SystemSecurityTitlePayloadTargetKindBillingOrder:
+		return true
 	case SystemSecurityTitlePayloadTargetKindComment:
+		return true
+	case SystemSecurityTitlePayloadTargetKindGroupMembership:
+		return true
+	case SystemSecurityTitlePayloadTargetKindModerationAppeal:
 		return true
 	case SystemSecurityTitlePayloadTargetKindReport:
 		return true
@@ -1040,6 +1584,8 @@ func (e SystemSecurityTitlePayloadTargetKind) Valid() bool {
 	case SystemSecurityTitlePayloadTargetKindResourceRemovalRequest:
 		return true
 	case SystemSecurityTitlePayloadTargetKindReview:
+		return true
+	case SystemSecurityTitlePayloadTargetKindStorageContribution:
 		return true
 	case SystemSecurityTitlePayloadTargetKindTeacherApplication:
 		return true
@@ -1109,12 +1655,17 @@ func (e SystemSecurityTitlePayloadType) Valid() bool {
 
 // Defines values for TargetKind.
 const (
+	TargetKindBillingOrder               TargetKind = "billing_order"
 	TargetKindComment                    TargetKind = "comment"
+	TargetKindGroupMembership            TargetKind = "group_membership"
+	TargetKindModerationAppeal           TargetKind = "moderation_appeal"
 	TargetKindReport                     TargetKind = "report"
 	TargetKindResource                   TargetKind = "resource"
 	TargetKindResourceRemovalRequest     TargetKind = "resource_removal_request"
 	TargetKindReview                     TargetKind = "review"
+	TargetKindStorageContribution        TargetKind = "storage_contribution"
 	TargetKindTeacherApplication         TargetKind = "teacher_application"
+	TargetKindTeacherHomepageRequest     TargetKind = "teacher_homepage_request"
 	TargetKindVerificationApplication    TargetKind = "verification_application"
 	TargetKindVerificationCredential     TargetKind = "verification_credential"
 	TargetKindVerificationOperation      TargetKind = "verification_operation"
@@ -1124,7 +1675,13 @@ const (
 // Valid indicates whether the value is a known member of the TargetKind enum.
 func (e TargetKind) Valid() bool {
 	switch e {
+	case TargetKindBillingOrder:
+		return true
 	case TargetKindComment:
+		return true
+	case TargetKindGroupMembership:
+		return true
+	case TargetKindModerationAppeal:
 		return true
 	case TargetKindReport:
 		return true
@@ -1134,7 +1691,11 @@ func (e TargetKind) Valid() bool {
 		return true
 	case TargetKindReview:
 		return true
+	case TargetKindStorageContribution:
+		return true
 	case TargetKindTeacherApplication:
+		return true
+	case TargetKindTeacherHomepageRequest:
 		return true
 	case TargetKindVerificationApplication:
 		return true
@@ -1143,6 +1704,96 @@ func (e TargetKind) Valid() bool {
 	case TargetKindVerificationOperation:
 		return true
 	case TargetKindVerificationRemovalRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestApprovedTitlePayloadTargetKind.
+const (
+	TeacherHomepageRequestApprovedTitlePayloadTargetKindTeacherHomepageRequest TeacherHomepageRequestApprovedTitlePayloadTargetKind = "teacher_homepage_request"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestApprovedTitlePayloadTargetKind enum.
+func (e TeacherHomepageRequestApprovedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestApprovedTitlePayloadTargetKindTeacherHomepageRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestApprovedTitlePayloadTitleKey.
+const (
+	TeacherHomepageRequestApprovedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestApproved TeacherHomepageRequestApprovedTitlePayloadTitleKey = "notifications.teacher_homepage_request.approved"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestApprovedTitlePayloadTitleKey enum.
+func (e TeacherHomepageRequestApprovedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestApprovedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestApprovedTitlePayloadType.
+const (
+	TeacherHomepageRequestApprovedTitlePayloadTypeBusiness TeacherHomepageRequestApprovedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestApprovedTitlePayloadType enum.
+func (e TeacherHomepageRequestApprovedTitlePayloadType) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestApprovedTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestRejectedTitlePayloadTargetKind.
+const (
+	TeacherHomepageRequestRejectedTitlePayloadTargetKindTeacherHomepageRequest TeacherHomepageRequestRejectedTitlePayloadTargetKind = "teacher_homepage_request"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestRejectedTitlePayloadTargetKind enum.
+func (e TeacherHomepageRequestRejectedTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestRejectedTitlePayloadTargetKindTeacherHomepageRequest:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestRejectedTitlePayloadTitleKey.
+const (
+	TeacherHomepageRequestRejectedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestRejected TeacherHomepageRequestRejectedTitlePayloadTitleKey = "notifications.teacher_homepage_request.rejected"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestRejectedTitlePayloadTitleKey enum.
+func (e TeacherHomepageRequestRejectedTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestRejectedTitlePayloadTitleKeyNotificationsTeacherHomepageRequestRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherHomepageRequestRejectedTitlePayloadType.
+const (
+	TeacherHomepageRequestRejectedTitlePayloadTypeBusiness TeacherHomepageRequestRejectedTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the TeacherHomepageRequestRejectedTitlePayloadType enum.
+func (e TeacherHomepageRequestRejectedTitlePayloadType) Valid() bool {
+	switch e {
+	case TeacherHomepageRequestRejectedTitlePayloadTypeBusiness:
 		return true
 	default:
 		return false
@@ -1239,41 +1890,112 @@ func (e TeacherVerificationRejectedTitlePayloadType) Valid() bool {
 	}
 }
 
+// Defines values for TeacherVerificationSupplementRequiredTitlePayloadTargetKind.
+const (
+	TeacherVerificationSupplementRequiredTitlePayloadTargetKindTeacherApplication TeacherVerificationSupplementRequiredTitlePayloadTargetKind = "teacher_application"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationSupplementRequiredTitlePayloadTargetKind enum.
+func (e TeacherVerificationSupplementRequiredTitlePayloadTargetKind) Valid() bool {
+	switch e {
+	case TeacherVerificationSupplementRequiredTitlePayloadTargetKindTeacherApplication:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationSupplementRequiredTitlePayloadTitleKey.
+const (
+	TeacherVerificationSupplementRequiredTitlePayloadTitleKeyNotificationsTeacherVerificationSupplementRequired TeacherVerificationSupplementRequiredTitlePayloadTitleKey = "notifications.teacher_verification.supplement_required"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationSupplementRequiredTitlePayloadTitleKey enum.
+func (e TeacherVerificationSupplementRequiredTitlePayloadTitleKey) Valid() bool {
+	switch e {
+	case TeacherVerificationSupplementRequiredTitlePayloadTitleKeyNotificationsTeacherVerificationSupplementRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeacherVerificationSupplementRequiredTitlePayloadType.
+const (
+	TeacherVerificationSupplementRequiredTitlePayloadTypeBusiness TeacherVerificationSupplementRequiredTitlePayloadType = "business"
+)
+
+// Valid indicates whether the value is a known member of the TeacherVerificationSupplementRequiredTitlePayloadType enum.
+func (e TeacherVerificationSupplementRequiredTitlePayloadType) Valid() bool {
+	switch e {
+	case TeacherVerificationSupplementRequiredTitlePayloadTypeBusiness:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TitleKey.
 const (
-	TitleKeyNotificationsContentApproved                TitleKey = "notifications.content.approved"
-	TitleKeyNotificationsContentRejected                TitleKey = "notifications.content.rejected"
-	TitleKeyNotificationsContentRemoved                 TitleKey = "notifications.content.removed"
-	TitleKeyNotificationsIdentityVerificationApproved   TitleKey = "notifications.identity_verification.approved"
-	TitleKeyNotificationsIdentityVerificationRejected   TitleKey = "notifications.identity_verification.rejected"
-	TitleKeyNotificationsInteractionLike                TitleKey = "notifications.interaction.like"
-	TitleKeyNotificationsInteractionReply               TitleKey = "notifications.interaction.reply"
-	TitleKeyNotificationsReportApproved                 TitleKey = "notifications.report.approved"
-	TitleKeyNotificationsReportRejected                 TitleKey = "notifications.report.rejected"
-	TitleKeyNotificationsResourceRemovalApproved        TitleKey = "notifications.resource_removal.approved"
-	TitleKeyNotificationsResourceRemovalRejected        TitleKey = "notifications.resource_removal.rejected"
-	TitleKeyNotificationsStudentVerificationApproved    TitleKey = "notifications.student_verification.approved"
-	TitleKeyNotificationsStudentVerificationRejected    TitleKey = "notifications.student_verification.rejected"
-	TitleKeyNotificationsStudentVerificationRevoked     TitleKey = "notifications.student_verification.revoked"
-	TitleKeyNotificationsSystemAccount                  TitleKey = "notifications.system.account"
-	TitleKeyNotificationsSystemNotice                   TitleKey = "notifications.system.notice"
-	TitleKeyNotificationsSystemSecurity                 TitleKey = "notifications.system.security"
-	TitleKeyNotificationsTeacherVerificationApproved    TitleKey = "notifications.teacher_verification.approved"
-	TitleKeyNotificationsTeacherVerificationRejected    TitleKey = "notifications.teacher_verification.rejected"
-	TitleKeyNotificationsVerificationDeletionApproved   TitleKey = "notifications.verification_deletion.approved"
-	TitleKeyNotificationsVerificationDeletionRejected   TitleKey = "notifications.verification_deletion.rejected"
-	TitleKeyNotificationsVerificationRevocationApproved TitleKey = "notifications.verification_revocation.approved"
-	TitleKeyNotificationsVerificationRevocationRejected TitleKey = "notifications.verification_revocation.rejected"
+	TitleKeyNotificationsAppealApproved                        TitleKey = "notifications.appeal.approved"
+	TitleKeyNotificationsAppealRejected                        TitleKey = "notifications.appeal.rejected"
+	TitleKeyNotificationsBillingRefundCompleted                TitleKey = "notifications.billing.refund_completed"
+	TitleKeyNotificationsBillingRefundRejected                 TitleKey = "notifications.billing.refund_rejected"
+	TitleKeyNotificationsBillingTopupReviewRequired            TitleKey = "notifications.billing.topup_review_required"
+	TitleKeyNotificationsContentApproved                       TitleKey = "notifications.content.approved"
+	TitleKeyNotificationsContentDraftExpiring                  TitleKey = "notifications.content.draft_expiring"
+	TitleKeyNotificationsContentRejected                       TitleKey = "notifications.content.rejected"
+	TitleKeyNotificationsContentRemoved                        TitleKey = "notifications.content.removed"
+	TitleKeyNotificationsGroupMembershipGraceExpiring          TitleKey = "notifications.group_membership.grace_expiring"
+	TitleKeyNotificationsIdentityVerificationApproved          TitleKey = "notifications.identity_verification.approved"
+	TitleKeyNotificationsIdentityVerificationRejected          TitleKey = "notifications.identity_verification.rejected"
+	TitleKeyNotificationsInteractionLike                       TitleKey = "notifications.interaction.like"
+	TitleKeyNotificationsInteractionReply                      TitleKey = "notifications.interaction.reply"
+	TitleKeyNotificationsReportApproved                        TitleKey = "notifications.report.approved"
+	TitleKeyNotificationsReportRejected                        TitleKey = "notifications.report.rejected"
+	TitleKeyNotificationsResourceRemovalApproved               TitleKey = "notifications.resource_removal.approved"
+	TitleKeyNotificationsResourceRemovalRejected               TitleKey = "notifications.resource_removal.rejected"
+	TitleKeyNotificationsStorageContributionExitCompleted      TitleKey = "notifications.storage_contribution.exit_completed"
+	TitleKeyNotificationsStudentVerificationApproved           TitleKey = "notifications.student_verification.approved"
+	TitleKeyNotificationsStudentVerificationRejected           TitleKey = "notifications.student_verification.rejected"
+	TitleKeyNotificationsStudentVerificationRevoked            TitleKey = "notifications.student_verification.revoked"
+	TitleKeyNotificationsStudentVerificationSupplementRequired TitleKey = "notifications.student_verification.supplement_required"
+	TitleKeyNotificationsSystemAccount                         TitleKey = "notifications.system.account"
+	TitleKeyNotificationsSystemNotice                          TitleKey = "notifications.system.notice"
+	TitleKeyNotificationsSystemSecurity                        TitleKey = "notifications.system.security"
+	TitleKeyNotificationsTeacherHomepageRequestApproved        TitleKey = "notifications.teacher_homepage_request.approved"
+	TitleKeyNotificationsTeacherHomepageRequestRejected        TitleKey = "notifications.teacher_homepage_request.rejected"
+	TitleKeyNotificationsTeacherVerificationApproved           TitleKey = "notifications.teacher_verification.approved"
+	TitleKeyNotificationsTeacherVerificationRejected           TitleKey = "notifications.teacher_verification.rejected"
+	TitleKeyNotificationsTeacherVerificationSupplementRequired TitleKey = "notifications.teacher_verification.supplement_required"
+	TitleKeyNotificationsVerificationDeletionApproved          TitleKey = "notifications.verification_deletion.approved"
+	TitleKeyNotificationsVerificationDeletionRejected          TitleKey = "notifications.verification_deletion.rejected"
+	TitleKeyNotificationsVerificationRevocationApproved        TitleKey = "notifications.verification_revocation.approved"
+	TitleKeyNotificationsVerificationRevocationRejected        TitleKey = "notifications.verification_revocation.rejected"
 )
 
 // Valid indicates whether the value is a known member of the TitleKey enum.
 func (e TitleKey) Valid() bool {
 	switch e {
+	case TitleKeyNotificationsAppealApproved:
+		return true
+	case TitleKeyNotificationsAppealRejected:
+		return true
+	case TitleKeyNotificationsBillingRefundCompleted:
+		return true
+	case TitleKeyNotificationsBillingRefundRejected:
+		return true
+	case TitleKeyNotificationsBillingTopupReviewRequired:
+		return true
 	case TitleKeyNotificationsContentApproved:
+		return true
+	case TitleKeyNotificationsContentDraftExpiring:
 		return true
 	case TitleKeyNotificationsContentRejected:
 		return true
 	case TitleKeyNotificationsContentRemoved:
+		return true
+	case TitleKeyNotificationsGroupMembershipGraceExpiring:
 		return true
 	case TitleKeyNotificationsIdentityVerificationApproved:
 		return true
@@ -1291,11 +2013,15 @@ func (e TitleKey) Valid() bool {
 		return true
 	case TitleKeyNotificationsResourceRemovalRejected:
 		return true
+	case TitleKeyNotificationsStorageContributionExitCompleted:
+		return true
 	case TitleKeyNotificationsStudentVerificationApproved:
 		return true
 	case TitleKeyNotificationsStudentVerificationRejected:
 		return true
 	case TitleKeyNotificationsStudentVerificationRevoked:
+		return true
+	case TitleKeyNotificationsStudentVerificationSupplementRequired:
 		return true
 	case TitleKeyNotificationsSystemAccount:
 		return true
@@ -1303,9 +2029,15 @@ func (e TitleKey) Valid() bool {
 		return true
 	case TitleKeyNotificationsSystemSecurity:
 		return true
+	case TitleKeyNotificationsTeacherHomepageRequestApproved:
+		return true
+	case TitleKeyNotificationsTeacherHomepageRequestRejected:
+		return true
 	case TitleKeyNotificationsTeacherVerificationApproved:
 		return true
 	case TitleKeyNotificationsTeacherVerificationRejected:
+		return true
+	case TitleKeyNotificationsTeacherVerificationSupplementRequired:
 		return true
 	case TitleKeyNotificationsVerificationDeletionApproved:
 		return true
@@ -1500,6 +2232,178 @@ func (e VerificationRevocationRejectedTitlePayloadType) Valid() bool {
 	}
 }
 
+// Defines values for ListNotificationsParamsType.
+const (
+	ListNotificationsParamsTypeAccount     ListNotificationsParamsType = "account"
+	ListNotificationsParamsTypeBusiness    ListNotificationsParamsType = "business"
+	ListNotificationsParamsTypeInteraction ListNotificationsParamsType = "interaction"
+	ListNotificationsParamsTypeSecurity    ListNotificationsParamsType = "security"
+)
+
+// Valid indicates whether the value is a known member of the ListNotificationsParamsType enum.
+func (e ListNotificationsParamsType) Valid() bool {
+	switch e {
+	case ListNotificationsParamsTypeAccount:
+		return true
+	case ListNotificationsParamsTypeBusiness:
+		return true
+	case ListNotificationsParamsTypeInteraction:
+		return true
+	case ListNotificationsParamsTypeSecurity:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MarkAllReadParamsType.
+const (
+	MarkAllReadParamsTypeAccount     MarkAllReadParamsType = "account"
+	MarkAllReadParamsTypeBusiness    MarkAllReadParamsType = "business"
+	MarkAllReadParamsTypeInteraction MarkAllReadParamsType = "interaction"
+	MarkAllReadParamsTypeSecurity    MarkAllReadParamsType = "security"
+)
+
+// Valid indicates whether the value is a known member of the MarkAllReadParamsType enum.
+func (e MarkAllReadParamsType) Valid() bool {
+	switch e {
+	case MarkAllReadParamsTypeAccount:
+		return true
+	case MarkAllReadParamsTypeBusiness:
+		return true
+	case MarkAllReadParamsTypeInteraction:
+		return true
+	case MarkAllReadParamsTypeSecurity:
+		return true
+	default:
+		return false
+	}
+}
+
+// AppealApprovedTitlePayload 审核申诉通过
+type AppealApprovedTitlePayload struct {
+	Target struct {
+		Id   string                               `json:"id"`
+		Kind AppealApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    AppealApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// AppealId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		AppealId string `json:"appeal_id"`
+	} `json:"title_params"`
+	Type AppealApprovedTitlePayloadType `json:"type"`
+}
+
+// AppealApprovedTitlePayloadTargetKind defines model for AppealApprovedTitlePayload.Target.Kind.
+type AppealApprovedTitlePayloadTargetKind string
+
+// AppealApprovedTitlePayloadTitleKey defines model for AppealApprovedTitlePayload.TitleKey.
+type AppealApprovedTitlePayloadTitleKey string
+
+// AppealApprovedTitlePayloadType defines model for AppealApprovedTitlePayload.Type.
+type AppealApprovedTitlePayloadType string
+
+// AppealRejectedTitlePayload 审核申诉驳回
+type AppealRejectedTitlePayload struct {
+	Target struct {
+		Id   string                               `json:"id"`
+		Kind AppealRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    AppealRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// AppealId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		AppealId string `json:"appeal_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+	} `json:"title_params"`
+	Type AppealRejectedTitlePayloadType `json:"type"`
+}
+
+// AppealRejectedTitlePayloadTargetKind defines model for AppealRejectedTitlePayload.Target.Kind.
+type AppealRejectedTitlePayloadTargetKind string
+
+// AppealRejectedTitlePayloadTitleKey defines model for AppealRejectedTitlePayload.TitleKey.
+type AppealRejectedTitlePayloadTitleKey string
+
+// AppealRejectedTitlePayloadType defines model for AppealRejectedTitlePayload.Type.
+type AppealRejectedTitlePayloadType string
+
+// BillingRefundCompletedTitlePayload 退款打款完成
+type BillingRefundCompletedTitlePayload struct {
+	Target struct {
+		Id   string                                       `json:"id"`
+		Kind BillingRefundCompletedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    BillingRefundCompletedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// OrderId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		OrderId string `json:"order_id"`
+	} `json:"title_params"`
+	Type BillingRefundCompletedTitlePayloadType `json:"type"`
+}
+
+// BillingRefundCompletedTitlePayloadTargetKind defines model for BillingRefundCompletedTitlePayload.Target.Kind.
+type BillingRefundCompletedTitlePayloadTargetKind string
+
+// BillingRefundCompletedTitlePayloadTitleKey defines model for BillingRefundCompletedTitlePayload.TitleKey.
+type BillingRefundCompletedTitlePayloadTitleKey string
+
+// BillingRefundCompletedTitlePayloadType defines model for BillingRefundCompletedTitlePayload.Type.
+type BillingRefundCompletedTitlePayloadType string
+
+// BillingRefundRejectedTitlePayload 退款申请驳回
+type BillingRefundRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                      `json:"id"`
+		Kind BillingRefundRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    BillingRefundRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// OrderId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		OrderId string `json:"order_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+	} `json:"title_params"`
+	Type BillingRefundRejectedTitlePayloadType `json:"type"`
+}
+
+// BillingRefundRejectedTitlePayloadTargetKind defines model for BillingRefundRejectedTitlePayload.Target.Kind.
+type BillingRefundRejectedTitlePayloadTargetKind string
+
+// BillingRefundRejectedTitlePayloadTitleKey defines model for BillingRefundRejectedTitlePayload.TitleKey.
+type BillingRefundRejectedTitlePayloadTitleKey string
+
+// BillingRefundRejectedTitlePayloadType defines model for BillingRefundRejectedTitlePayload.Type.
+type BillingRefundRejectedTitlePayloadType string
+
+// BillingTopupReviewRequiredTitlePayload 充值订单转人工核查
+type BillingTopupReviewRequiredTitlePayload struct {
+	Target struct {
+		Id   string                                           `json:"id"`
+		Kind BillingTopupReviewRequiredTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    BillingTopupReviewRequiredTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// OrderId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		OrderId string `json:"order_id"`
+	} `json:"title_params"`
+	Type BillingTopupReviewRequiredTitlePayloadType `json:"type"`
+}
+
+// BillingTopupReviewRequiredTitlePayloadTargetKind defines model for BillingTopupReviewRequiredTitlePayload.Target.Kind.
+type BillingTopupReviewRequiredTitlePayloadTargetKind string
+
+// BillingTopupReviewRequiredTitlePayloadTitleKey defines model for BillingTopupReviewRequiredTitlePayload.TitleKey.
+type BillingTopupReviewRequiredTitlePayloadTitleKey string
+
+// BillingTopupReviewRequiredTitlePayloadType defines model for BillingTopupReviewRequiredTitlePayload.Type.
+type BillingTopupReviewRequiredTitlePayloadType string
+
+// Box 通知中心分箱标识。
+type Box string
+
 // ContentApprovedTitlePayload 内容审核通过
 type ContentApprovedTitlePayload struct {
 	Target struct {
@@ -1508,7 +2412,7 @@ type ContentApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ContentApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -1516,6 +2420,9 @@ type ContentApprovedTitlePayload struct {
 
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *ContentApprovedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
 	} `json:"title_params"`
 	Type ContentApprovedTitlePayloadType `json:"type"`
 }
@@ -1532,6 +2439,38 @@ type ContentApprovedTitlePayloadTitleParamsContentNameState string
 // ContentApprovedTitlePayloadType defines model for ContentApprovedTitlePayload.Type.
 type ContentApprovedTitlePayloadType string
 
+// ContentDraftExpiringTitlePayload 撤回重编草稿即将过期
+type ContentDraftExpiringTitlePayload struct {
+	Target struct {
+		Id   string                                     `json:"id"`
+		Kind ContentDraftExpiringTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    ContentDraftExpiringTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		ContentId string `json:"content_id"`
+
+		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
+		ContentName *string `json:"content_name,omitempty"`
+
+		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+		ContentNameState *ContentDraftExpiringTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+	} `json:"title_params"`
+	Type ContentDraftExpiringTitlePayloadType `json:"type"`
+}
+
+// ContentDraftExpiringTitlePayloadTargetKind defines model for ContentDraftExpiringTitlePayload.Target.Kind.
+type ContentDraftExpiringTitlePayloadTargetKind string
+
+// ContentDraftExpiringTitlePayloadTitleKey defines model for ContentDraftExpiringTitlePayload.TitleKey.
+type ContentDraftExpiringTitlePayloadTitleKey string
+
+// ContentDraftExpiringTitlePayloadTitleParamsContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
+type ContentDraftExpiringTitlePayloadTitleParamsContentNameState string
+
+// ContentDraftExpiringTitlePayloadType defines model for ContentDraftExpiringTitlePayload.Type.
+type ContentDraftExpiringTitlePayloadType string
+
 // ContentRejectedTitlePayload 内容审核驳回
 type ContentRejectedTitlePayload struct {
 	Target struct {
@@ -1540,7 +2479,7 @@ type ContentRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ContentRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -1548,6 +2487,12 @@ type ContentRejectedTitlePayload struct {
 
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *ContentRejectedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 	} `json:"title_params"`
 	Type ContentRejectedTitlePayloadType `json:"type"`
 }
@@ -1572,7 +2517,7 @@ type ContentRemovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ContentRemovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -1580,6 +2525,12 @@ type ContentRemovedTitlePayload struct {
 
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *ContentRemovedTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 	} `json:"title_params"`
 	Type ContentRemovedTitlePayloadType `json:"type"`
 }
@@ -1601,6 +2552,29 @@ type Error struct {
 	Code string `json:"code"`
 }
 
+// GroupMembershipGraceExpiringTitlePayload 群准入资格宽限期即将到期
+type GroupMembershipGraceExpiringTitlePayload struct {
+	Target struct {
+		Id   string                                             `json:"id"`
+		Kind GroupMembershipGraceExpiringTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    GroupMembershipGraceExpiringTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// GroupId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		GroupId string `json:"group_id"`
+	} `json:"title_params"`
+	Type GroupMembershipGraceExpiringTitlePayloadType `json:"type"`
+}
+
+// GroupMembershipGraceExpiringTitlePayloadTargetKind defines model for GroupMembershipGraceExpiringTitlePayload.Target.Kind.
+type GroupMembershipGraceExpiringTitlePayloadTargetKind string
+
+// GroupMembershipGraceExpiringTitlePayloadTitleKey defines model for GroupMembershipGraceExpiringTitlePayload.TitleKey.
+type GroupMembershipGraceExpiringTitlePayloadTitleKey string
+
+// GroupMembershipGraceExpiringTitlePayloadType defines model for GroupMembershipGraceExpiringTitlePayload.Type.
+type GroupMembershipGraceExpiringTitlePayloadType string
+
 // IdentityVerificationApprovedTitlePayload 实名核验通过
 type IdentityVerificationApprovedTitlePayload struct {
 	Target struct {
@@ -1609,7 +2583,7 @@ type IdentityVerificationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    IdentityVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// OperationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// OperationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		OperationId string `json:"operation_id"`
 	} `json:"title_params"`
 	Type IdentityVerificationApprovedTitlePayloadType `json:"type"`
@@ -1632,8 +2606,11 @@ type IdentityVerificationRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    IdentityVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// OperationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// OperationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		OperationId string `json:"operation_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 	} `json:"title_params"`
 	Type IdentityVerificationRejectedTitlePayloadType `json:"type"`
 }
@@ -1655,7 +2632,7 @@ type InteractionLikeTitlePayload struct {
 	} `json:"target"`
 	TitleKey    InteractionLikeTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -1663,6 +2640,9 @@ type InteractionLikeTitlePayload struct {
 
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *InteractionLikeTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
 	} `json:"title_params"`
 	Type InteractionLikeTitlePayloadType `json:"type"`
 }
@@ -1687,7 +2667,7 @@ type InteractionReplyTitlePayload struct {
 	} `json:"target"`
 	TitleKey    InteractionReplyTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ContentId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContentId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ContentId string `json:"content_id"`
 
 		// ContentName 当前可见的评价标题或资料标题。不可见和依赖故障时为空字符串；客户端按 content_name_state 使用本地化占位，不能回显缓存标题。仅 review、comment、resource 目标提供。
@@ -1695,6 +2675,9 @@ type InteractionReplyTitlePayload struct {
 
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *InteractionReplyTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
+
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
 	} `json:"title_params"`
 	Type InteractionReplyTitlePayloadType `json:"type"`
 }
@@ -1713,9 +2696,9 @@ type InteractionReplyTitlePayloadType string
 
 // Notification defines model for Notification.
 type Notification struct {
-	Count        int                      `json:"count"`
+	Count        int64                    `json:"count"`
 	CreatedAt    time.Time                `json:"created_at"`
-	Id           string                   `json:"id"`
+	Id           openapi_types.UUID       `json:"id"`
 	ReadAt       *time.Time               `json:"read_at"`
 	SourceModule string                   `json:"source_module"`
 	Target       Target                   `json:"target"`
@@ -1724,10 +2707,13 @@ type Notification struct {
 	// TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 	TitleKey TitleKey `json:"title_key"`
 
-	// TitleParams 保留 TitleKey 的旧业务编号参数。内容目标另带读取时解析的 content_name 与 content_name_state，见 x-title-catalog。旧客户端可继续使用旧参数；新客户端应按状态展示名称或本地化占位。 读取参数仅在 include_content_names=true 时追加。
+	// TitleParams 标题参数见 x-title-catalog。允许的标题按当前权限返回内容名称和名称状态，可访问的评论可附带所属根评价 ID。适用的通知可附带 reason_code。
 	TitleParams map[string]string `json:"title_params"`
 	Type        NotificationType  `json:"type"`
-	union       json.RawMessage
+
+	// UpdatedAt 最近一次通知发生或窗口内聚合更新时间；首次写入与 created_at 相同。
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	union     json.RawMessage
 }
 
 // NotificationTargetStatus defines model for Notification.TargetStatus.
@@ -1744,8 +2730,24 @@ type Page struct {
 
 // Preferences defines model for Preferences.
 type Preferences struct {
-	InteractionEnabled bool `json:"interaction_enabled"`
+	// LikeEnabled 点赞通知独立开关，默认 true。
+	LikeEnabled bool `json:"like_enabled"`
+
+	// ReplyEnabled 评论回复通知独立开关，默认 true。
+	ReplyEnabled bool `json:"reply_enabled"`
 }
+
+// PreferencesUpdate defines model for PreferencesUpdate.
+type PreferencesUpdate struct {
+	// LikeEnabled 点赞通知独立开关。
+	LikeEnabled *bool `json:"like_enabled,omitempty"`
+
+	// ReplyEnabled 评论回复通知独立开关。
+	ReplyEnabled *bool `json:"reply_enabled,omitempty"`
+}
+
+// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+type ReasonCode string
 
 // ReportApprovedTitlePayload 举报处理通过
 type ReportApprovedTitlePayload struct {
@@ -1755,7 +2757,7 @@ type ReportApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ReportApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ReportId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReportId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReportId string `json:"report_id"`
 	} `json:"title_params"`
 	Type ReportApprovedTitlePayloadType `json:"type"`
@@ -1778,7 +2780,10 @@ type ReportRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ReportRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ReportId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+
+		// ReportId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReportId string `json:"report_id"`
 	} `json:"title_params"`
 	Type ReportRejectedTitlePayloadType `json:"type"`
@@ -1801,7 +2806,7 @@ type ResourceRemovalApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ResourceRemovalApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type ResourceRemovalApprovedTitlePayloadType `json:"type"`
@@ -1824,7 +2829,10 @@ type ResourceRemovalRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    ResourceRemovalRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type ResourceRemovalRejectedTitlePayloadType `json:"type"`
@@ -1839,6 +2847,29 @@ type ResourceRemovalRejectedTitlePayloadTitleKey string
 // ResourceRemovalRejectedTitlePayloadType defines model for ResourceRemovalRejectedTitlePayload.Type.
 type ResourceRemovalRejectedTitlePayloadType string
 
+// StorageContributionExitCompletedTitlePayload 存储贡献退出完成
+type StorageContributionExitCompletedTitlePayload struct {
+	Target struct {
+		Id   string                                                 `json:"id"`
+		Kind StorageContributionExitCompletedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    StorageContributionExitCompletedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ContributionId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		ContributionId string `json:"contribution_id"`
+	} `json:"title_params"`
+	Type StorageContributionExitCompletedTitlePayloadType `json:"type"`
+}
+
+// StorageContributionExitCompletedTitlePayloadTargetKind defines model for StorageContributionExitCompletedTitlePayload.Target.Kind.
+type StorageContributionExitCompletedTitlePayloadTargetKind string
+
+// StorageContributionExitCompletedTitlePayloadTitleKey defines model for StorageContributionExitCompletedTitlePayload.TitleKey.
+type StorageContributionExitCompletedTitlePayloadTitleKey string
+
+// StorageContributionExitCompletedTitlePayloadType defines model for StorageContributionExitCompletedTitlePayload.Type.
+type StorageContributionExitCompletedTitlePayloadType string
+
 // StudentVerificationApprovedTitlePayload 学生认证通过
 type StudentVerificationApprovedTitlePayload struct {
 	Target struct {
@@ -1847,7 +2878,7 @@ type StudentVerificationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StudentVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 	} `json:"title_params"`
 	Type StudentVerificationApprovedTitlePayloadType `json:"type"`
@@ -1870,8 +2901,11 @@ type StudentVerificationRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StudentVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 	} `json:"title_params"`
 	Type StudentVerificationRejectedTitlePayloadType `json:"type"`
 }
@@ -1893,8 +2927,11 @@ type StudentVerificationRevokedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    StudentVerificationRevokedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// CredentialId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// CredentialId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		CredentialId string `json:"credential_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 	} `json:"title_params"`
 	Type StudentVerificationRevokedTitlePayloadType `json:"type"`
 }
@@ -1907,6 +2944,32 @@ type StudentVerificationRevokedTitlePayloadTitleKey string
 
 // StudentVerificationRevokedTitlePayloadType defines model for StudentVerificationRevokedTitlePayload.Type.
 type StudentVerificationRevokedTitlePayloadType string
+
+// StudentVerificationSupplementRequiredTitlePayload 学生认证需补充材料
+type StudentVerificationSupplementRequiredTitlePayload struct {
+	Target struct {
+		Id   string                                                      `json:"id"`
+		Kind StudentVerificationSupplementRequiredTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    StudentVerificationSupplementRequiredTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		ApplicationId string `json:"application_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+	} `json:"title_params"`
+	Type StudentVerificationSupplementRequiredTitlePayloadType `json:"type"`
+}
+
+// StudentVerificationSupplementRequiredTitlePayloadTargetKind defines model for StudentVerificationSupplementRequiredTitlePayload.Target.Kind.
+type StudentVerificationSupplementRequiredTitlePayloadTargetKind string
+
+// StudentVerificationSupplementRequiredTitlePayloadTitleKey defines model for StudentVerificationSupplementRequiredTitlePayload.TitleKey.
+type StudentVerificationSupplementRequiredTitlePayloadTitleKey string
+
+// StudentVerificationSupplementRequiredTitlePayloadType defines model for StudentVerificationSupplementRequiredTitlePayload.Type.
+type StudentVerificationSupplementRequiredTitlePayloadType string
 
 // SystemAccountTitlePayload 账号通知
 type SystemAccountTitlePayload struct {
@@ -1922,7 +2985,10 @@ type SystemAccountTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *SystemAccountTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
+
+		// ReferenceId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
 	Type SystemAccountTitlePayloadType `json:"type"`
@@ -1954,7 +3020,10 @@ type SystemNoticeTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *SystemNoticeTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
+
+		// ReferenceId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
 	Type SystemNoticeTitlePayloadType `json:"type"`
@@ -1986,7 +3055,10 @@ type SystemSecurityTitlePayload struct {
 		// ContentNameState available 为当前可读名称；inaccessible 表示已删除、下架或无权查看，统一显示内容不可用；unavailable 为依赖暂不可用。
 		ContentNameState *SystemSecurityTitlePayloadTitleParamsContentNameState `json:"content_name_state,omitempty"`
 
-		// ReferenceId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ContextId 可访问评论所属的根评价 ID，用于打开讨论上下文。
+		ContextId *string `json:"context_id,omitempty"`
+
+		// ReferenceId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ReferenceId string `json:"reference_id"`
 	} `json:"title_params"`
 	Type SystemSecurityTitlePayloadType `json:"type"`
@@ -2013,6 +3085,52 @@ type Target struct {
 // TargetKind defines model for Target.Kind.
 type TargetKind string
 
+// TeacherHomepageRequestApprovedTitlePayload 教师主页修改申请已通过
+type TeacherHomepageRequestApprovedTitlePayload struct {
+	Target struct {
+		Id   string                                               `json:"id"`
+		Kind TeacherHomepageRequestApprovedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    TeacherHomepageRequestApprovedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type TeacherHomepageRequestApprovedTitlePayloadType `json:"type"`
+}
+
+// TeacherHomepageRequestApprovedTitlePayloadTargetKind defines model for TeacherHomepageRequestApprovedTitlePayload.Target.Kind.
+type TeacherHomepageRequestApprovedTitlePayloadTargetKind string
+
+// TeacherHomepageRequestApprovedTitlePayloadTitleKey defines model for TeacherHomepageRequestApprovedTitlePayload.TitleKey.
+type TeacherHomepageRequestApprovedTitlePayloadTitleKey string
+
+// TeacherHomepageRequestApprovedTitlePayloadType defines model for TeacherHomepageRequestApprovedTitlePayload.Type.
+type TeacherHomepageRequestApprovedTitlePayloadType string
+
+// TeacherHomepageRequestRejectedTitlePayload 教师主页修改申请未通过
+type TeacherHomepageRequestRejectedTitlePayload struct {
+	Target struct {
+		Id   string                                               `json:"id"`
+		Kind TeacherHomepageRequestRejectedTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    TeacherHomepageRequestRejectedTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		RequestId string `json:"request_id"`
+	} `json:"title_params"`
+	Type TeacherHomepageRequestRejectedTitlePayloadType `json:"type"`
+}
+
+// TeacherHomepageRequestRejectedTitlePayloadTargetKind defines model for TeacherHomepageRequestRejectedTitlePayload.Target.Kind.
+type TeacherHomepageRequestRejectedTitlePayloadTargetKind string
+
+// TeacherHomepageRequestRejectedTitlePayloadTitleKey defines model for TeacherHomepageRequestRejectedTitlePayload.TitleKey.
+type TeacherHomepageRequestRejectedTitlePayloadTitleKey string
+
+// TeacherHomepageRequestRejectedTitlePayloadType defines model for TeacherHomepageRequestRejectedTitlePayload.Type.
+type TeacherHomepageRequestRejectedTitlePayloadType string
+
 // TeacherVerificationApprovedTitlePayload 教师认证通过
 type TeacherVerificationApprovedTitlePayload struct {
 	Target struct {
@@ -2021,7 +3139,7 @@ type TeacherVerificationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    TeacherVerificationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
 	} `json:"title_params"`
 	Type TeacherVerificationApprovedTitlePayloadType `json:"type"`
@@ -2044,8 +3162,11 @@ type TeacherVerificationRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    TeacherVerificationRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// ApplicationId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		ApplicationId string `json:"application_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
 	} `json:"title_params"`
 	Type TeacherVerificationRejectedTitlePayloadType `json:"type"`
 }
@@ -2059,12 +3180,56 @@ type TeacherVerificationRejectedTitlePayloadTitleKey string
 // TeacherVerificationRejectedTitlePayloadType defines model for TeacherVerificationRejectedTitlePayload.Type.
 type TeacherVerificationRejectedTitlePayloadType string
 
+// TeacherVerificationSupplementRequiredTitlePayload 教师认证需补充材料
+type TeacherVerificationSupplementRequiredTitlePayload struct {
+	Target struct {
+		Id   string                                                      `json:"id"`
+		Kind TeacherVerificationSupplementRequiredTitlePayloadTargetKind `json:"kind"`
+	} `json:"target"`
+	TitleKey    TeacherVerificationSupplementRequiredTitlePayloadTitleKey `json:"title_key"`
+	TitleParams struct {
+		// ApplicationId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
+		ApplicationId string `json:"application_id"`
+
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+	} `json:"title_params"`
+	Type TeacherVerificationSupplementRequiredTitlePayloadType `json:"type"`
+}
+
+// TeacherVerificationSupplementRequiredTitlePayloadTargetKind defines model for TeacherVerificationSupplementRequiredTitlePayload.Target.Kind.
+type TeacherVerificationSupplementRequiredTitlePayloadTargetKind string
+
+// TeacherVerificationSupplementRequiredTitlePayloadTitleKey defines model for TeacherVerificationSupplementRequiredTitlePayload.TitleKey.
+type TeacherVerificationSupplementRequiredTitlePayloadTitleKey string
+
+// TeacherVerificationSupplementRequiredTitlePayloadType defines model for TeacherVerificationSupplementRequiredTitlePayload.Type.
+type TeacherVerificationSupplementRequiredTitlePayloadType string
+
 // TitleKey 封闭标题键目录，详见 x-title-catalog 和各 TitlePayload。互动复数参数 count 使用通知顶层 count（整数），禁止由 Consumer 传入 title_params。
 type TitleKey string
 
-// Unread defines model for Unread.
+// Unread 未读总数、分箱统计和按通知类型统计。
 type Unread struct {
-	Count int64 `json:"count"`
+	ByBox  UnreadByBox  `json:"by_box"`
+	ByType UnreadByType `json:"by_type"`
+	Count  int64        `json:"count"`
+}
+
+// UnreadByBox defines model for UnreadByBox.
+type UnreadByBox struct {
+	Interaction  int64 `json:"interaction"`
+	Review       int64 `json:"review"`
+	System       int64 `json:"system"`
+	Verification int64 `json:"verification"`
+}
+
+// UnreadByType defines model for UnreadByType.
+type UnreadByType struct {
+	Account     int64 `json:"account"`
+	Business    int64 `json:"business"`
+	Interaction int64 `json:"interaction"`
+	Security    int64 `json:"security"`
 }
 
 // VerificationDeletionApprovedTitlePayload 认证删除申请通过
@@ -2075,7 +3240,7 @@ type VerificationDeletionApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    VerificationDeletionApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationDeletionApprovedTitlePayloadType `json:"type"`
@@ -2098,7 +3263,10 @@ type VerificationDeletionRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    VerificationDeletionRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationDeletionRejectedTitlePayloadType `json:"type"`
@@ -2121,7 +3289,7 @@ type VerificationRevocationApprovedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    VerificationRevocationApprovedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationRevocationApprovedTitlePayloadType `json:"type"`
@@ -2144,7 +3312,10 @@ type VerificationRevocationRejectedTitlePayload struct {
 	} `json:"target"`
 	TitleKey    VerificationRevocationRejectedTitlePayloadTitleKey `json:"title_key"`
 	TitleParams struct {
-		// RequestId 显示用业务编号，不得包含正文、姓名、学号、证件号、邮箱或其他个人敏感信息。
+		// ReasonCode 封闭原因码枚举，由客户端八语言字典翻译，禁止传入自由文本或审核员备注。
+		ReasonCode *ReasonCode `json:"reason_code,omitempty"`
+
+		// RequestId 事件的业务对象引用。仅接受目录规定的标识符。禁止提交正文或个人敏感信息。
 		RequestId string `json:"request_id"`
 	} `json:"title_params"`
 	Type VerificationRevocationRejectedTitlePayloadType `json:"type"`
@@ -2161,16 +3332,37 @@ type VerificationRevocationRejectedTitlePayloadType string
 
 // ListNotificationsParams defines parameters for ListNotifications.
 type ListNotificationsParams struct {
-	// Cursor 不透明游标，按创建时间和 ID 倒序；不包含快照隔离保证。
+	// Cursor 不透明游标，按最近动态时间（updated_at）和 ID 倒序；不包含快照隔离保证。
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// IncludeContentNames 启用读取时解析的 content_name 与 content_name_state。默认 false，保留旧客户端的封闭标题参数结构。
-	IncludeContentNames *bool `form:"include_content_names,omitempty" json:"include_content_names,omitempty"`
+	// Box 按通知中心分箱过滤：interaction（互动）、review（审核与举报）、verification（认证）、system（系统）。
+	Box *Box `form:"box,omitempty" json:"box,omitempty"`
+
+	// Type 按通知底层类别过滤。
+	Type *ListNotificationsParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// UnreadOnly 仅返回未到保留期限的未读通知（read_at 为 null）。
+	UnreadOnly *bool `form:"unread_only,omitempty" json:"unread_only,omitempty"`
 }
 
+// ListNotificationsParamsType defines parameters for ListNotifications.
+type ListNotificationsParamsType string
+
+// MarkAllReadParams defines parameters for MarkAllRead.
+type MarkAllReadParams struct {
+	// Box 可选按分箱批量标为已读。省略时处理全部分箱。
+	Box *Box `form:"box,omitempty" json:"box,omitempty"`
+
+	// Type 可选按通知类别批量标为已读。
+	Type *MarkAllReadParamsType `form:"type,omitempty" json:"type,omitempty"`
+}
+
+// MarkAllReadParamsType defines parameters for MarkAllRead.
+type MarkAllReadParamsType string
+
 // SetPreferencesJSONRequestBody defines body for SetPreferences for application/json ContentType.
-type SetPreferencesJSONRequestBody = Preferences
+type SetPreferencesJSONRequestBody = PreferencesUpdate
 
 // AsInteractionReplyTitlePayload returns the union data inside the Notification as a InteractionReplyTitlePayload
 func (t Notification) AsInteractionReplyTitlePayload() (InteractionReplyTitlePayload, error) {
@@ -2692,6 +3884,318 @@ func (t *Notification) MergeStudentVerificationRevokedTitlePayload(v StudentVeri
 	return err
 }
 
+// AsContentDraftExpiringTitlePayload returns the union data inside the Notification as a ContentDraftExpiringTitlePayload
+func (t Notification) AsContentDraftExpiringTitlePayload() (ContentDraftExpiringTitlePayload, error) {
+	var body ContentDraftExpiringTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromContentDraftExpiringTitlePayload overwrites any union data inside the Notification as the provided ContentDraftExpiringTitlePayload
+func (t *Notification) FromContentDraftExpiringTitlePayload(v ContentDraftExpiringTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeContentDraftExpiringTitlePayload performs a merge with any union data inside the Notification, using the provided ContentDraftExpiringTitlePayload
+func (t *Notification) MergeContentDraftExpiringTitlePayload(v ContentDraftExpiringTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsStudentVerificationSupplementRequiredTitlePayload returns the union data inside the Notification as a StudentVerificationSupplementRequiredTitlePayload
+func (t Notification) AsStudentVerificationSupplementRequiredTitlePayload() (StudentVerificationSupplementRequiredTitlePayload, error) {
+	var body StudentVerificationSupplementRequiredTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromStudentVerificationSupplementRequiredTitlePayload overwrites any union data inside the Notification as the provided StudentVerificationSupplementRequiredTitlePayload
+func (t *Notification) FromStudentVerificationSupplementRequiredTitlePayload(v StudentVerificationSupplementRequiredTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeStudentVerificationSupplementRequiredTitlePayload performs a merge with any union data inside the Notification, using the provided StudentVerificationSupplementRequiredTitlePayload
+func (t *Notification) MergeStudentVerificationSupplementRequiredTitlePayload(v StudentVerificationSupplementRequiredTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsTeacherVerificationSupplementRequiredTitlePayload returns the union data inside the Notification as a TeacherVerificationSupplementRequiredTitlePayload
+func (t Notification) AsTeacherVerificationSupplementRequiredTitlePayload() (TeacherVerificationSupplementRequiredTitlePayload, error) {
+	var body TeacherVerificationSupplementRequiredTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTeacherVerificationSupplementRequiredTitlePayload overwrites any union data inside the Notification as the provided TeacherVerificationSupplementRequiredTitlePayload
+func (t *Notification) FromTeacherVerificationSupplementRequiredTitlePayload(v TeacherVerificationSupplementRequiredTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTeacherVerificationSupplementRequiredTitlePayload performs a merge with any union data inside the Notification, using the provided TeacherVerificationSupplementRequiredTitlePayload
+func (t *Notification) MergeTeacherVerificationSupplementRequiredTitlePayload(v TeacherVerificationSupplementRequiredTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAppealApprovedTitlePayload returns the union data inside the Notification as a AppealApprovedTitlePayload
+func (t Notification) AsAppealApprovedTitlePayload() (AppealApprovedTitlePayload, error) {
+	var body AppealApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAppealApprovedTitlePayload overwrites any union data inside the Notification as the provided AppealApprovedTitlePayload
+func (t *Notification) FromAppealApprovedTitlePayload(v AppealApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAppealApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided AppealApprovedTitlePayload
+func (t *Notification) MergeAppealApprovedTitlePayload(v AppealApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAppealRejectedTitlePayload returns the union data inside the Notification as a AppealRejectedTitlePayload
+func (t Notification) AsAppealRejectedTitlePayload() (AppealRejectedTitlePayload, error) {
+	var body AppealRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAppealRejectedTitlePayload overwrites any union data inside the Notification as the provided AppealRejectedTitlePayload
+func (t *Notification) FromAppealRejectedTitlePayload(v AppealRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAppealRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided AppealRejectedTitlePayload
+func (t *Notification) MergeAppealRejectedTitlePayload(v AppealRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGroupMembershipGraceExpiringTitlePayload returns the union data inside the Notification as a GroupMembershipGraceExpiringTitlePayload
+func (t Notification) AsGroupMembershipGraceExpiringTitlePayload() (GroupMembershipGraceExpiringTitlePayload, error) {
+	var body GroupMembershipGraceExpiringTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGroupMembershipGraceExpiringTitlePayload overwrites any union data inside the Notification as the provided GroupMembershipGraceExpiringTitlePayload
+func (t *Notification) FromGroupMembershipGraceExpiringTitlePayload(v GroupMembershipGraceExpiringTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGroupMembershipGraceExpiringTitlePayload performs a merge with any union data inside the Notification, using the provided GroupMembershipGraceExpiringTitlePayload
+func (t *Notification) MergeGroupMembershipGraceExpiringTitlePayload(v GroupMembershipGraceExpiringTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsStorageContributionExitCompletedTitlePayload returns the union data inside the Notification as a StorageContributionExitCompletedTitlePayload
+func (t Notification) AsStorageContributionExitCompletedTitlePayload() (StorageContributionExitCompletedTitlePayload, error) {
+	var body StorageContributionExitCompletedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromStorageContributionExitCompletedTitlePayload overwrites any union data inside the Notification as the provided StorageContributionExitCompletedTitlePayload
+func (t *Notification) FromStorageContributionExitCompletedTitlePayload(v StorageContributionExitCompletedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeStorageContributionExitCompletedTitlePayload performs a merge with any union data inside the Notification, using the provided StorageContributionExitCompletedTitlePayload
+func (t *Notification) MergeStorageContributionExitCompletedTitlePayload(v StorageContributionExitCompletedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBillingTopupReviewRequiredTitlePayload returns the union data inside the Notification as a BillingTopupReviewRequiredTitlePayload
+func (t Notification) AsBillingTopupReviewRequiredTitlePayload() (BillingTopupReviewRequiredTitlePayload, error) {
+	var body BillingTopupReviewRequiredTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBillingTopupReviewRequiredTitlePayload overwrites any union data inside the Notification as the provided BillingTopupReviewRequiredTitlePayload
+func (t *Notification) FromBillingTopupReviewRequiredTitlePayload(v BillingTopupReviewRequiredTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBillingTopupReviewRequiredTitlePayload performs a merge with any union data inside the Notification, using the provided BillingTopupReviewRequiredTitlePayload
+func (t *Notification) MergeBillingTopupReviewRequiredTitlePayload(v BillingTopupReviewRequiredTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBillingRefundCompletedTitlePayload returns the union data inside the Notification as a BillingRefundCompletedTitlePayload
+func (t Notification) AsBillingRefundCompletedTitlePayload() (BillingRefundCompletedTitlePayload, error) {
+	var body BillingRefundCompletedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBillingRefundCompletedTitlePayload overwrites any union data inside the Notification as the provided BillingRefundCompletedTitlePayload
+func (t *Notification) FromBillingRefundCompletedTitlePayload(v BillingRefundCompletedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBillingRefundCompletedTitlePayload performs a merge with any union data inside the Notification, using the provided BillingRefundCompletedTitlePayload
+func (t *Notification) MergeBillingRefundCompletedTitlePayload(v BillingRefundCompletedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBillingRefundRejectedTitlePayload returns the union data inside the Notification as a BillingRefundRejectedTitlePayload
+func (t Notification) AsBillingRefundRejectedTitlePayload() (BillingRefundRejectedTitlePayload, error) {
+	var body BillingRefundRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBillingRefundRejectedTitlePayload overwrites any union data inside the Notification as the provided BillingRefundRejectedTitlePayload
+func (t *Notification) FromBillingRefundRejectedTitlePayload(v BillingRefundRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBillingRefundRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided BillingRefundRejectedTitlePayload
+func (t *Notification) MergeBillingRefundRejectedTitlePayload(v BillingRefundRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsTeacherHomepageRequestApprovedTitlePayload returns the union data inside the Notification as a TeacherHomepageRequestApprovedTitlePayload
+func (t Notification) AsTeacherHomepageRequestApprovedTitlePayload() (TeacherHomepageRequestApprovedTitlePayload, error) {
+	var body TeacherHomepageRequestApprovedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTeacherHomepageRequestApprovedTitlePayload overwrites any union data inside the Notification as the provided TeacherHomepageRequestApprovedTitlePayload
+func (t *Notification) FromTeacherHomepageRequestApprovedTitlePayload(v TeacherHomepageRequestApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTeacherHomepageRequestApprovedTitlePayload performs a merge with any union data inside the Notification, using the provided TeacherHomepageRequestApprovedTitlePayload
+func (t *Notification) MergeTeacherHomepageRequestApprovedTitlePayload(v TeacherHomepageRequestApprovedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsTeacherHomepageRequestRejectedTitlePayload returns the union data inside the Notification as a TeacherHomepageRequestRejectedTitlePayload
+func (t Notification) AsTeacherHomepageRequestRejectedTitlePayload() (TeacherHomepageRequestRejectedTitlePayload, error) {
+	var body TeacherHomepageRequestRejectedTitlePayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromTeacherHomepageRequestRejectedTitlePayload overwrites any union data inside the Notification as the provided TeacherHomepageRequestRejectedTitlePayload
+func (t *Notification) FromTeacherHomepageRequestRejectedTitlePayload(v TeacherHomepageRequestRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeTeacherHomepageRequestRejectedTitlePayload performs a merge with any union data inside the Notification, using the provided TeacherHomepageRequestRejectedTitlePayload
+func (t *Notification) MergeTeacherHomepageRequestRejectedTitlePayload(v TeacherHomepageRequestRejectedTitlePayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsSystemNoticeTitlePayload returns the union data inside the Notification as a SystemNoticeTitlePayload
 func (t Notification) AsSystemNoticeTitlePayload() (SystemNoticeTitlePayload, error) {
 	var body SystemNoticeTitlePayload
@@ -2835,6 +4339,12 @@ func (t Notification) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error marshaling 'type': %w", err)
 	}
 
+	if t.UpdatedAt != nil {
+		object["updated_at"], err = json.Marshal(t.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'updated_at': %w", err)
+		}
+	}
 	b, err = json.Marshal(object)
 	return b, err
 }
@@ -2920,6 +4430,13 @@ func (t *Notification) UnmarshalJSON(b []byte) error {
 		}
 	}
 
+	if raw, found := object["updated_at"]; found {
+		err = json.Unmarshal(raw, &t.UpdatedAt)
+		if err != nil {
+			return fmt.Errorf("error reading 'updated_at': %w", err)
+		}
+	}
+
 	return err
 }
 
@@ -2998,30 +4515,49 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 type ClientInterface interface {
 
 	// ListNotifications performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
+	//
+	// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
 	ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetPreferences performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
+	//
+	// 读取回复与点赞的当前通知偏好。.
 	GetPreferences(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SetPreferencesWithBody performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 	// with any type of body and a specified content type.
+	//
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
 	SetPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SetPreferences performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 	// Takes a body of the `application/json` content type.
+	//
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
 	SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
-	MarkAllRead(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	//
+	// 按筛选条件标记本人未到保留期限的未读通知。.
+	MarkAllRead(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+	//
+	// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
 	GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteNotification performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+	DeleteNotification(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MarkRead performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+	//
+	// 记录本人未到保留期限的通知的首次已读时间。.
 	MarkRead(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 // ListNotifications performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
+//
+// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
 func (c *Client) ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListNotificationsRequest(c.Server, params)
 	if err != nil {
@@ -3035,6 +4571,8 @@ func (c *Client) ListNotifications(ctx context.Context, params *ListNotification
 }
 
 // GetPreferences performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
+//
+// 读取回复与点赞的当前通知偏好。.
 func (c *Client) GetPreferences(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPreferencesRequest(c.Server)
 	if err != nil {
@@ -3049,6 +4587,8 @@ func (c *Client) GetPreferences(ctx context.Context, reqEditors ...RequestEditor
 
 // SetPreferencesWithBody performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 // with any type of body and a specified content type.
+//
+// 更新提交的回复或点赞偏好，返回两项当前值。.
 func (c *Client) SetPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSetPreferencesRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -3063,6 +4603,8 @@ func (c *Client) SetPreferencesWithBody(ctx context.Context, contentType string,
 
 // SetPreferences performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 // Takes a body of the `application/json` content type.
+//
+// 更新提交的回复或点赞偏好，返回两项当前值。.
 func (c *Client) SetPreferences(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSetPreferencesRequest(c.Server, body)
 	if err != nil {
@@ -3076,8 +4618,10 @@ func (c *Client) SetPreferences(ctx context.Context, body SetPreferencesJSONRequ
 }
 
 // MarkAllRead performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
-func (c *Client) MarkAllRead(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewMarkAllReadRequest(c.Server)
+//
+// 按筛选条件标记本人未到保留期限的未读通知。.
+func (c *Client) MarkAllRead(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMarkAllReadRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3089,6 +4633,8 @@ func (c *Client) MarkAllRead(ctx context.Context, reqEditors ...RequestEditorFn)
 }
 
 // GetUnreadCount performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+//
+// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
 func (c *Client) GetUnreadCount(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUnreadCountRequest(c.Server)
 	if err != nil {
@@ -3101,7 +4647,22 @@ func (c *Client) GetUnreadCount(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
+// DeleteNotification performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+func (c *Client) DeleteNotification(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteNotificationRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // MarkRead performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+//
+// 记录本人未到保留期限的通知的首次已读时间。.
 func (c *Client) MarkRead(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMarkReadRequest(c.Server, id)
 	if err != nil {
@@ -3166,9 +4727,33 @@ func NewListNotificationsRequest(server string, params *ListNotificationsParams)
 
 		}
 
-		if params.IncludeContentNames != nil {
+		if params.Box != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_content_names", *params.IncludeContentNames, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.UnreadOnly != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "unread_only", *params.UnreadOnly, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -3260,7 +4845,7 @@ func NewSetPreferencesRequestWithBody(server string, contentType string, body io
 }
 
 // NewMarkAllReadRequest constructs an http.Request for the MarkAllRead method
-func NewMarkAllReadRequest(server string) (*http.Request, error) {
+func NewMarkAllReadRequest(server string, params *MarkAllReadParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3276,6 +4861,45 @@ func NewMarkAllReadRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Box != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "box", *params.Box, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
@@ -3306,6 +4930,40 @@ func NewGetUnreadCountRequest(server string) (*http.Request, error) {
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteNotificationRequest constructs an http.Request for the DeleteNotification method
+func NewDeleteNotificationRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/notifications/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -3393,10 +5051,14 @@ type ClientWithResponsesInterface interface {
 
 	// ListNotificationsWithResponse performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 	//
+	// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	ListNotificationsWithResponse(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error)
 
 	// GetPreferencesWithResponse performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
+	//
+	// 读取回复与点赞的当前通知偏好。.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	GetPreferencesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error)
@@ -3404,24 +5066,39 @@ type ClientWithResponsesInterface interface {
 	// SetPreferencesWithBodyWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 	// with any type of body and a specified content type.
 	//
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	SetPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
 
 	// SetPreferencesWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// 更新提交的回复或点赞偏好，返回两项当前值。.
 	SetPreferencesWithResponse(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error)
 
 	// MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 	//
+	// 按筛选条件标记本人未到保留期限的未读通知。.
+	//
 	// Returns a wrapper object for the known response body format(s).
-	MarkAllReadWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error)
+	MarkAllReadWithResponse(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error)
 
 	// GetUnreadCountWithResponse performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+	//
+	// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error)
 
+	// DeleteNotificationWithResponse performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	DeleteNotificationWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteNotificationResponse, error)
+
 	// MarkReadWithResponse performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+	//
+	// 记录本人未到保留期限的通知的首次已读时间。.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	MarkReadWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*MarkReadResponse, error)
@@ -3436,6 +5113,8 @@ type ListNotificationsResponse struct {
 	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3455,6 +5134,11 @@ func (r ListNotificationsResponse) GetJSON400() *Error {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListNotificationsResponse) GetJSON401() *Error {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListNotificationsResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -3505,6 +5189,8 @@ type GetPreferencesResponse struct {
 	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3524,6 +5210,11 @@ func (r GetPreferencesResponse) GetJSON400() *Error {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetPreferencesResponse) GetJSON401() *Error {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetPreferencesResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -3574,6 +5265,8 @@ type SetPreferencesResponse struct {
 	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3593,6 +5286,11 @@ func (r SetPreferencesResponse) GetJSON400() *Error {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r SetPreferencesResponse) GetJSON401() *Error {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SetPreferencesResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -3641,6 +5339,8 @@ type MarkAllReadResponse struct {
 	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3655,6 +5355,11 @@ func (r MarkAllReadResponse) GetJSON400() *Error {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r MarkAllReadResponse) GetJSON401() *Error {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MarkAllReadResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -3705,6 +5410,8 @@ type GetUnreadCountResponse struct {
 	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3724,6 +5431,11 @@ func (r GetUnreadCountResponse) GetJSON400() *Error {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetUnreadCountResponse) GetJSON401() *Error {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetUnreadCountResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -3765,6 +5477,75 @@ func (r GetUnreadCountResponse) ContentType() string {
 	return ""
 }
 
+type DeleteNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *Error
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteNotificationResponse) GetJSON400() *Error {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteNotificationResponse) GetJSON401() *Error {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteNotificationResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteNotificationResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r DeleteNotificationResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteNotificationResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteNotificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteNotificationResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type MarkReadResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3772,6 +5553,8 @@ type MarkReadResponse struct {
 	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3786,6 +5569,11 @@ func (r MarkReadResponse) GetJSON400() *Error {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r MarkReadResponse) GetJSON401() *Error {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MarkReadResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -3829,6 +5617,8 @@ func (r MarkReadResponse) ContentType() string {
 
 // ListNotificationsWithResponse performs a GET /api/v1/notifications (the `ListNotifications` operationId) request.
 //
+// 分页返回本人未到保留期限的通知，按当前权限补充内容名称和评论所属根评价 ID。.
+//
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error) {
 	rsp, err := c.ListNotifications(ctx, params, reqEditors...)
@@ -3839,6 +5629,8 @@ func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context,
 }
 
 // GetPreferencesWithResponse performs a GET /api/v1/notifications/preferences (the `GetPreferences` operationId) request.
+//
+// 读取回复与点赞的当前通知偏好。.
 //
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPreferencesResponse, error) {
@@ -3852,6 +5644,8 @@ func (c *ClientWithResponses) GetPreferencesWithResponse(ctx context.Context, re
 // SetPreferencesWithBodyWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request,
 // with any type of body and a specified content type.
 //
+// 更新提交的回复或点赞偏好，返回两项当前值。.
+//
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
 	rsp, err := c.SetPreferencesWithBody(ctx, contentType, body, reqEditors...)
@@ -3863,6 +5657,8 @@ func (c *ClientWithResponses) SetPreferencesWithBodyWithResponse(ctx context.Con
 
 // SetPreferencesWithResponse performs a PUT /api/v1/notifications/preferences (the `SetPreferences` operationId) request.
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// 更新提交的回复或点赞偏好，返回两项当前值。.
 func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, body SetPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*SetPreferencesResponse, error) {
 	rsp, err := c.SetPreferences(ctx, body, reqEditors...)
 	if err != nil {
@@ -3873,9 +5669,11 @@ func (c *ClientWithResponses) SetPreferencesWithResponse(ctx context.Context, bo
 
 // MarkAllReadWithResponse performs a POST /api/v1/notifications/read-all (the `MarkAllRead` operationId) request.
 //
+// 按筛选条件标记本人未到保留期限的未读通知。.
+//
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error) {
-	rsp, err := c.MarkAllRead(ctx, reqEditors...)
+func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, params *MarkAllReadParams, reqEditors ...RequestEditorFn) (*MarkAllReadResponse, error) {
+	rsp, err := c.MarkAllRead(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -3883,6 +5681,8 @@ func (c *ClientWithResponses) MarkAllReadWithResponse(ctx context.Context, reqEd
 }
 
 // GetUnreadCountWithResponse performs a GET /api/v1/notifications/unread-count (the `GetUnreadCount` operationId) request.
+//
+// 返回本人未到保留期限的未读总数及分箱、通知类型统计。.
 //
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUnreadCountResponse, error) {
@@ -3893,7 +5693,20 @@ func (c *ClientWithResponses) GetUnreadCountWithResponse(ctx context.Context, re
 	return ParseGetUnreadCountResponse(rsp)
 }
 
+// DeleteNotificationWithResponse performs a DELETE /api/v1/notifications/{id} (the `DeleteNotification` operationId) request.
+//
+// Returns a wrapper object for the known response body format(s).
+func (c *ClientWithResponses) DeleteNotificationWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteNotificationResponse, error) {
+	rsp, err := c.DeleteNotification(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteNotificationResponse(rsp)
+}
+
 // MarkReadWithResponse performs a POST /api/v1/notifications/{id}/read (the `MarkRead` operationId) request.
+//
+// 记录本人未到保留期限的通知的首次已读时间。.
 //
 // Returns a wrapper object for the known response body format(s).
 func (c *ClientWithResponses) MarkReadWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*MarkReadResponse, error) {
@@ -3938,6 +5751,13 @@ func ParseListNotificationsResponse(rsp *http.Response) (*ListNotificationsRespo
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
@@ -3993,6 +5813,13 @@ func ParseGetPreferencesResponse(rsp *http.Response) (*GetPreferencesResponse, e
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -4047,6 +5874,13 @@ func ParseSetPreferencesResponse(rsp *http.Response) (*SetPreferencesResponse, e
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -4096,6 +5930,13 @@ func ParseMarkAllReadResponse(rsp *http.Response) (*MarkAllReadResponse, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
@@ -4151,6 +5992,70 @@ func ParseGetUnreadCountResponse(rsp *http.Response) (*GetUnreadCountResponse, e
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteNotificationResponse parses an HTTP response from a DeleteNotificationWithResponse call
+func ParseDeleteNotificationResponse(rsp *http.Response) (*DeleteNotificationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 204:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -4200,6 +6105,13 @@ func ParseMarkReadResponse(rsp *http.Response) (*MarkReadResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error

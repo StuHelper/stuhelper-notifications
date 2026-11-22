@@ -1,5 +1,5 @@
 id: notifications
-version: 0.5.1
+version: 0.6.0
 kind: module
 api: 1
 critical: false
@@ -7,6 +7,8 @@ requires:
   - id: platform
     api: 1
 optional:
+  - id: identity
+    api: 1
   - id: reviews
     api: 1
   - id: resources
@@ -20,34 +22,70 @@ optional:
 capabilities:
   - notifications.inbox
   - notifications.consume
+capability_requires:
+  notifications.inbox:
+    - id: identity
+      api: 1
 scenario_tests:
   NT-01:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+    - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
+    - interaction_consistency_test.go#TestClockSkewAndPreLockTimestampSamplingDoNotSplitInteractionAggregate
+    - b04_preferences_test.go#TestGranularReplyAndLikePreferences
+    - b05_updated_at_test.go#TestAggregationUpdatedAtFloatingOrderAndMigration
+    - b05_updated_at_test.go#TestUpdatedAtMigrationAcceptsPreviousWriter
   NT-02:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
+    - validation_test.go#TestStrictUUIDValidationRejectsNonCanonicalFormatsWith400
+    - query_efficiency_test.go#TestReadOnlyPreferencesAndUnreadOnlyMarkUpdates
+    - query_efficiency_test.go#TestCursorListUsesCompositeIndexInGenericPlanAndValidatesBounds
+    - b01_filter_test.go#TestBoxTypeUnreadFilteringSummaryAndScopedMarkAllRead
+    - b01_filter_test.go#TestBoxColumnMigrationBackfillsExistingItems
+    - b07_delete_test.go#TestDeleteNotificationOwnershipIdempotencyAndNoResurrection
   NT-03:
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
   NT-04:
     - integration_test.go#TestOwnershipPaginationReadAndTargetState
+    - runtime_diagnostics_test.go#TestURIDSNSetupAndDesensitizedDiagnostics
+    - target_titles_test.go#TestParentContextCancellationAbortsTargetResolutionWithoutFake200
   NT-05:
     - integration_test.go#TestHTTPAuthenticationAndStrictPreferences
+    - validation_test.go#TestStrictUTF8ControlAndWhitespaceValidation
+    - http_contract_sdk_test.go#TestHTTPRouteMatchingStrictQueryParamsAndSDKTypes
+    - b04_preferences_test.go#TestGranularReplyAndLikePreferences
+    - b04_preferences_test.go#TestPreferencesMigrationPreservesUserChoices
+    - b07_delete_test.go#TestDeleteNotificationOwnershipIdempotencyAndNoResurrection
   NT-06:
     - integration_test.go#TestDeliveryRollbackAndRetentionBoundary
+    - retention_test.go#TestRetentionBoundariesAfterPublishedSchemaMigration
+    - retention_test.go#TestRetentionCleanupConcurrentAndRetries
     - integration_test.go#TestAggregationSeparatesTargetsParametersAndRecipients
+    - b06_observability_test.go#TestMaintenanceStatsAndOperationalObserver
+    - b06_observability_test.go#TestResolveObserverCountsEachDistinctTargetOnce
+    - runtime_diagnostics_test.go#TestCheckRuntimeEnforcesLeastPrivilegeAndOwnership
+    - closure_test.go#TestInboxDetailRetentionCleanupAndLegacyUpgrade
+  PC-07:
+    - closure_test.go#TestAccountClosureDeletesPersonalDataBlocksResurrectionAndEnforcesHTTP
   NT-07:
-    - http_compatibility_test.go#TestLegacyHTTPParametersAndExplicitNameExpansion
     - target_titles_test.go#TestNotificationNamesAreCurrentBoundedAndNeverPersisted
+    - target_titles_test.go#TestCommentContextIDAndReasonCodeReadBehavior
     - title_catalog_test.go#TestTitleCatalogAdmissionAndRejectedWrites
     - title_catalog_test.go#TestInteractionTitleUsesServerAggregateCount
+    - b06_observability_test.go#TestCatalogPayloadSchemaSynthesisFromXTitleCatalog
   NT-08:
     - consume_test.go#TestConsumeRevisionOrderingAndOriginalResults
     - consume_test.go#TestConsumeRollbackRestoresAggregateAndRevision
     - consume_test.go#TestConsumeSuppressionAdvancesRevisionAndValidation
     - consume_test.go#TestConsumeConcurrentSameRevision
     - integration_test.go#TestConcurrentDeliveryAggregationPreferencesAndCleanup
+    - interaction_consistency_test.go#TestInteractionSubjectIsolationAndLikeToggleDeduplication
+    - interaction_consistency_test.go#TestLegacyLikeReplayAndMigration
+    - interaction_consistency_test.go#TestLegacyLikeMigrationRollsBackWithoutEvidence
   NT-09:
     - recipients_test.go#TestConsumeRecipientsDeduplicationPreferencesAndReplay
     - recipients_test.go#TestConsumeRecipientsBoundsAndAllDelivered
     - recipients_test.go#TestConsumeRecipientsRollbackAllWrites
     - recipients_test.go#TestConsumeRecipientsConcurrentReplayAndOverlap
     - recipients_test.go#TestBatchInboxMigrationPreservesExistingData
+  NT-11:
+    - teacher_homepage_test.go#TestTeacherHomepageNotificationPagingUnreadAndBulkRead

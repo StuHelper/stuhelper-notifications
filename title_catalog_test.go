@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	n "github.com/StuHelper/stuhelper-notifications"
+	"maps"
 	"strings"
 	"testing"
+
+	n "github.com/StuHelper/stuhelper-notifications"
 )
 
 func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
@@ -15,15 +17,23 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 	ctx := context.Background()
 	var contract struct {
 		Catalog map[string]struct {
-			Type   string   `json:"type"`
-			Kinds  []string `json:"target_kinds"`
-			Params []string `json:"parameters"`
+			Type           string   `json:"type"`
+			Kinds          []string `json:"target_kinds"`
+			Params         []string `json:"parameters"`
+			OptionalParams []string `json:"optional_parameters"`
 		} `json:"x-title-catalog"`
+		Components struct {
+			Schemas struct {
+				ReasonCode struct {
+					Enum []string `json:"enum"`
+				} `json:"ReasonCode"`
+			} `json:"schemas"`
+		} `json:"components"`
 	}
 	if e := json.Unmarshal(n.OpenAPI(), &contract); e != nil {
 		t.Fatal(e)
 	}
-	if len(contract.Catalog) != 23 {
+	if len(contract.Catalog) != 35 {
 		t.Fatal("catalog coverage changed", len(contract.Catalog))
 	}
 	serial := 0
@@ -37,6 +47,20 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 			v := deliver(t, f, d)
 			if v.Recipients[0].ID == "" || v.Recipients[0].SuppressionReason != "" {
 				t.Fatal(key, v)
+			}
+			if len(rule.OptionalParams) > 0 && rule.OptionalParams[0] == "reason_code" {
+				serial++
+				withReason := d
+				withReason.ID = fmt.Sprint(serial)
+				withReason.Subject = fmt.Sprint(serial)
+				withReason.TitleParams = map[string]string{"reason_code": contract.Components.Schemas.ReasonCode.Enum[0]}
+				for _, param := range rule.Params {
+					withReason.TitleParams[param] = "ref-123"
+				}
+				v = deliver(t, f, withReason)
+				if v.Recipients[0].ID == "" || v.Recipients[0].SuppressionReason != "" {
+					t.Fatal(key, v)
+				}
 			}
 		}
 	}
@@ -72,7 +96,7 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 	}
 	// Preference suppression must not hide invalid producer input or record its key.
 	disabled := false
-	if _, e := f.s.Preferences(ctx, "alice", &disabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &disabled, LikeEnabled: &disabled}); e != nil {
 		t.Fatal(e)
 	}
 	d := delivery("off-invalid", "interaction")
@@ -84,12 +108,46 @@ func TestTitleCatalogAdmissionAndRejectedWrites(t *testing.T) {
 		t.Fatal("invalid suppressed inbox")
 	}
 	enabled := true
-	if _, e := f.s.Preferences(ctx, "alice", &enabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &enabled, LikeEnabled: &enabled}); e != nil {
 		t.Fatal(e)
 	}
 	d = delivery("max-reference", "interaction")
 	d.TitleParams["content_id"] = strings.Repeat("a", 64)
 	deliver(t, f, d)
+
+	// Verify closed reason_code validation: arbitrary text, unknown enum values, and non-rejection keys are rejected.
+	for _, badReason := range []string{"", "unknown_reason_code", "审核员手写备注", "duplicate_material ", "duplicate-material"} {
+		rej := n.Event{
+			Recipients:  []string{"alice"},
+			ID:          "bad-reason-" + badReason,
+			Subject:     "mod/bad-reason",
+			Revision:    1,
+			EventType:   "moderation.result.v1",
+			Type:        "business",
+			Source:      "moderation",
+			Target:      n.Target{Kind: "review", ID: "review-1"},
+			TitleKey:    "notifications.content.rejected",
+			TitleParams: map[string]string{"content_id": "review-1", "reason_code": badReason},
+		}
+		if _, e := f.s.Consume(ctx, rej); !errors.Is(e, n.ErrInput) {
+			t.Fatalf("expected ErrInput for reason_code %q, got %v", badReason, e)
+		}
+	}
+	approvedWithReason := n.Event{
+		Recipients:  []string{"alice"},
+		ID:          "approved-with-reason",
+		Subject:     "mod/approved-reason",
+		Revision:    1,
+		EventType:   "moderation.result.v1",
+		Type:        "business",
+		Source:      "moderation",
+		Target:      n.Target{Kind: "review", ID: "review-1"},
+		TitleKey:    "notifications.content.approved",
+		TitleParams: map[string]string{"content_id": "review-1", "reason_code": "duplicate_material"},
+	}
+	if _, e := f.s.Consume(ctx, approvedWithReason); !errors.Is(e, n.ErrInput) {
+		t.Fatalf("expected ErrInput for reason_code on approved title, got %v", e)
+	}
 }
 
 func TestInteractionTitleUsesServerAggregateCount(t *testing.T) {
@@ -106,9 +164,14 @@ func TestInteractionTitleUsesServerAggregateCount(t *testing.T) {
 	if e != nil || len(page.Items) != 2 {
 		t.Fatal(page, e)
 	}
+	wantParams := map[string]string{
+		"content_id":         "example-1",
+		"content_name":       "",
+		"content_name_state": "unavailable",
+	}
 	for _, item := range page.Items {
-		if item.Count != 2 || len(item.TitleParams) != 1 || item.TitleParams["content_id"] != "example-1" {
-			t.Fatal(item)
+		if item.Count != 2 || !maps.Equal(item.TitleParams, wantParams) {
+			t.Fatalf("%s: aggregate count=%d and title params=%v, want count=2 and params=%v", item.TitleKey, item.Count, item.TitleParams, wantParams)
 		}
 	}
 }

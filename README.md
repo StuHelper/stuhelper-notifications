@@ -1,47 +1,79 @@
+---
+type: index
+status: Accepted
+updated: 2026-11-22
+---
+
 # StuHelper Notifications
 
-站内通知模块，采用 Handler → Service → Repository。业务规格与当前实现见 [通知说明](docs/spec/notifications.md)，HTTP 定义见 [OpenAPI](contracts/notifications.openapi.json)。
+更新日期：2026-11-22。
+
+站内通知模块拥有通知条目、互动偏好和投递去重数据。来源模块通过公开 Go Consumer 投递，用户通过 HTTP API 访问本人通知。见 [通知规格](docs/spec/notifications.md)、[OpenAPI](contracts/notifications.openapi.json) 和 [模块清单](module.yaml)。
 
 ## 本地检查
 
-使用 Go 1.27.3、Node.js 24.22.1、pnpm 10.33.4。安装锁定依赖并启用 hooks：
+安装 `.go-version`、`.node-version` 和 `package.json` 指定的工具链及 PostgreSQL，以普通用户执行：
 
 ```bash
 make setup
-pnpm run hooks
-make generate
 bash scripts/check-with-postgres.sh
 ```
 
-数据库脚本创建独立、仅 Unix socket 可访问的临时 PostgreSQL，退出时清理。可通过 STUHELPER_TEST_PG_BIN 指定 PostgreSQL 程序目录。make check 要求 STUHELPER_NOTIFICATIONS_TEST_DSN 指向隔离测试服务器，测试会创建和删除专属数据库与角色。
+脚本在独立 Unix socket 上启动临时 PostgreSQL，执行 `make check` 并在退出时清理。通过 `STUHELPER_TEST_PG_BIN` 可指定 PostgreSQL 程序目录。直接运行 `make check` 时，`STUHELPER_NOTIFICATIONS_TEST_DSN` 必须指向隔离测试服务器。
+
+检查使用 `GOWORK=off`，覆盖生成一致性、仓库规则、文档、SQL 边界、场景登记、Go race 测试、构建和工作流配置。修改 OpenAPI 后执行 `make generate` 同步 SDK。需要暂存区检查时执行 `pnpm run hooks`。
 
 ## Backend 装配
 
-1. 仓库为 StuHelper/stuhelper-notifications，默认分支 develop。候选在 feat/backend-decisions 分支和 PR #1 维护，集成时登记候选提交与依赖组合。
-2. backend 引入模块，迁移身份调用 postgres.Migrate(ctx, db)。该迁移创建 notifications schema，已有通知不会被删除。
-3. 单独创建运行身份，授予 schema USAGE、items/preferences 的 SELECT、INSERT、UPDATE、DELETE，revisions 的 SELECT、INSERT、UPDATE，以及 inbox 的 SELECT、INSERT。运行身份不得拥有 schema 或提权能力，也不得更新删除 inbox 或删除 revisions。
-4. 使用运行连接构造 postgres.Repository，并调用 CheckRuntime。backend 管理连接池、请求超时、健康检查和连接关闭。迁移身份不进入业务进程。
-5. 调用 notifications.New(repo, resolver, config, clock)。Resolver 根据来源模块和目标引用调用所属模块公开接口，按接收人当前权限返回状态。依赖错误返回 error，禁止默认判定可访问。
-6. 将 httpapi.Handler 挂载至 /api/v1/notifications 及其子路径，Authenticate 回调复用平台认证，返回稳定用户标识。Cookie 认证由宿主同时执行 CSRF 防护。
-7. 标题键、参数和目标类型必须符合 [标题目录](docs/spec/notifications.md#标题键目录)。向 backend relay 注入 notifications.Consumer。relay 保留生产者的 source、id、type、subject、revision，将全部收件人放入 Event.Recipients 后调用 Consume。Consume 成功后才能调用提供方 ConfirmOutbox；超时重试沿用原事件和映射。
-8. 宿主按配置周期调用 Service.Cleanup(ctx)，每次一个有上限的批次。关闭服务时取消任务并等待退出。宿主配置任务超时，保留可再次执行的进度。
-9. 负责人同步 stuhelper-next 规格的实现状态、模块登记和候选锁文件，并更新 Web 的 SDK 快照及实际通知页面。合并前验证真实候选组合。
+1. 用迁移身份调用 `postgres.Migrate(ctx, db)`，在事务内更新 `notifications` schema。先核对历史已读数据及回执关联。见 [通知迁移](docs/spec/notifications.md#通知保留与迁移)和[回执迁移](docs/spec/notifications.md#回执保留与迁移)。
+2. 以独立运行身份构造 `postgres.Repository` 并调用 `CheckRuntime`。调用方通过 `notifications.UnavailableReason(err)` 读取脱敏原因。宿主管理连接池、请求超时、健康检查和关闭过程。
+3. 调用 `notifications.New(repo, resolver, config, clock)`。宿主按收件人权限解析目标，使用 `BatchResolver` 一次解析本页去重后的目标和标题。只实现 `Resolver` 时最多顺序发起 100 次调用。解析器应响应上下文取消，宿主设置请求总超时。
+4. 按契约挂载 `httpapi.Handler`。宿主的 `Authenticate` 回调提供稳定用户标识，Cookie 认证同时执行 CSRF 防护。见 [HTTP 操作](docs/spec/notifications.md#http-操作)。
+5. 在 relay 中注入 `notifications.Consumer`。按标题目录映射事件，保留来源身份和修订，将同一事件的全部收件人一起提交。消费成功后确认来源 outbox。见 [事件消费](docs/spec/notifications.md#事件消费)。
+6. 宿主周期调用 `Service.Cleanup(ctx)`，每次清理一个有上限的批次，停止服务时取消任务并等待退出。业务账号注销调用 `Service.CloseAccount(ctx, owner, closureID)`，原子删除个人通知、偏好并写入关闭记录。
 
-## 配置
+### 数据库授权
 
-以下为 Go Config 字段，环境变量映射由 backend 负责。
-
-| 配置 | 条件与用途 |
+| 身份 | 权限 |
 | --- | --- |
-| Retention | 正时长，按创建时间保留通知 |
-| AggregationWindow | 正时长且不超过 Retention，互动聚合窗口 |
-| CleanupBatch | 1 至 10000，每次清理最大条数 |
-| ResolveTimeout | 正时长，每次目标状态查询超时 |
+| 运行 | schema `USAGE`，`items`、`preferences` 的 `SELECT`、`INSERT`、`UPDATE`、`DELETE` |
+| 运行 | `revisions` 的 `SELECT`、`INSERT`、`UPDATE` |
+| 运行 | `inbox`、`closed_owners`、`like_subjects` 的 `SELECT`、`INSERT` |
+| 维护 | 清理回执详情使用独立连接，对 `inbox` 具备选择清理批次及更新 `result` 所需权限 |
+| 迁移 | 管理本模块 schema 与迁移对象 |
 
-backend 还须提供独立运行数据库连接、迁移连接、清理周期、清理超时和认证回调。模块没有内置凭据或隐含保留期限。
+`CheckRuntime` 拒绝可提权、可在本模块 schema 建对象、拥有 schema 或表的运行身份，并检查去重记录和关闭记录的修改权限。迁移连接由部署工具管理。
 
-Resolver 顺序处理当前页目标，每页最多 100 次调用。宿主应设置整个请求的总超时，Resolver 必须响应 context 取消。profiles 缺失只影响未来外部渠道偏好，不影响当前能力。
+### 配置
 
-当前 SDK 包含 Go HTTP 客户端和 TypeScript 类型，分别由 oapi-codegen 与 openapi-typescript 生成。Go Consumer 是内部模块接口，不开放网络投递入口。消费输入和 relay 处理约定见 [事件消费](docs/spec/notifications.md#事件消费)。
+Backend 使用 `read_retention_seconds` 和 `unread_retention_seconds` 配置各自期限。下表列出模块的 Go `Config` 字段。
 
-Consume 每次接收 1–20 个收件人条目，去重排序后原子写入整批结果。Result.Recipients 返回逐人通知 ID 或抑制原因。若候选库已有单收件人 inbox 数据，迁移会明确报错并保留数据；恢复要求见事件消费说明。
+| 字段 | 条件与用途 |
+| --- | --- |
+| `ReadRetention` | 大于零且最多 180 日，从首次标为已读起算 |
+| `UnreadRetention` | 大于零且最多 365 日，从创建起算 |
+| `AggregationWindow` | 正时长且不超过 `UnreadRetention`，限制互动聚合窗口 |
+| `CleanupBatch` | 1 至 10000，每批清理条数上限 |
+| `ResolveTimeout` | 正时长，限制每次目标解析调用 |
+| `Diagnostics` | 可选回调，接收脱敏操作名与固定原因码 |
+| `Observer` | 可选观察接口，接收消费、目标解析和清理的汇总指标 |
+
+## 实施与验证
+
+### 当前生产组合
+
+StuHelper v0.1.31 已启用站内通知。该组合的 Backend v0.1.46 使用 Notifications v0.1.2。见 [StuHelper v0.1.31 组件清单](https://github.com/StuHelper/stuhelper/releases/download/v0.1.31/COMPONENTS.json)。
+
+### 源码与持续集成
+
+develop 的 OpenAPI 0.5.0 默认提供教师主页申请结果、分箱与类型未读统计、当前权限下的内容名称与评论上下文，以及独立的回复和点赞偏好。消费方按锁定源码生成 SDK。
+
+通知条目按已读与未读分别到期。PostgreSQL 场景覆盖 v0.1.2 旧表迁移、期限边界、主动删除、并发清理和失败重试。
+
+develop 源码 `b9be6e7` 已通过隔离 PostgreSQL 的 Notifications checks。测试覆盖用例见 [场景登记](docs/spec/notifications.md#验收场景)。见 [CI 运行](https://github.com/StuHelper/stuhelper-notifications/actions/runs/44604785405)。
+
+### 待验证
+
+develop 的新增路由、偏好字段、通知标题和回执保留需要在升级后端与客户端后做实际组合验证。首次部署点赞去重迁移时，待核对既有回执和来源记录能否完整重建去重事实。账号注销与回执到期清理的现行生产运行结果待验证。
+
+邮件、QQ、客户端推送、免打扰及提醒提前量仍待实现和验证。

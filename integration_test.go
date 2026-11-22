@@ -8,7 +8,8 @@ import (
 	n "github.com/StuHelper/stuhelper-notifications"
 	"github.com/StuHelper/stuhelper-notifications/httpapi"
 	"github.com/StuHelper/stuhelper-notifications/postgres"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -31,51 +32,64 @@ func (r *resolver) Resolve(ctx context.Context, owner, module string, target n.T
 }
 
 type fixture struct {
-	s   *n.Service
-	db  *sql.DB
-	src *resolver
-	now time.Time
+	runtime *sql.DB
+	s       *n.Service
+	db      *sql.DB
+	src     *resolver
+	now     time.Time
 }
 
 func setup(t *testing.T) *fixture {
+	t.Helper()
+	return setupDatabase(t, nil)
+}
+
+func setupDatabase(t *testing.T, initialize func(*sql.DB)) *fixture {
 	t.Helper()
 	dsn := os.Getenv("STUHELPER_NOTIFICATIONS_TEST_DSN")
 	if dsn == "" {
 		t.Fatal("isolated PostgreSQL required")
 	}
-	admin, e := sql.Open("pgx", dsn)
+	adminCfg, e := pgx.ParseConfig(dsn)
 	if e != nil {
 		t.Fatal(e)
 	}
+	admin := stdlib.OpenDB(*adminCfg)
 	name := fmt.Sprintf("notifications_%d", time.Now().UnixNano())
 	role := name + "_runtime"
+	var owner, runtime *sql.DB
+	t.Cleanup(func() {
+		if runtime != nil {
+			_ = runtime.Close()
+		}
+		if owner != nil {
+			_ = owner.Close()
+		}
+		_, _ = admin.Exec("DROP DATABASE IF EXISTS " + name + " WITH(FORCE)")
+		_, _ = admin.Exec("DROP ROLE IF EXISTS " + role)
+		_ = admin.Close()
+	})
 	if _, e = admin.Exec("CREATE DATABASE " + name); e != nil {
 		t.Fatal(e)
 	}
-	owner, e := sql.Open("pgx", dsn+" dbname="+name)
-	if e != nil {
-		t.Fatal(e)
+	ownerCfg := adminCfg.Copy()
+	ownerCfg.Database = name
+	owner = stdlib.OpenDB(*ownerCfg)
+	if initialize != nil {
+		initialize(owner)
 	}
-	t.Cleanup(func() {
-		owner.Close()
-		admin.Exec("DROP DATABASE " + name + " WITH(FORCE)")
-		admin.Exec("DROP ROLE " + role)
-		admin.Close()
-	})
 	for range 2 {
 		if e = postgres.Migrate(context.Background(), owner); e != nil {
 			t.Fatal(e)
 		}
 	}
-	_, e = owner.Exec("CREATE ROLE " + role + " LOGIN; REVOKE ALL ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA notifications TO " + role + "; GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO " + role + "; GRANT SELECT,INSERT,UPDATE ON notifications.revisions TO " + role + "; GRANT SELECT,INSERT ON notifications.inbox TO " + role + "; CREATE SCHEMA foreign_data; CREATE TABLE foreign_data.secret(value text)")
+	_, e = owner.Exec("CREATE ROLE " + role + " LOGIN; REVOKE ALL ON SCHEMA public FROM PUBLIC; GRANT USAGE ON SCHEMA notifications TO " + role + "; GRANT SELECT,INSERT,UPDATE,DELETE ON notifications.items,notifications.preferences TO " + role + "; GRANT SELECT,INSERT,UPDATE ON notifications.revisions TO " + role + "; GRANT SELECT,INSERT ON notifications.inbox,notifications.closed_owners,notifications.like_subjects TO " + role + "; CREATE SCHEMA foreign_data; CREATE TABLE foreign_data.secret(value text)")
 	if e != nil {
 		t.Fatal(e)
 	}
-	runtime, e := sql.Open("pgx", dsn+" dbname="+name+" user="+role)
-	if e != nil {
-		t.Fatal(e)
-	}
-	t.Cleanup(func() { runtime.Close() })
+	runtimeCfg := ownerCfg.Copy()
+	runtimeCfg.User = role
+	runtime = stdlib.OpenDB(*runtimeCfg)
 	repo := &postgres.Repository{DB: runtime}
 	if e = repo.CheckRuntime(context.Background()); e != nil {
 		t.Fatal(e)
@@ -83,13 +97,13 @@ func setup(t *testing.T) *fixture {
 	if e = (&postgres.Repository{DB: owner}).CheckRuntime(context.Background()); e == nil {
 		t.Fatal("migration identity accepted")
 	}
-	for _, query := range []string{"SELECT * FROM foreign_data.secret", "CREATE TABLE notifications.bad(id int)", "DELETE FROM notifications.inbox", "DELETE FROM notifications.revisions", "UPDATE notifications.inbox SET fingerprint='bad'"} {
+	for _, query := range []string{"SELECT * FROM foreign_data.secret", "CREATE TABLE notifications.bad(id int)", "DELETE FROM notifications.inbox", "DELETE FROM notifications.revisions", "DELETE FROM notifications.like_subjects", "DELETE FROM notifications.closed_owners", "UPDATE notifications.inbox SET fingerprint='bad'", "UPDATE notifications.closed_owners SET closure_id='bad'"} {
 		if _, e = runtime.Exec(query); e == nil {
 			t.Fatalf("runtime allowed %s", query)
 		}
 	}
-	f := &fixture{db: owner, src: &resolver{state: "accessible"}, now: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)}
-	f.s, e = n.New(repo, f.src, n.Config{Retention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
+	f := &fixture{db: owner, runtime: runtime, src: &resolver{state: "accessible"}, now: time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)}
+	f.s, e = n.New(repo, f.src, n.Config{ReadRetention: 24 * time.Hour, UnreadRetention: 24 * time.Hour, AggregationWindow: time.Hour, CleanupBatch: 2, ResolveTimeout: time.Second}, func() time.Time { return f.now })
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -246,7 +260,7 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 		t.Fatal(aggregate, e)
 	}
 	disabled := false
-	if _, e := f.s.Preferences(ctx, "alice", &disabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &disabled, LikeEnabled: &disabled}); e != nil {
 		t.Fatal(e)
 	}
 	blocked := delivery("off", "interaction")
@@ -261,7 +275,7 @@ func TestConcurrentDeliveryAggregationPreferencesAndCleanup(t *testing.T) {
 		}
 	}
 	enabled := true
-	if _, e := f.s.Preferences(ctx, "alice", &enabled); e != nil {
+	if _, e := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &enabled, LikeEnabled: &enabled}); e != nil {
 		t.Fatal(e)
 	}
 	if v = deliver(t, f, blocked); v.Recipients[0].SuppressionReason == "" {
@@ -305,7 +319,7 @@ func TestHTTPAuthenticationAndStrictPreferences(t *testing.T) {
 		{"GET", "/api/v1/notifications", "", 401},
 		{"GET", "/api/v1/notifications/unread-count", "", 401},
 		{"GET", "/api/v1/notifications/preferences", "", 401},
-		{"PUT", "/api/v1/notifications/preferences", `{"interaction_enabled":false}`, 401},
+		{"PUT", "/api/v1/notifications/preferences", `{"reply_enabled":false}`, 401},
 		{"POST", "/api/v1/notifications/" + id + "/read", "", 401},
 		{"POST", "/api/v1/notifications/read-all", "", 401},
 	}
@@ -330,12 +344,12 @@ func TestHTTPAuthenticationAndStrictPreferences(t *testing.T) {
 	if w := request("GET", "/api/v1/notifications", "", "bob"); w.Code != 200 || !strings.Contains(w.Body.String(), `"items":[]`) {
 		t.Fatal(w.Code, w.Body.String())
 	}
-	for _, body := range []string{`{}`, `{"interaction_enabled":null}`, `{"interaction_enabled":false,"security_enabled":false}`, `{"interaction_enabled":false} {}`} {
+	for _, body := range []string{`{}`, `{"reply_enabled":null}`, `{"reply_enabled":false,"security_enabled":false}`, `{"reply_enabled":false} {}`} {
 		if w := request("PUT", "/api/v1/notifications/preferences", body, "alice"); w.Code != 400 {
 			t.Fatal(body, w.Code)
 		}
 	}
-	if w := request("PUT", "/api/v1/notifications/preferences", `{"interaction_enabled":false}`, "alice"); w.Code != 200 {
+	if w := request("PUT", "/api/v1/notifications/preferences", `{"reply_enabled":false}`, "alice"); w.Code != 200 {
 		t.Fatal(w.Code)
 	}
 	if v := deliver(t, f, delivery("disabled", "interaction")); v.Recipients[0].SuppressionReason == "" {
@@ -374,7 +388,7 @@ func TestDeliveryRollbackAndRetentionBoundary(t *testing.T) {
 	if count(t, f, "items") != 1 || count(t, f, "inbox") != 1 {
 		t.Fatal("canceled delivery wrote data")
 	}
-	f.now = f.now.Add(24 * time.Hour)
+	f.now = f.now.Add(24*time.Hour - time.Second)
 	removed, e := f.s.Cleanup(ctx)
 	if e != nil || removed != 0 {
 		t.Fatal("retention boundary", removed, e)

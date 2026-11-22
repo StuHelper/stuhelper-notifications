@@ -149,7 +149,7 @@ func TestConsumeSuppressionAdvancesRevisionAndValidation(t *testing.T) {
 	f := setup(t)
 	ctx := context.Background()
 	off := false
-	if _, err := f.s.Preferences(ctx, "alice", &off); err != nil {
+	if _, err := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &off, LikeEnabled: &off}); err != nil {
 		t.Fatal(err)
 	}
 	e := delivery("off", "interaction")
@@ -160,7 +160,7 @@ func TestConsumeSuppressionAdvancesRevisionAndValidation(t *testing.T) {
 		t.Fatal(suppressed)
 	}
 	on := true
-	if _, err := f.s.Preferences(ctx, "alice", &on); err != nil {
+	if _, err := f.s.UpdatePreferences(ctx, "alice", n.PreferencesUpdate{ReplyEnabled: &on, LikeEnabled: &on}); err != nil {
 		t.Fatal(err)
 	}
 	stale := e
